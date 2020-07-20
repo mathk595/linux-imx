@@ -1,0 +1,141 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+&iomuxc {
+	pinctrl_display_enable: display-enable 	{
+		fsl,pins = < SPIN100_GPIO		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
+	};
+};
+
+&mipi_dsi {
+	status              = "okay";
+	panel@0 {
+		status          = "okay";
+		compatible      = "ipan7,edt-wvga";   /* call driver Panel-simple.c */
+		reg             = <0>;
+		pinctrl-0       = <&pinctrl_display_enable>;
+		enable-gpio     = <spin100_gpio GPIO_ACTIVE_HIGH>;
+		dsi-lanes       = <2>;
+		panel-width-mm  = <154>;
+		panel-height-mm = <86>;
+
+		port@1 {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
+	};
+};
+
+/************************************************************************/
+#if defined (__DTS_TRIZEPS8_PINFUNC_H) || defined (__DTS_TRIZEPS8MINI_PINFUNC_H) || defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
+&i2c3 {
+	tr8fpga@41 {
+		status = "ok";
+		compatible = "kuk,tr8fpga";
+		reg = <0x41>;
+		// 0x00		I2C_REG_ID:	0x61
+		// 0x01		I2C_REG_TEMP:	simple memory register
+		// 0x10		I2C_REG_DISPLAY:
+		//	0x8.	invert PCLK polarity
+		//	0x4.	invert HSync polarity
+		// 	0x2.	invert VSync polarity
+		//	0x1.	invert Data-Enable polarity
+		//	0x.C	24 bpp
+		//	0x.8	18 bpp
+		//	0x.4	16 bpp
+		//	0x.1	Enable MIPI-DSI to RGB conversion
+		// 0x20
+		//      0x01    Enable Wireless Module 2 UART4
+		//      
+		tr8fpga,addresses = <	0x10 0x20 >;
+		tr8fpga,values =    <	0x09 0x00 >;
+	};
+
+	touch: kuk_tr8mcu_touch@10 {
+		xscale              = <800>;
+		yscale              = <480>;
+		xmin                = <306>;
+		xmax                = <3781>;
+        ymin                = <692>;
+        ymax                = <3459>;
+        settle              = <10>;
+		average             = <25>;
+		yreverse            = "true" ;
+        enable_touch        = "true";
+	};    
+};
+#endif
+/************************************************************************/
+#if defined (__DTS_TRIZEPS8_PINFUNC_H)
+&hdmi {
+	status = "disabled";
+};
+
+&lcdif {
+	status = "disabled";
+};
+
+&dcss {
+	status = "okay";
+
+	clocks = <&clk IMX8MQ_CLK_DISP_APB_ROOT>,
+		 <&clk IMX8MQ_CLK_DISP_AXI_ROOT>,
+		 <&clk IMX8MQ_CLK_DISP_RTRM_ROOT>,
+		 <&clk IMX8MQ_CLK_DC_PIXEL>,
+		 <&clk IMX8MQ_CLK_DISP_DTRC>;
+	clock-names = "apb", "axi", "rtrm", "pix", "dtrc";
+	assigned-clocks = <&clk IMX8MQ_CLK_DC_PIXEL>,
+					  <&clk IMX8MQ_VIDEO_PLL1_BYPASS>,
+					  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>,
+					  <&clk IMX8MQ_CLK_DISP_AXI>,
+					  <&clk IMX8MQ_CLK_DISP_RTRM>;
+	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
+							 <&clk IMX8MQ_VIDEO_PLL1>,
+							 <&clk IMX8MQ_CLK_27M>,
+							 <&clk IMX8MQ_SYS1_PLL_800M>,
+							 <&clk IMX8MQ_SYS1_PLL_800M>;
+	assigned-clock-rates = <600000000>, <0>, <0>,
+						   <800000000>,
+						   <400000000>;
+
+	port@0 {
+		dcss_out: endpoint {
+			remote-endpoint = <&mipi_dsi_in>;
+		};
+	};
+};
+&mipi_dsi {
+    fsl,clock-drop-level = <2>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			mipi_dsi_in: endpoint {
+				remote-endpoint = <&dcss_out>;
+			};
+		};
+		port@1 {
+			reg = <1>;
+			mipi_dsi_out: endpoint {
+				remote-endpoint = <&panel1_in>;
+			};
+		};
+	};
+};
+#endif
+/************************************************************************/
+#if defined (__DTS_TRIZEPS8MINI_PINFUNC_H) || defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
+&mipi_dsi {
+	port@1 {
+		mipi_dsi_out: endpoint {
+			remote-endpoint = <&panel1_in>;
+		};
+	};
+};
+#endif
+/************************************************************************/
+

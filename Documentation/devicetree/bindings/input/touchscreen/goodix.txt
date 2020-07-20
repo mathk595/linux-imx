@@ -27,6 +27,9 @@ Optional properties:
  - touchscreen-size-x
  - touchscreen-size-y
  - touchscreen-swapped-x-y
+ - touchscreen-screwed-x-y : X and Y axis are swapped, but display-resolution is not!
+							 (scale to x,y to match display after swapping )
+
 
 The touchscreen-* properties are documented in touchscreen.txt in this
 directory.

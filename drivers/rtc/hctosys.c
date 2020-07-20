@@ -9,6 +9,7 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/rtc.h>
+#include <linux/delay.h>
 
 /* IMPORTANT: the RTC only stores whole seconds. It is arbitrary
  * whether it stores the most close value or the value with partial
@@ -63,6 +64,7 @@ err_read:
 err_open:
 	rtc_hctosys_ret = err;
 
+	msleep(1);	
 	return err;
 }
 

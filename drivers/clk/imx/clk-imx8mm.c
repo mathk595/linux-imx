@@ -40,10 +40,19 @@ static const struct imx_pll14xx_rate_table imx8mm_pll1416x_tbl[] = {
 	PLL_1416X_RATE(600000000U,  300, 3, 2),
 };
 
+#if 1
+// Commit ebb28f5d, VK: Keep old audio_pll setting (to be changed after verify new setting)
+static const struct imx_pll14xx_rate_table imx8mm_audiopll_tbl[] = {
+       PLL_1443X_RATE(786432000U, 262, 2, 2, 9437),
+       PLL_1443X_RATE(722534400U, 361, 3, 2, 17511),
+};
+
+#else
 static const struct imx_pll14xx_rate_table imx8mm_audiopll_tbl[] = {
 	PLL_1443X_RATE(393216000U, 262, 2, 3, 9437),
 	PLL_1443X_RATE(361267200U, 361, 3, 3, 17511),
 };
+#endif
 
 static const struct imx_pll14xx_rate_table imx8mm_videopll_tbl[] = {
 	PLL_1443X_RATE(650000000U, 325, 3, 2, 0),

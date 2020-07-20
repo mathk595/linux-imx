@@ -1,0 +1,29 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+
+#include "myon2nano.dtsi"
+#include "conxm.dtsi"
+#include "adv7533.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH ConXM-HDMI i.MX8MN Myon2-Nano";
+	compatible = "kk,myon2","kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mm-evk", "fsl,imx8mm";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+
+
+
+
+
+
+

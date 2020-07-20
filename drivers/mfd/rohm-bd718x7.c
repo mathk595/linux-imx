@@ -125,17 +125,19 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
 	struct bd718xx *bd718xx;
 	int ret;
 
+#ifdef BD718XX_NEED_FOR_IRQ
 	if (!i2c->irq) {
 		dev_err(&i2c->dev, "No IRQ configured\n");
 		return -EINVAL;
 	}
+#endif
 
 	bd718xx = devm_kzalloc(&i2c->dev, sizeof(struct bd718xx), GFP_KERNEL);
 
 	if (!bd718xx)
 		return -ENOMEM;
 
-	bd718xx->chip_irq = i2c->irq;
+	bd718xx->chip_irq = i2c->irq;   
 	bd718xx->chip.chip_type = (unsigned int)(uintptr_t)
 				of_device_get_match_data(&i2c->dev);
 	bd718xx->chip.dev = &i2c->dev;
@@ -148,31 +150,44 @@ static int bd718xx_i2c_probe(struct i2c_client *i2c,
 		return PTR_ERR(bd718xx->chip.regmap);
 	}
 
-	ret = devm_regmap_add_irq_chip(&i2c->dev, bd718xx->chip.regmap,
+    if ( bd718xx->chip_irq)
+    {
+	    ret = devm_regmap_add_irq_chip(&i2c->dev, bd718xx->chip.regmap,
 				       bd718xx->chip_irq, IRQF_ONESHOT, 0,
 				       &bd718xx_irq_chip, &bd718xx->irq_data);
-	if (ret) {
-		dev_err(&i2c->dev, "Failed to add irq_chip\n");
-		return ret;
-	}
+	    if (ret) {
+		    dev_err(&i2c->dev, "Failed to add irq_chip\n");
+		    return ret;
+	    }
+    }
 
 	ret = bd718xx_init_press_duration(bd718xx);
 	if (ret)
 		return ret;
 
-	ret = regmap_irq_get_virq(bd718xx->irq_data, BD718XX_INT_PWRBTN_S);
 
-	if (ret < 0) {
-		dev_err(&i2c->dev, "Failed to get the IRQ\n");
-		return ret;
-	}
+    if ( bd718xx->chip_irq)
+    {
+    	ret = regmap_irq_get_virq(bd718xx->irq_data, BD718XX_INT_PWRBTN_S);
 
-	button.irq = ret;
+	    if (ret < 0) {
+		    dev_err(&i2c->dev, "Failed to get the IRQ\n");
+		    return ret;
+	    }
 
-	ret = devm_mfd_add_devices(bd718xx->chip.dev, PLATFORM_DEVID_AUTO,
+	    button.irq = ret;
+
+	    ret = devm_mfd_add_devices(bd718xx->chip.dev, PLATFORM_DEVID_AUTO,
 				   bd718xx_mfd_cells,
 				   ARRAY_SIZE(bd718xx_mfd_cells), NULL, 0,
 				   regmap_irq_get_domain(bd718xx->irq_data));
+    }else
+    {
+	    ret = devm_mfd_add_devices(bd718xx->chip.dev, PLATFORM_DEVID_AUTO,
+				   bd718xx_mfd_cells,
+				   ARRAY_SIZE(bd718xx_mfd_cells), NULL, 0,
+				   NULL);
+    }
 	if (ret)
 		dev_err(&i2c->dev, "Failed to create subdevices\n");
 

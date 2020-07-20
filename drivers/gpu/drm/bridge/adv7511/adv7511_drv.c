@@ -611,12 +611,18 @@ static int adv7511_get_edid_block(void *data, u8 *buf, unsigned int block,
 /* -----------------------------------------------------------------------------
  * ADV75xx helpers
  */
+static const struct drm_display_mode hdmi_mode_1080 = 
+	{ DRM_MODE("1920x1080", DRM_MODE_TYPE_DRIVER, 148500, 1920, 2008,
+		   2052, 2200, 0, 1080, 1084, 1089, 1125, 0,
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC),
+	  .vrefresh = 60, .picture_aspect_ratio = HDMI_PICTURE_ASPECT_16_9 
+	  };
 
 static int adv7511_get_modes(struct adv7511 *adv7511,
 			     struct drm_connector *connector)
 {
-	struct edid *edid;
-	unsigned int count;
+	struct edid *edid = NULL;
+	unsigned int count = 0;
 	u32 bus_format = MEDIA_BUS_FMT_RGB888_1X24;
 	int ret;
 
@@ -632,15 +638,30 @@ static int adv7511_get_modes(struct adv7511 *adv7511,
 			     edid_i2c_addr);
 	}
 
-	edid = drm_do_get_edid(connector, adv7511_get_edid_block, adv7511);
+	if ( !adv7511->ignore_edid)
+	{
+		edid = drm_do_get_edid(connector, adv7511_get_edid_block, adv7511);
+	}
+	
 
 	if (!adv7511->powered)
 		__adv7511_power_off(adv7511);
 
-
-	drm_connector_update_edid_property(connector, edid);
-	count = drm_add_edid_modes(connector, edid);
-
+	if (edid)
+	{
+		drm_connector_update_edid_property(connector, edid);
+		count = drm_add_edid_modes(connector, edid);
+	}
+	if (count == 0)
+	{
+		struct drm_display_mode *newmode;
+		newmode = drm_mode_duplicate(connector->dev, &hdmi_mode_1080);
+		if ( newmode)
+		{
+			drm_mode_probed_add( connector, newmode);
+			count++;
+		}
+	}
 	adv7511_set_config_csc(adv7511, connector, adv7511->rgb,
 			       drm_detect_hdmi_monitor(edid));
 
@@ -1174,6 +1195,9 @@ static int adv7511_probe(struct i2c_client *i2c, const struct i2c_device_id *id)
 		ret = adv7511_parse_dt(dev->of_node, &link_config);
 	else
 		ret = adv7533_parse_dt(dev->of_node, adv7511);
+	
+	adv7511->ignore_edid = of_property_read_bool(dev->of_node, "adi,ignore-edid");
+	
 	if (ret)
 		return ret;
 

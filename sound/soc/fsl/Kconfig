@@ -418,6 +418,18 @@ config SND_SOC_IMX_CS42888
 	 Say Y if you want to add support for SoC audio on an i.MX board with
 	 a cs42888 codec.
 
+config SND_SOC_IMX_WM8983
+	tristate "SoC Audio support for i.MX boards with WM8983"
+	depends on OF && I2C
+	select SND_SOC_WM8983_I2C
+	select SND_SOC_IMX_PCM_DMA
+	select SND_SOC_FSL_SAI
+	select SND_SOC_FSL_UTILS
+	help
+	  SoC Audio support for i.MX boards with WM8983
+	  Say Y if you want to add support for SoC audio on an i.MX board with
+	  an wm8983 codec.
+
 config SND_SOC_IMX_WM8962
 	tristate "SoC Audio support for i.MX boards with wm8962"
 	depends on OF && I2C && INPUT
@@ -490,6 +502,13 @@ config SND_SOC_IMX_MQS
 	select SND_SOC_IMX_PCM_DMA
 	select SND_SOC_FSL_SAI
 	select SND_SOC_FSL_MQS
+	select SND_SOC_FSL_UTILS
+
+config SND_SOC_IMX_BTSCO
+	tristate "SoC Audio support for i.MX boards with BT_SCO"
+	depends on OF
+	select SND_SOC_IMX_PCM_DMA
+	select SND_SOC_FSL_SAI
 	select SND_SOC_FSL_UTILS
 
 config SND_SOC_IMX_SPDIF

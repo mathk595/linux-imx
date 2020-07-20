@@ -1,0 +1,30 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+#define ETHERNET_ONLY_100MBIT       0
+
+#include "trizeps8nano.dtsi"
+#include "ipant10.dtsi"
+#include "scf1001.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH iPANT10 i.MX8MN Trizeps8-Nano";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mn-evk", "fsl,imx8mn";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+
+
+
+
+
+
+

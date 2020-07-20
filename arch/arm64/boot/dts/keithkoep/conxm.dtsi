@@ -1,0 +1,158 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+&iomuxc {
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+    
+    pinctrl_hog: hoggrp {
+    	fsl,pins = < 
+					MYON2_HOGGRP_COMMON			            
+		       >;
+	};
+
+    pinctrl_gpio_keys: gpio_keys {
+	    fsl,pins = < PIN1_6_GPIO       PAD_GPIO_PU >;  /* PowerButton SODIMM Pin 122 */
+	};
+
+	pinctrl_mipi_dsi_en: mipi_dsi_en {
+		fsl,pins = < PIN1_62_GPIO		PAD_GPIO_PU	>;
+	};
+		
+	pinctrl_display_enable: display-enable 	{
+		fsl,pins = < PIN1_62_GPIO		PAD_GPIO >; /* DISPLAY_ENABLE */
+	};
+
+	pinctrl_backlight_pwm1: pwm-backlight {
+		fsl,pins = < PIN0_74_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM */
+	};		
+
+	pinctrl_hdmi_int: hdmi-int 	{
+		fsl,pins = < PIN1_5_GPIO		PAD_GPIO >; /* HDMI_INT */
+	};
+};
+
+/ {
+	reg_vin_fused: vin_fused {
+		compatible = "regulator-fixed";
+		regulator-name = "VIN_FUSED";
+		regulator-min-microvolt = <12000000>;
+		/* max	should be 24V but the fixed regulator driver does
+		not allow a range here */
+		regulator-max-microvolt = <12000000>;
+		regulator-always-on;
+	};
+
+	reg_board_5v: 5v {
+		compatible = "regulator-fixed";
+		regulator-name = "+5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_3v3: 3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "+3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_display_pwr: display-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "DISPLAY PWCTRL";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_display_enable>;
+		gpio = <pin1_62_gpio 0>;
+		enable-active-high;
+		regulator-always-on;
+		vin-supply = <&reg_3v3>;
+	};
+
+	gpio-keys {
+        compatible = "gpio-keys1";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_gpio_keys>;
+        power { /* Reconfig to power key in Android*/
+            label = "Power Button";
+            gpios = <pin1_6_gpio GPIO_ACTIVE_LOW>;
+            linux,code = <116>; /* KEY_POWER */
+            gpio-key,wakeup;
+        };
+    };
+};
+
+&pwm1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_backlight_pwm1>;
+	status = "okay";
+};
+
+&backlight {
+	status = "okay";
+};
+
+&i2c2 {
+};
+
+&usbotg1 {
+	dr_mode = "host";    
+	disable-over-current; 
+};
+
+#if !defined (__DTS_IMX8MN_PINFUNC_H)
+&usbotg2 {
+	disable-over-current; 
+};
+#endif
+
+
+
+/************************************************************************/
+
+#if defined (__DTS_MYON2_PINFUNC_H) || defined (__DTS_MYON2NANO_PINFUNC_H)
+
+&mipi_dsi {
+	status = "okay";
+
+	port@1 {
+		mipi_dsi_bridge_out: endpoint {
+			remote-endpoint = <&adv7533_in>;
+            attach-bridge;
+		};
+	};
+};
+
+&i2c3 {
+	adv_bridge: adv7533@39 {
+		compatible = "adi,adv7533";
+		reg = <0x39>;
+
+		interrupt-parent = <pin1_5_gpio_parent>;
+		interrupts = <pin1_5_gpio_pin IRQ_TYPE_LEVEL_LOW>;
+
+		adi,ignore-edid;
+		adi,dsi-lanes = <4>;
+        pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_hdmi_int>;        
+		status = "okay";
+
+		port {
+			adv7533_in: endpoint {
+				remote-endpoint = <&mipi_dsi_bridge_out>;
+			};
+		};
+	};
+};
+
+#endif
+/************************************************************************/
+

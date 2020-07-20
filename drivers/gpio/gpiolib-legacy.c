@@ -43,11 +43,17 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
 		set_bit(FLAG_ACTIVE_LOW, &desc->flags);
 
 	if (flags & GPIOF_DIR_IN)
+	{
+	        printk(KERN_ERR "%s: Requesting gpio #%03u as input\n", __func__, gpio);
 		err = gpiod_direction_input(desc);
-	else
+	}else
+	{
+	        printk(KERN_ERR "%s: Requesting gpio #%03u as output:%s\n",
+		       __func__, gpio,(flags & GPIOF_INIT_HIGH) ? "1" : "0" );	  
 		err = gpiod_direction_output_raw(desc,
 				(flags & GPIOF_INIT_HIGH) ? 1 : 0);
-
+	}
+	
 	if (err)
 		goto free_gpio;
 

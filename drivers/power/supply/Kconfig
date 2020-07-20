@@ -718,4 +718,16 @@ config CHARGER_WILCO
 	  information can be found in
 	  Documentation/ABI/testing/sysfs-class-power-wilco
 
+config BATTERY_DUMMY_OFFLINE
+	tristate "Dummy battery offline"
+	depends on BATTERY_DUMMY
+	help
+	  Say Y to enable support for dummy battery non charging
+
+config BATTERY_TRIZEPS8
+       tristate "Battery Driver for Trizeps8(Mini) with Kinetis MCU"
+       depends on I2C
+       help
+	  Say Y to enable support for trizeps8 battery driver with Kinetis MCU
+
 endif # POWER_SUPPLY
