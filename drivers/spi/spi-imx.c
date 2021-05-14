@@ -1549,6 +1549,7 @@ static int spi_imx_pio_transfer_slave(struct spi_device *spi,
 static int spi_imx_transfer(struct spi_device *spi,
 				struct spi_transfer *transfer)
 {
+    int ret;
 	struct spi_imx_data *spi_imx = spi_master_get_devdata(spi->master);
 
 	transfer->effective_speed_hz = spi_imx->spi_bus_clk;
@@ -1561,9 +1562,17 @@ static int spi_imx_transfer(struct spi_device *spi,
 		return spi_imx_pio_transfer_slave(spi, transfer);
 
 	if (spi_imx->usedma)
-		return spi_imx_dma_transfer(spi_imx, transfer);
+        ret = spi_imx_dma_transfer(spi_imx, transfer);
+    else
+        ret = spi_imx_pio_transfer(spi, transfer);
 
-	return spi_imx_pio_transfer(spi, transfer);
+    if (ret == (-EINVAL)){    
+        if ( spi_imx->usedma){
+            dev_err(&spi->dev, "spi_imx_transfer failed, try to recover:\n");
+            ret = spi_imx_pio_transfer(spi, transfer);
+        }
+    }
+    return ret;
 }
 
 static int spi_imx_setup(struct spi_device *spi)
