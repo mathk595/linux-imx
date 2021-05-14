@@ -1,0 +1,172 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/*
+Defines:
+Defines:
+    TOUCH_USE_INT2  Set if alternate touch-interrupt should be used.
+
+    TOUCH_INT      Defined in xxx_pinfunc.h. (SODIMM-pin: 45: pConXS)
+    TOUCH_INT2     Defined in xxx_pinfunc.h. (SODIMM-pin: 55: i-PANT7, i-PAN T10)
+    TOUCH_RESET    Defined in xxx_pinfunc.h. (SODIMM-pin: 75)
+*/
+
+&iomuxc {
+	pinctrl_captouch: captouchgrp {
+		fsl,pins = <
+					 TOUCH_RESET		PAD_GPIO /* WAKE */
+#if defined(TOUCH_USE_INT2) && (TOUCH_USE_INT2==1)
+					 TOUCH_INT2 		PAD_GPIO /* IRQ */
+#else
+					 TOUCH_INT  		PAD_GPIO /* IRQ */
+#endif
+			   	>;
+	};
+		
+	pinctrl_display_enable: display-enable 	{
+		fsl,pins = < DISPLAY_ENABLE		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
+	};
+};
+
+&i2c2 {
+	touch: edt-ft5x06@38 {
+		compatible = "edt,edt-ft5x06", "edt,edt-ft5406";
+		reg = <0x38>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_captouch>;
+		enable_wakeup = "true";
+#if defined(TOUCH_USE_INT2) && (TOUCH_USE_INT2==1)
+		interrupt-parent = <touch_int2_parent>;
+		interrupts = <touch_int2_pin IRQ_TYPE_LEVEL_LOW>;
+#else
+		interrupt-parent = <touch_int_parent>;
+		interrupts = <touch_int_pin IRQ_TYPE_LEVEL_LOW>;
+#endif
+		reset-gpios         = <touch_reset GPIO_ACTIVE_HIGH>;
+		touch-threshold     = <30>;
+		touch-gain          = <3>;
+		touch-offset        = <0>;
+		touch-report-rate   = <8>;
+		linux,wakeup;
+	};
+};
+
+&i2c3 {
+	tr8fpga@41 {
+		status = "ok";
+		compatible = "kuk,tr8fpga";
+		reg = <0x41>;
+		// AZ Display
+		// 0x00		I2C_REG_ID:	0x61
+		// 0x01		I2C_REG_TEMP:	simple memory register
+		// 0x10		I2C_REG_DISPLAY:
+		//	0x8.	invert PCLK polarity
+		//	0x4.	invert HSync polarity
+		// 	0x2.	invert VSync polarity
+		//	0x1.	invert Data-Enable polarity
+		//	0x.C	24 bpp
+		//	0x.8	18 bpp
+		//	0x.4	16 bpp
+		//	0x.1	Enable MIPI-DSI to RGB conversion
+		// 0x20
+		//      0x01    Enable Wireless Module 2 UART4
+		//      
+		tr8fpga,addresses = <	0x10 0x20 >;
+		tr8fpga,values =    <	0x8D 0x00 >;
+	};
+};
+
+&mipi_dsi {
+	status              = "okay";
+	panel@0 {
+		status          = "okay";
+		compatible      = "az,atm0700";   /* call driver Panel-simple.c */
+		reg             = <0>;
+		pinctrl-0       = <&pinctrl_display_enable>;
+		enable-gpio     = <display_enable GPIO_ACTIVE_HIGH>;
+		dsi-lanes       = <2>;
+		panel-width-mm  = <154>;
+		panel-height-mm = <86>;
+		power           = <&reg_display_pwr>;
+
+		port@1 {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
+	};
+};
+
+/************************************************************************/
+#if defined (__DTS_TRIZEPS8_PINFUNC_H)
+&hdmi {
+	status = "disabled";
+};
+
+&lcdif {
+	status = "disabled";
+};
+
+&dcss {
+	status = "okay";
+
+	clocks = <&clk IMX8MQ_CLK_DISP_APB_ROOT>,
+		 <&clk IMX8MQ_CLK_DISP_AXI_ROOT>,
+		 <&clk IMX8MQ_CLK_DISP_RTRM_ROOT>,
+		 <&clk IMX8MQ_CLK_DC_PIXEL>,
+		 <&clk IMX8MQ_CLK_DISP_DTRC>;
+	clock-names = "apb", "axi", "rtrm", "pix", "dtrc";
+	assigned-clocks = <&clk IMX8MQ_CLK_DC_PIXEL>,
+					  <&clk IMX8MQ_VIDEO_PLL1_BYPASS>,
+					  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>,
+					  <&clk IMX8MQ_CLK_DISP_AXI>,
+					  <&clk IMX8MQ_CLK_DISP_RTRM>;
+	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
+							 <&clk IMX8MQ_VIDEO_PLL1>,
+							 <&clk IMX8MQ_CLK_27M>,
+							 <&clk IMX8MQ_SYS1_PLL_800M>,
+							 <&clk IMX8MQ_SYS1_PLL_800M>;
+	assigned-clock-rates = <600000000>, <0>, <0>,
+						   <800000000>,
+						   <400000000>;
+
+	port@0 {
+		dcss_out: endpoint {
+			remote-endpoint = <&mipi_dsi_in>;
+		};
+	};
+};
+&mipi_dsi {
+    fsl,clock-drop-level = <2>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			mipi_dsi_in: endpoint {
+				remote-endpoint = <&dcss_out>;
+			};
+		};
+		port@1 {
+			reg = <1>;
+			mipi_dsi_out: endpoint {
+				remote-endpoint = <&panel1_in>;
+			};
+		};
+	};
+};
+#endif
+/************************************************************************/
+#if defined (__DTS_IMX8MM_PINFUNC_H) || defined (__DTS_IMX8MN_PINFUNC_H)
+&mipi_dsi {
+	port@1 {
+		mipi_dsi_out: endpoint {
+			remote-endpoint = <&panel1_in>;
+		};
+	};
+};
+#endif
+/************************************************************************/
+

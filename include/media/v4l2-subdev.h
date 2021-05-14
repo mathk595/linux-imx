@@ -193,6 +193,8 @@ struct v4l2_subdev_core_ops {
 	int (*load_fw)(struct v4l2_subdev *sd);
 	int (*reset)(struct v4l2_subdev *sd, u32 val);
 	int (*s_gpio)(struct v4l2_subdev *sd, u32 val);
+	int (*g_ctrl)(struct v4l2_subdev *sd, struct v4l2_control *ctrl);
+        int (*s_ctrl)(struct v4l2_subdev *sd, struct v4l2_control *ctrl);
 	long (*ioctl)(struct v4l2_subdev *sd, unsigned int cmd, void *arg);
 #ifdef CONFIG_COMPAT
 	long (*compat_ioctl32)(struct v4l2_subdev *sd, unsigned int cmd,

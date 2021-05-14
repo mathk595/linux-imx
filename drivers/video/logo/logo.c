@@ -79,6 +79,10 @@ const struct linux_logo * __ref fb_find_logo(int depth)
 		/* DEC Linux logo on MIPS/MIPS64 or ALPHA */
 		logo = &logo_dec_clut224;
 #endif
+#ifdef CONFIG_LOGO_KUK_CLUT224
+		/* SuB Linux logo */
+		logo = &logo_kuk_clut224;
+#endif
 #ifdef CONFIG_LOGO_MAC_CLUT224
 		/* Macintosh Linux logo on m68k */
 		if (MACH_IS_MAC)
@@ -91,6 +95,10 @@ const struct linux_logo * __ref fb_find_logo(int depth)
 #ifdef CONFIG_LOGO_SGI_CLUT224
 		/* SGI Linux logo on MIPS/MIPS64 */
 		logo = &logo_sgi_clut224;
+#endif
+#ifdef CONFIG_LOGO_SUB_CLUT224
+		/* SuB Linux logo */
+		logo = &logo_sub_clut224;
 #endif
 #ifdef CONFIG_LOGO_SUN_CLUT224
 		/* Sun Linux logo */

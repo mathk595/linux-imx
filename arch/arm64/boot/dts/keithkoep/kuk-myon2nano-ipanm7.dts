@@ -1,0 +1,28 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+
+#include "myon2nano.dtsi"
+#include "ipanm7.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH iPANM7 i.MX8MN Myon2-Nano";
+	compatible = "kk,myon2nano","kk,myon2","kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mn-evk", "fsl,imx8mn";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+
+
+
+
+
+
+

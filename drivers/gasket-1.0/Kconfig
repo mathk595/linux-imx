@@ -1,0 +1,6 @@
+menuconfig GOOGLE_EDGE_TPU
+	tristate "GOOGLE_EDGE_TPU Apex Driver"
+	help
+	  Say Y here if you want support for the Google Edge TPU from the
+	  kernel. 
+

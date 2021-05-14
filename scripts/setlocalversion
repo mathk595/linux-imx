@@ -15,6 +15,7 @@ usage() {
 	exit 1
 }
 
+withgit=false
 scm_only=false
 srctree=.
 android_release=
@@ -64,6 +65,8 @@ scm_version()
 	fi
 
 	# Check for git and a git repo.
+     if $withgit; then
+
 	if test -z "$(git rev-parse --show-cdup 2>/dev/null)" &&
 	   head=$(git rev-parse --verify HEAD 2>/dev/null); then
 
@@ -124,6 +127,7 @@ scm_version()
 		# All done with git
 		return
 	fi
+     fi
 
 	# Check for mercurial and a mercurial repo.
 	if test -d .hg && hgid=$(hg id 2>/dev/null); then

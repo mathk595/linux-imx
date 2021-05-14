@@ -352,6 +352,7 @@ struct adv7511 {
 	unsigned int current_edid_segment;
 	uint8_t edid_buf[256];
 	bool edid_read;
+	bool ignore_edid;
 
 	wait_queue_head_t wq;
 	struct work_struct hpd_work;

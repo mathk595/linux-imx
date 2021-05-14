@@ -11,6 +11,9 @@ obj-y				+= bus/
 
 obj-$(CONFIG_GENERIC_PHY)	+= phy/
 
+# GOOGLE_TPU
+# obj-$(CONFIG_GOOGLE_EDGE_TPU)   += gasket-1.0/
+
 # GPIO must come after pinctrl as gpios may need to mux pins etc
 obj-$(CONFIG_PINCTRL)		+= pinctrl/
 obj-$(CONFIG_GPIOLIB)		+= gpio/

@@ -1,0 +1,306 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+#define TOUCH_USE_INT2      1
+
+&iomuxc {
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+    pinctrl_hog: hoggrp {
+    	fsl,pins = < 
+					 TRIZEPS_HOGGRP_COMMON
+					 SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                  */
+		    		 SPIN123_GPIO		PAD_GPIO_PU   /* Camera Pwdn SODIMM Pin 123 */
+    				 SPIN125_GPIO		PAD_GPIO_PU   /* Camera nRST SODIMM Pin 125 */
+		    		 SPIN59_GPIO		PAD_GPIO_PU   /* Card Detect Act.low     59 */
+		       >;
+	};
+
+#if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
+    pinctrl_gpio_keys: gpio_keys {
+		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
+	};
+#endif        
+
+	pinctrl_backlight_pwm1: pwm-backlight {
+		fsl,pins = < SPIN77_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM */
+	};
+		
+	pinctrl_usbhost_enable: usbhost-enable 	{
+		fsl,pins = < SPIN129_GPIO		PAD_GPIO >; /* USBH_PWR */
+	};
+
+	pinctrl_usbotg_enable: usbotg-enable 	{
+		fsl,pins = < SPIN127_GPIO		PAD_GPIO >; /* USBOTG_PWR */
+	};		
+};
+
+/ {
+	reg_vin_fused: vin_fused {
+		compatible = "regulator-fixed";
+		regulator-name = "VIN_FUSED";
+		regulator-min-microvolt = <12000000>;
+		/* max	should be 24V but the fixed regulator driver does
+		not allow a range here */
+		regulator-max-microvolt = <12000000>;
+		regulator-always-on;
+	};
+
+	reg_board_5v: 5v {
+		compatible = "regulator-fixed";
+		regulator-name = "+5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_3v3: 3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "+3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_display_pwr: display-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "DISPLAY PWCTRL";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_display_enable>;
+		gpio = <spin100_gpio 0>;
+		enable-active-high;
+		regulator-always-on;
+		vin-supply = <&reg_3v3>;
+	};
+
+	reg_usbhost_pwr: usbhost-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBHOST PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbhost_enable>;
+		gpio = <spin129_gpio 0>;
+		enable-active-low;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+
+	reg_usbotg_pwr: usbotg-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBOTG PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbotg_enable>;
+		gpio = <spin127_gpio 0>;
+		enable-active-low;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+
+  	reserved@board {
+        compatible      = "kk,trizeps7-reserved";
+        kk,gpio-names   = "EN-Audio","CAM-PWDN";
+        kk,os-gpios     = < 
+                            spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST */
+                            spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En */
+                            spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN */
+                        >;
+    };
+
+#if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
+	gpio-keys {
+        compatible = "gpio-keys1";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_gpio_keys>;
+        power { /* Reconfig to power key in Android*/
+            label = "Power Button";
+            gpios = <spin122_gpio GPIO_ACTIVE_LOW>;
+            linux,code = <116>; /* KEY_POWER */
+            gpio-key,wakeup;
+        };
+    };
+#endif    
+};
+
+&pwm1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_backlight_pwm1>;
+	status = "okay";
+};
+
+&backlight {
+	status = "okay";
+};
+
+&i2c2 {
+	rtc@51 {
+		compatible = "nxp,pcf8563";
+		reg = <0x51>;
+	};
+};
+
+#if !defined (__DTS_IMX8MQ_PINFUNC_H)
+&usbotg1 {
+	vbus-supply = <&reg_usbotg_pwr>; 
+	disable-over-current; 
+};
+
+#if !defined (__DTS_IMX8MN_PINFUNC_H)
+&usbotg2 {
+	vbus-supply = <&reg_usbhost_pwr>; 
+	disable-over-current; 
+};
+#endif
+#endif
+
+&usdhc2 {
+	cd-gpios = <spin59_gpio GPIO_ACTIVE_LOW>;
+	status = "okay";	
+};
+
+#if 0
+&wm8983 {
+	mute-gpios = <spin102_gpio GPIO_ACTIVE_HIGH>; /* Works but leads to "plops" */
+};
+#endif
+
+
+/************************************************************************/
+#if defined (__DTS_TRIZEPS8_PINFUNC_H)
+
+/ {
+	reserved@mcu{
+		compatible     = "kk,trizeps8mcu-reserved";
+        kk,gpio-names  = "nRESET_OUT", "CAN1_RX", "CAN1_TX";
+        /* gpio1 -- 0:AD3, 1:AD2, 2:AD1, 3:AD0, 4:TSPX, 5:TSMX, 6:TSPY, 7:TSMY, 8:RESET_OUT, 9:CAN1_RX, 10:CAN1_TX */
+        kk,os-gpios = <\
+                		&gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* RESET_OUT */
+			            &gpio1  9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* CAN1_RX */
+			            &gpio1 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* CAN1_TX */
+                    >;
+    };
+	
+    /* VIN_AD2 is connected. Other ADC not connected on i-PAN T7. !! Need to check use !!*/
+	powerCapUSV {
+		compatible      = "sub,tr8_cap";
+		batt_aux		= <4>;						/* ADC 2, SODIMM-Pin 4 (capacitors voltage) */
+		temp_aux		= <8>;	 					/* ADC 0, SODIMM-Pin 8 (Main power supply voltage) */
+		charging_low   	= <1>;		 				/* not needed */
+		batt_mult		= <18077>; 					/* ADC to Voltage convert values (WM97xx use 12Bit ADC (0xfff[4095]) and K&K 0V-7,5V max voltage attach */
+		batt_div		= <1>;			 		    /*  "         "              "    a voltage divider of 6,583 to the main voltage => 1,823V on ADC ==> 12V backup voltage) */
+  		temp_mult		= <(7500000/0xfff*2)>; 		/* ADC to Voltage convert values (WM97xx use 12Bit ADC (0xfff[4095]) and K&K 0V-7,5V max voltage attach */
+		temp_div		= <1>;			 		    /*  "         "              "    a voltage divider of 20,14 to the main voltage => 2,234V on ADC ==> 45V main voltage) */
+		min_voltage		= <3300000>;  		 		/* 3.3V */
+		max_voltage		= <12000000>;  		 		/* 12 V Direct power supply */
+		batt_tech		= <7>;   // Capacitor USV is not defined -> define new one: (POWER_SUPPLY_TECHNOLOGY_LiMn+1)
+		batt_name		= "CapUSV";		 			/* capacitors as USV */
+		status 			= "okay";
+	};
+};
+#endif
+/************************************************************************/
+#if defined (__DTS_TRIZEPS8MINI_PINFUNC_H) || defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
+/ {
+	reserved@mcu{
+		compatible     = "kk,trizeps8mcu-reserved";
+        kk,gpio-names  = "nRESET_OUT", "CAN1_RX", "CAN1_TX";
+        /* gpio1 -- 0:AD3, 1:AD2, 2:AD1, 3:AD0, 4:TSPX, 5:TSMX, 6:TSPY, 7:TSMY, 8:RESET_OUT, 9:CAN1_RX, 10:CAN1_TX */
+        kk,os-gpios = <\
+                		&gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* RESET_OUT */
+			            &gpio1  9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* CAN1_RX */
+			            &gpio1 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* CAN1_TX */
+                    >;
+    };
+	
+    /* VIN_AD2 is connected. Other ADC not connected on i-PAN T7. !! Need to check use !!*/
+	powerCapUSV {
+		compatible      = "sub,tr8_cap";
+		batt_aux		= <4>;						/* ADC 2, SODIMM-Pin 4 (capacitors voltage) */
+		temp_aux		= <8>;	 					/* ADC 0, SODIMM-Pin 8 (Main power supply voltage) */
+		charging_low   	= <1>;		 				/* not needed */
+		batt_mult		= <18077>; 					/* ADC to Voltage convert values (WM97xx use 12Bit ADC (0xfff[4095]) and K&K 0V-7,5V max voltage attach */
+		batt_div		= <1>;			 		    /*  "         "              "    a voltage divider of 6,583 to the main voltage => 1,823V on ADC ==> 12V backup voltage) */
+  		temp_mult		= <(7500000/0xfff*2)>; 		/* ADC to Voltage convert values (WM97xx use 12Bit ADC (0xfff[4095]) and K&K 0V-7,5V max voltage attach */
+		temp_div		= <1>;			 		    /*  "         "              "    a voltage divider of 20,14 to the main voltage => 2,234V on ADC ==> 45V main voltage) */
+		min_voltage		= <3300000>;  		 		/* 3.3V */
+		max_voltage		= <12000000>;  		 		/* 12 V Direct power supply */
+		batt_tech		= <7>;   // Capacitor USV is not defined -> define new one: (POWER_SUPPLY_TECHNOLOGY_LiMn+1)
+		batt_name		= "CapUSV";		 			/* capacitors as USV */
+		status 			= "okay";
+	};
+};
+#endif
+
+#if defined (__DTS_IMX8MM_PINFUNC_H)
+&csi1_bridge {
+	fsl,mipi-mode;
+	status = "okay";
+	port {
+		csi1_ep: endpoint {
+			remote-endpoint = <&csi1_mipi_ep>;
+		};
+	};
+};
+
+&mipi_csi_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+	port {
+		mipi1_sensor_ep: endpoint@1 {
+			remote-endpoint = <&ov5640_mipi1_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+
+		csi1_mipi_ep: endpoint@2 {
+			remote-endpoint = <&csi1_ep>;
+		};
+	};
+};
+
+&i2c1 {
+        clock-frequency = <100000>;
+	ov5640_mipi: ov5640_mipi@3c {
+		compatible             = "ovti,ov5640_mipi";
+		reg                    = <0x3c>;
+		status                 = "okay";
+		clock-names            = "csi_mclk";
+#if defined (__DTS_IMX8MM_PINFUNC_H)
+		clocks                 = <&clk IMX8MM_CLK_CLKO1>;
+		assigned-clocks        = <&clk IMX8MM_CLK_CLKO1>;
+		assigned-clock-parents = <&clk IMX8MM_CLK_24M>;
+#endif        
+#if defined (__DTS_IMX8MN_PINFUNC_H)
+		clocks                 = <&clk IMX8MN_CLK_CLKO1>;
+		assigned-clocks        = <&clk IMX8MN_CLK_CLKO1>;
+		assigned-clock-parents = <&clk IMX8MN_CLK_24M>;
+#endif        
+		assigned-clock-rates   = <24000000>;
+		csi_id                 = <0>;
+		pwn-gpios              = <spin123_gpio 1>; /* Active Low  GPIO_ACTIVE_LOW>; */
+		rst-gpios              = <spin125_gpio 0>; /* Active High GPIO_ACTIVE_HIGH>; */
+		mclk                   = <24000000>;
+		mclk_source            = <0>;
+		port {
+			ov5640_mipi1_ep: endpoint {
+				remote-endpoint = <&mipi1_sensor_ep>;
+			};
+		};
+	};
+};
+#endif
+/************************************************************************/
+

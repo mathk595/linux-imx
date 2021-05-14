@@ -1,0 +1,47 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+&iomuxc {
+	pinctrl_hdmi_int: hdmi-int 	{
+		fsl,pins = < HDMI_INT_GPIO		PAD_GPIO >; /* HDMI_INT */
+	};
+};
+
+&i2c3 {
+	adv_bridge: adv7533@39 {
+		compatible = "adi,adv7533";
+		reg = <0x39>;
+
+		interrupt-parent = <hdmi_int_gpio_parent>;
+		interrupts = <hdmi_int_gpio_pin IRQ_TYPE_LEVEL_LOW>;
+
+		adi,ignore-edid;
+		adi,dsi-lanes = <4>;
+        pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_hdmi_int>;        
+		status = "okay";
+
+		port {
+			adv7533_in: endpoint {
+				remote-endpoint = <&mipi_dsi_bridge_out>;
+			};
+		};
+	};
+};
+/************************************************************************/
+#if defined (__DTS_IMX8MM_PINFUNC_H) || defined (__DTS_IMX8MN_PINFUNC_H)
+&mipi_dsi {
+	status = "okay";
+
+	port@1 {
+		mipi_dsi_bridge_out: endpoint {
+			remote-endpoint = <&adv7533_in>;
+            attach-bridge;
+		};
+	};
+};
+#endif
+/************************************************************************/
+

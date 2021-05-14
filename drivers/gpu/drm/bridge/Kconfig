@@ -215,6 +215,12 @@ config DRM_TOSHIBA_TC358767
 	help
 	  Toshiba TC358767 eDP bridge chip driver.
 
+config DRM_TI_SN65DSI84
+	tristate "SN65DSI84 DSI to LVDS bridge"
+	select REGMAP_I2C
+	help
+	  Support for the Texas Intruments SN65DSI84 bridge.
+
 config DRM_TOSHIBA_TC358768
 	tristate "Toshiba TC358768 MIPI DSI bridge"
 	depends on OF
@@ -264,6 +270,8 @@ source "drivers/gpu/drm/bridge/analogix/Kconfig"
 
 source "drivers/gpu/drm/bridge/adv7511/Kconfig"
 
+source "drivers/gpu/drm/bridge/nwl-dsi/Kconfig"
+
 source "drivers/gpu/drm/bridge/cadence/Kconfig"
 
 source "drivers/gpu/drm/bridge/synopsys/Kconfig"
@@ -276,5 +284,7 @@ config DRM_ITE_IT6263
 	select OF_DYNAMIC
 	help
 	  ITE IT6263 bridge chip driver.
+
+source "drivers/gpu/drm/bridge/sn65dsi83/Kconfig"
 
 endmenu

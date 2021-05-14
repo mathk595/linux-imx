@@ -41,6 +41,8 @@
 #define AT803X_SS_SPEED_DUPLEX_RESOLVED		BIT(11)
 #define AT803X_SS_MDIX				BIT(6)
 
+#define  DRV_NAME "at803x"
+
 #define AT803X_INTR_ENABLE			0x12
 #define AT803X_INTR_ENABLE_AUTONEG_ERR		BIT(15)
 #define AT803X_INTR_ENABLE_SPEED_CHANGED	BIT(14)
@@ -75,6 +77,7 @@
 #define AT803X_LOC_MAC_ADDR_16_31_OFFSET	0x804B
 #define AT803X_LOC_MAC_ADDR_32_47_OFFSET	0x804A
 #define AT803X_SMARTEEE_CTL3_OFFSET		0x805D
+#define AT803X_BASE_T_CONTROL     		0x09
 #define AT803X_MMD_ACCESS_CONTROL		0x0D
 #define AT803X_MMD_ACCESS_CONTROL_DATA		0x0E
 #define AT803X_FUNC_DATA			0x4003
@@ -152,6 +155,7 @@
 
 #define AT803X_EEE_FEATURE_DISABLE		(1 << 1)
 #define AT803X_VDDIO_1P8V			(1 << 2)
+#define AT803X_100MBit			        (1 << 3)
 
 MODULE_DESCRIPTION("Qualcomm Atheros AR803x PHY driver");
 MODULE_AUTHOR("Matus Ujhelyi");
@@ -256,6 +260,17 @@ static int at803x_disable_eee(struct phy_device *phydev)
 
 	ret = phy_write(phydev, AT803X_MMD_ACCESS_CONTROL_DATA,
 				  AT803X_SMARTEEE_DISABLED_VAL);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}
+
+
+static int at803x_disable_1Gb(struct phy_device *phydev)
+{
+	int ret;
+	ret = phy_write(phydev, AT803X_BASE_T_CONTROL, 0);
 	if (ret < 0)
 		return ret;
 
@@ -567,8 +582,21 @@ static int at803x_probe(struct phy_device *phydev)
 	if (of_property_read_bool(dev->of_node, "at803x,vddio-1p8v"))
 		priv->quirks |= AT803X_VDDIO_1P8V;
 
+	if (of_property_read_bool(dev->of_node, "at803x,100MBit"))
+	{ 
+	  priv->quirks |= AT803X_100MBit;
+	}
+
 	phydev->priv = priv;
 
+	if (priv->quirks & AT803X_100MBit) {
+        int ret;
+	  // printk(KERN_ERR DRV_NAME "Disable 1Gbit");
+	        ret = at803x_disable_1Gb(phydev);
+		if (ret < 0)
+			return ret;
+	}
+	phy_write(phydev, MII_BMCR, BMCR_PDOWN);
 	return at803x_parse_dt(phydev);
 }
 

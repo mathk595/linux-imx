@@ -788,4 +788,10 @@ config BATTERY_DUMMY
 	help
 	  Say Y to enable support for dummy battery and USB power.
 
+config BATTERY_TRIZEPS8
+       tristate "Battery Driver for Trizeps8(Mini) with Kinetis MCU"
+       depends on I2C
+       help
+	  Say Y to enable support for trizeps8 battery driver with Kinetis MCU
+
 endif # POWER_SUPPLY

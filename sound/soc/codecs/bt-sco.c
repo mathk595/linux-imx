@@ -102,7 +102,7 @@ MODULE_DEVICE_TABLE(of, bt_sco_codec_of_match);
 
 static struct platform_driver bt_sco_driver = {
 	.driver = {
-		.name = "bt-sco",
+		.name = "btsco_codec",
 		.of_match_table = of_match_ptr(bt_sco_codec_of_match),
 	},
 	.probe = bt_sco_probe,

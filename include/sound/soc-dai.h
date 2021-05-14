@@ -35,7 +35,7 @@ struct snd_compr_stream;
 /* left and right justified also known as MSB and LSB respectively */
 #define SND_SOC_DAIFMT_MSB		SND_SOC_DAIFMT_LEFT_J
 #define SND_SOC_DAIFMT_LSB		SND_SOC_DAIFMT_RIGHT_J
-
+#define SND_SOC_DAIFMT_MARVELL_BT       SND_SOC_DAI_FORMAT_MARVELL_BT
 /*
  * DAI Clock gating.
  *

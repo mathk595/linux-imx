@@ -1,0 +1,224 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+&iomuxc {
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+    pinctrl_hog: hoggrp {
+		fsl,pins = < 
+					MYON2_HOGGRP_COMMON			            
+		            PIN1_20_GPIO   PAD_GPIO_PU      /* USB SW SEL   */
+		       >;
+	};
+
+    pinctrl_gpio_keys: gpio_keys {
+		fsl,pins = < PIN1_6_GPIO       PAD_GPIO_PU >;  /* PowerButton SODIMM Pin 122 */
+	};
+
+	pinctrl_mipi_dsi_en: mipi_dsi_en {
+		fsl,pins = < PIN1_62_GPIO		PAD_GPIO_PU	>;
+	};
+
+	pinctrl_ipanm7_captouch: ipanm7-captouchgrp {
+		fsl,pins = <
+					 PIN0_62_GPIO		PAD_GPIO /* TOUCH_RESET/WAKE */
+					 PIN0_64_GPIO		PAD_GPIO /* TOUCH_INT */
+			   	>;
+	};
+
+	pinctrl_display_enable: display-enable 	{
+		fsl,pins = < PIN1_62_GPIO		PAD_GPIO >; /* DISPLAY_ENABLE */
+	};
+
+	pinctrl_backlight_pwm1: pwm-backlight {
+		fsl,pins = < PIN0_74_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM */
+	};		
+};
+
+/ {
+	reg_vin_fused: vin_fused {
+		compatible = "regulator-fixed";
+		regulator-name = "VIN_FUSED";
+		regulator-min-microvolt = <12000000>;
+		/* max	should be 24V but the fixed regulator driver does
+		not allow a range here */
+		regulator-max-microvolt = <12000000>;
+		regulator-always-on;
+	};
+
+	reg_board_5v: 5v {
+		compatible = "regulator-fixed";
+		regulator-name = "+5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_3v3: 3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "+3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_usbhost_pwr: usbhost-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBHOST PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+
+	reg_usbotg_pwr: usbotg-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBOTG PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+
+  	reserved@board {
+        compatible      = "kk,trizeps7-reserved";
+        kk,gpio-names   = "nRESET_OUT", "USB_SWSEL-HOST";
+        kk,os-gpios     = < 
+                            pin0_32_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* nRESET_OUT  */
+                            pin1_20_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* USB SW SEL  */
+                        >;
+    };
+
+	gpio-keys {
+        compatible = "gpio-keys1";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_gpio_keys>;
+        power { /* Reconfig to power key in Android*/
+            label = "Power Button";
+            gpios = <pin1_6_gpio GPIO_ACTIVE_LOW>;
+            linux,code = <116>; /* KEY_POWER */
+            gpio-key,wakeup;
+        };
+    };
+};
+
+&pwm1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_backlight_pwm1>;
+	status = "okay";
+};
+
+&backlight {
+	status = "okay";
+};
+
+&i2c2 {
+	rtc@51 {
+		compatible = "nxp,pcf8563";
+		reg = <0x51>;
+	};
+
+	touch: edt-ft5x06@38 {
+		compatible = "edt,edt-ft5x06", "edt,edt-ft5406";
+		reg = <0x38>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ipanm7_captouch>;
+		enable_wakeup = "true";
+		interrupts-extended = <pin0_64_gpio IRQ_TYPE_LEVEL_LOW>;
+		reset-gpios         = <pin0_62_gpio GPIO_ACTIVE_HIGH>;
+		touch-threshold     = <30>;
+		touch-gain          = <3>;
+		touch-offset        = <0>;
+		touch-report-rate   = <8>;
+		linux,wakeup;
+	};
+};
+
+&usbotg1 {
+	vbus-supply = <&reg_usbotg_pwr>; 
+	disable-over-current;
+#if USB1_OTG_FUNC == OTG_HOST	
+	dr_mode = "host";
+#endif
+#if USB1_OTG_FUNC == OTG_OTG
+	dr_mode = "otg";
+#endif
+};
+
+#if !defined (__DTS_IMX8MN_PINFUNC_H)
+&usbotg2 {
+	vbus-supply = <&reg_usbhost_pwr>; 
+	disable-over-current; 
+};
+#endif
+
+
+&usdhc2 {
+	cd-gpios = <pin0_95_gpio GPIO_ACTIVE_LOW>;
+	status = "okay";	
+};
+
+#if 0
+&wm8983 {
+	mute-gpios = <spin102_gpio GPIO_ACTIVE_HIGH>; /* Works but leads to "plops" */
+};
+#endif
+
+
+
+/************************************************************************/
+
+#if defined (__DTS_MYON2_PINFUNC_H) || defined (__DTS_MYON2NANO_PINFUNC_H)
+
+&mipi_dsi {
+	status              = "okay";
+	panel@0 {
+		status          = "okay";
+		compatible      = "az,atm0700";   /* call driver Panel-simple.c */
+		reg             = <0>;
+		pinctrl-0       = <&pinctrl_mipi_dsi_en>;
+		enable-gpio     = <pin1_62_gpio GPIO_ACTIVE_HIGH>;
+		dsi-lanes       = <4>;
+		panel-width-mm  = <154>;
+		panel-height-mm = <86>;
+
+		port@1 {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
+	};
+
+	port@1 {
+		mipi_dsi_out: endpoint {
+			remote-endpoint = <&panel1_in>;
+		};
+	};
+};
+
+&i2c3 {
+	sn65dsi84@2c {
+		sn65dsi84,addresses = <	0x09 0x0A 0x0B 0x0D 0x10 0x11 0x12  
+					0x18 	            0x20 0x21  
+					0x24 0x25  	    0x28 0x29
+					0x2C 0x2D           0x30 0x31 
+					0x34      0x36 	    0x38 0x3A 0x3C	
+						               0x0D>;
+		sn65dsi84,values =    <	0x00 0x01 0x10 0x00 0x20 0x00 0x27 
+					0x78                0x20 0x03  
+					0xe0 0x01 	    0x21 0x00 
+					0x30 0x00 	    0x03 0x00 
+					0x28      0x00      0x00 0x00 0x00
+					0x01>;
+	};  
+};
+
+#endif
+/************************************************************************/
+

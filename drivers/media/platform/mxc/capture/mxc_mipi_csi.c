@@ -677,6 +677,22 @@ static int mipi_csis_s_power(struct v4l2_subdev *mipi_sd, int on)
 	return pm_runtime_put_sync(dev);
 }
 
+static int mipi_csis_g_ctrl(struct v4l2_subdev *mipi_sd, struct v4l2_control *ctrl)
+{
+	struct csi_state *state = mipi_sd_to_csi_state(mipi_sd);
+	struct device *dev = &state->pdev->dev;
+
+	return v4l2_subdev_call(state->sensor_sd, core, g_ctrl, ctrl);
+}
+
+static int mipi_csis_s_ctrl(struct v4l2_subdev *mipi_sd, struct v4l2_control *ctrl)
+{
+	struct csi_state *state = mipi_sd_to_csi_state(mipi_sd);
+	struct device *dev = &state->pdev->dev;
+
+	return v4l2_subdev_call(state->sensor_sd, core, s_ctrl, ctrl);
+}
+
 static int mipi_csis_s_stream(struct v4l2_subdev *mipi_sd, int enable)
 {
 	struct csi_state *state = mipi_sd_to_csi_state(mipi_sd);
@@ -856,6 +872,9 @@ static int mipi_csis_log_status(struct v4l2_subdev *mipi_sd)
 static struct v4l2_subdev_core_ops mipi_csis_core_ops = {
 	.s_power = mipi_csis_s_power,
 	.log_status = mipi_csis_log_status,
+	
+	.g_ctrl = mipi_csis_g_ctrl,
+	.s_ctrl = mipi_csis_s_ctrl,
 };
 
 static struct v4l2_subdev_video_ops mipi_csis_video_ops = {

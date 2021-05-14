@@ -1,0 +1,30 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+#define ETHERNET_ONLY_100MBIT       1
+
+#include "trizeps8.dtsi"
+#include "pconxs.dtsi"
+#include "hdmi.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH pConXS V2 HDMI i.MX8MQ Trizeps8";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mq-evk", "fsl,imx8mq";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+
+
+
+
+
+
+

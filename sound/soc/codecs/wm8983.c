@@ -16,6 +16,7 @@
 #include <linux/regmap.h>
 #include <linux/spi/spi.h>
 #include <linux/slab.h>
+#include <linux/gpio/consumer.h>
 #include <sound/core.h>
 #include <sound/pcm.h>
 #include <sound/pcm_params.h>
@@ -24,6 +25,25 @@
 #include <sound/tlv.h>
 
 #include "wm8983.h"
+
+// Trizeps VIII
+/*
+LIN	MIC_GND
+LIP	MIC_OUT
+RIN	n.c.
+RIP	n.c.
+L2	LINE_IN_L
+R2	LINE_IN_R
+LOUT1	HEADPHONE_L
+ROUT1	HEADPHONE_R
+OUT3	n.c.
+OUT4	HEADPHONE_GND
+LOUT2	SPEAKER_L
+ROUT2	SPEAKER_R	
+AUXR	n.c.
+AUXL	n.c.
+*/
+
 
 static const struct reg_default wm8983_defaults[] = {
 	{ 0x01, 0x0000 },     /* R1  - Power management 1 */
@@ -63,7 +83,7 @@ static const struct reg_default wm8983_defaults[] = {
 	{ 0x27, 0x00E9 },     /* R39 - PLL K 3 */
 	{ 0x29, 0x0000 },     /* R41 - 3D control */
 	{ 0x2A, 0x0000 },     /* R42 - OUT4 to ADC */
-	{ 0x2B, 0x0000 },     /* R43 - Beep control */
+	{ 0x2B, 0x0010 },     /* R43 - Beep control */
 	{ 0x2C, 0x0033 },     /* R44 - Input ctrl */
 	{ 0x2D, 0x0010 },     /* R45 - Left INP PGA gain ctrl */
 	{ 0x2E, 0x0010 },     /* R46 - Right INP PGA gain ctrl */
@@ -77,7 +97,7 @@ static const struct reg_default wm8983_defaults[] = {
 	{ 0x36, 0x0039 },     /* R54 - LOUT2 (SPK) volume ctrl */
 	{ 0x37, 0x0039 },     /* R55 - ROUT2 (SPK) volume ctrl */
 	{ 0x38, 0x0001 },     /* R56 - OUT3 mixer ctrl */
-	{ 0x39, 0x0001 },     /* R57 - OUT4 (MONO) mix ctrl */
+	{ 0x39, 0x0041 },     /* R57 - OUT4 (MONO) mix ctrl */
 	{ 0x3D, 0x0000 },      /* R61 - BIAS CTRL */
 };
 
@@ -96,23 +116,25 @@ static const int vol_update_regs[] = {
 };
 
 struct wm8983_priv {
+	struct clk *mclk;
 	struct regmap *regmap;
 	u32 sysclk;
 	u32 bclk;
+	struct gpio_desc *mute;
 };
 
 static const struct {
 	int div;
 	int ratio;
 } fs_ratios[] = {
-	{ 10, 128 },
-	{ 15, 192 },
-	{ 20, 256 },
-	{ 30, 384 },
-	{ 40, 512 },
-	{ 60, 768 },
-	{ 80, 1024 },
-	{ 120, 1536 }
+	{ 10, 128 },	// *44.100 = 5.644.800
+	{ 15, 192 },	// *44.100 = 8.467.200
+	{ 20, 256 },	// *44.100 = 11.289.600
+	{ 30, 384 },	// *44.100 = 16.934.400
+	{ 40, 512 },	// *44.100 = 22.579.200
+	{ 60, 768 },	// *44.100 = 33.868.800
+	{ 80, 1024 },	// *44.100 = 45.158.400
+	{ 120, 1536 }	// *44.100 = 67.737.600
 };
 
 static const int srates[] = { 48000, 32000, 24000, 16000, 12000, 8000 };
@@ -264,6 +286,9 @@ static const struct snd_kcontrol_new wm8983_snd_controls[] = {
 	SOC_DOUBLE_R("Speaker Switch", WM8983_LOUT2_SPK_VOLUME_CTRL,
 		     WM8983_ROUT2_SPK_VOLUME_CTRL, 6, 1, 1),
 
+	SOC_SINGLE("Speaker Inversion Switch", WM8983_BEEP_CONTROL, 4, 1, 0),
+	SOC_SINGLE("Speaker Boost Switch", WM8983_OUTPUT_CTRL, 2, 1, 0),
+
 	SOC_SINGLE("OUT3 Switch", WM8983_OUT3_MIXER_CTRL,
 		   6, 1, 1),
 
@@ -277,7 +302,6 @@ static const struct snd_kcontrol_new wm8983_snd_controls[] = {
 	SOC_DOUBLE_R_TLV("Aux Bypass Volume",
 			 WM8983_LEFT_MIXER_CTRL, WM8983_RIGHT_MIXER_CTRL, 6, 7, 0,
 			 aux_tlv),
-
 	SOC_DOUBLE_R_TLV("Input PGA Bypass Volume",
 			 WM8983_LEFT_MIXER_CTRL, WM8983_RIGHT_MIXER_CTRL, 2, 7, 0,
 			 bypass_tlv),
@@ -302,14 +326,16 @@ static const struct snd_kcontrol_new wm8983_snd_controls[] = {
 
 static const struct snd_kcontrol_new left_out_mixer[] = {
 	SOC_DAPM_SINGLE("Line Switch", WM8983_LEFT_MIXER_CTRL, 1, 1, 0),
-	SOC_DAPM_SINGLE("Aux Switch", WM8983_LEFT_MIXER_CTRL, 5, 1, 0),
-	SOC_DAPM_SINGLE("PCM Switch", WM8983_LEFT_MIXER_CTRL, 0, 1, 0),
+	SOC_DAPM_SINGLE("AuxL Switch", WM8983_LEFT_MIXER_CTRL, 5, 1, 0),
+	SOC_DAPM_SINGLE("LDAC Switch", WM8983_LEFT_MIXER_CTRL, 0, 1, 0),
+	SOC_DAPM_SINGLE("RDAC Switch", WM8983_OUTPUT_CTRL, 5, 1, 0),
 };
 
 static const struct snd_kcontrol_new right_out_mixer[] = {
 	SOC_DAPM_SINGLE("Line Switch", WM8983_RIGHT_MIXER_CTRL, 1, 1, 0),
-	SOC_DAPM_SINGLE("Aux Switch", WM8983_RIGHT_MIXER_CTRL, 5, 1, 0),
-	SOC_DAPM_SINGLE("PCM Switch", WM8983_RIGHT_MIXER_CTRL, 0, 1, 0),
+	SOC_DAPM_SINGLE("AuxR Switch", WM8983_RIGHT_MIXER_CTRL, 5, 1, 0),
+	SOC_DAPM_SINGLE("RDAC Switch", WM8983_RIGHT_MIXER_CTRL, 0, 1, 0),
+	SOC_DAPM_SINGLE("LDAC Switch", WM8983_OUTPUT_CTRL, 6, 1, 0),
 };
 
 static const struct snd_kcontrol_new left_input_mixer[] = {
@@ -408,7 +434,7 @@ static const struct snd_soc_dapm_widget wm8983_dapm_widgets[] = {
 	SND_SOC_DAPM_PGA("OUT4 Out", WM8983_POWER_MANAGEMENT_3,
 			 8, 0, NULL, 0),
 
-	SND_SOC_DAPM_SUPPLY("Mic Bias", WM8983_POWER_MANAGEMENT_1, 4, 0,
+	SND_SOC_DAPM_SUPPLY("MICBIAS", WM8983_POWER_MANAGEMENT_1, 4, 0,
 			    NULL, 0),
 
 	SND_SOC_DAPM_INPUT("LIN"),
@@ -442,12 +468,14 @@ static const struct snd_soc_dapm_route wm8983_audio_map[] = {
 	{ "OUT4 Out", NULL, "OUT4 Mixer" },
 	{ "OUT4", NULL, "OUT4 Out" },
 
-	{ "Right Output Mixer", "PCM Switch", "Right DAC" },
-	{ "Right Output Mixer", "Aux Switch", "AUXR" },
+	{ "Right Output Mixer", "RDAC Switch", "Right DAC" },
+	{ "Right Output Mixer", "LDAC Switch", "Left DAC" },
+	{ "Right Output Mixer", "AuxR Switch", "AUXR" },
 	{ "Right Output Mixer", "Line Switch", "Right Boost Mixer" },
 
-	{ "Left Output Mixer", "PCM Switch", "Left DAC" },
-	{ "Left Output Mixer", "Aux Switch", "AUXL" },
+	{ "Left Output Mixer", "LDAC Switch", "Left DAC" },
+	{ "Left Output Mixer", "RDAC Switch", "Right DAC" },
+	{ "Left Output Mixer", "AuxL Switch", "AUXL" },
 	{ "Left Output Mixer", "Line Switch", "Left Boost Mixer" },
 
 	{ "Right Headphone Out", NULL, "Right Output Mixer" },
@@ -560,6 +588,10 @@ static bool wm8983_writeable(struct device *dev, unsigned int reg)
 static int wm8983_dac_mute(struct snd_soc_dai *dai, int mute, int direction)
 {
 	struct snd_soc_component *component = dai->component;
+	struct wm8983_priv *wm8983 = snd_soc_component_get_drvdata(component);
+
+	if (wm8983->mute)
+		gpiod_set_value_cansleep(wm8983->mute, mute);
 
 	return snd_soc_component_update_bits(component, WM8983_DAC_CONTROL,
 				   WM8983_SOFTMUTE_MASK,
@@ -712,6 +744,7 @@ static int wm8983_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (i == ARRAY_SIZE(fs_ratios)) {
+		
 		dev_err(dai->dev, "Unable to configure MCLK ratio %u/%u\n",
 			wm8983->sysclk, params_rate(params));
 		return -EINVAL;
@@ -820,6 +853,29 @@ static int wm8983_set_pll(struct snd_soc_dai *dai, int pll_id,
 	return 0;
 }
 
+static int wm8983_startup(struct snd_pcm_substream *substream,
+			  struct snd_soc_dai *dai)
+{
+	struct snd_soc_component *component = dai->component;
+	struct wm8983_priv *wm8983 = snd_soc_component_get_drvdata(component);
+
+	if (wm8983->mute)
+		gpiod_set_value_cansleep(wm8983->mute, 1);
+
+	return 0;
+}
+
+static void wm8983_shutdown(struct snd_pcm_substream *substream,
+			  struct snd_soc_dai *dai)
+{
+	struct snd_soc_component *component = dai->component;
+	struct wm8983_priv *wm8983 = snd_soc_component_get_drvdata(component);
+
+
+	if (wm8983->mute)
+		gpiod_set_value_cansleep(wm8983->mute, 0);
+}
+
 static int wm8983_set_sysclk(struct snd_soc_dai *dai,
 			     int clk_id, unsigned int freq, int dir)
 {
@@ -856,7 +912,7 @@ static int wm8983_set_bias_level(struct snd_soc_component *component,
 		/* VMID at 100k */
 		snd_soc_component_update_bits(component, WM8983_POWER_MANAGEMENT_1,
 				    WM8983_VMIDSEL_MASK,
-				    1 << WM8983_VMIDSEL_SHIFT);
+				    1 << WM8983_VMIDSEL_SHIFT);	
 		break;
 	case SND_SOC_BIAS_STANDBY:
 		if (snd_soc_component_get_bias_level(component) == SND_SOC_BIAS_OFF) {
@@ -943,7 +999,9 @@ static int wm8983_probe(struct snd_soc_component *component)
 }
 
 static const struct snd_soc_dai_ops wm8983_dai_ops = {
-	.mute_stream = wm8983_dac_mute,
+	.startup	= wm8983_startup,
+	.shutdown	= wm8983_shutdown,
+	.digital_mute 	= wm8983_dac_mute,
 	.hw_params = wm8983_hw_params,
 	.set_fmt = wm8983_set_fmt,
 	.set_sysclk = wm8983_set_sysclk,
@@ -955,19 +1013,19 @@ static const struct snd_soc_dai_ops wm8983_dai_ops = {
 			SNDRV_PCM_FMTBIT_S24_LE | SNDRV_PCM_FMTBIT_S32_LE)
 
 static struct snd_soc_dai_driver wm8983_dai = {
-	.name = "wm8983-hifi",
+	.name = "wm8983",
 	.playback = {
 		.stream_name = "Playback",
 		.channels_min = 2,
 		.channels_max = 2,
-		.rates = SNDRV_PCM_RATE_8000_48000,
+		.rates =  (SNDRV_PCM_RATE_48000), // SNDRV_PCM_RATE_8000_48000,
 		.formats = WM8983_FORMATS,
 	},
 	.capture = {
 		.stream_name = "Capture",
 		.channels_min = 2,
 		.channels_max = 2,
-		.rates = SNDRV_PCM_RATE_8000_48000,
+		.rates = (SNDRV_PCM_RATE_48000), // SNDRV_PCM_RATE_8000_48000,
 		.formats = WM8983_FORMATS,
 	},
 	.ops = &wm8983_dai_ops,
@@ -1002,46 +1060,13 @@ static const struct regmap_config wm8983_regmap = {
 	.writeable_reg = wm8983_writeable,
 };
 
-#if defined(CONFIG_SPI_MASTER)
-static int wm8983_spi_probe(struct spi_device *spi)
-{
-	struct wm8983_priv *wm8983;
-	int ret;
-
-	wm8983 = devm_kzalloc(&spi->dev, sizeof *wm8983, GFP_KERNEL);
-	if (!wm8983)
-		return -ENOMEM;
-
-	wm8983->regmap = devm_regmap_init_spi(spi, &wm8983_regmap);
-	if (IS_ERR(wm8983->regmap)) {
-		ret = PTR_ERR(wm8983->regmap);
-		dev_err(&spi->dev, "Failed to init regmap: %d\n", ret);
-		return ret;
-	}
-
-	spi_set_drvdata(spi, wm8983);
-
-	ret = devm_snd_soc_register_component(&spi->dev,
-				&soc_component_dev_wm8983, &wm8983_dai, 1);
-	return ret;
-}
-
-static struct spi_driver wm8983_spi_driver = {
-	.driver = {
-		.name = "wm8983",
-	},
-	.probe = wm8983_spi_probe,
-};
-#endif
-
-#if IS_ENABLED(CONFIG_I2C)
 static int wm8983_i2c_probe(struct i2c_client *i2c,
 			    const struct i2c_device_id *id)
 {
 	struct wm8983_priv *wm8983;
 	int ret;
 
-	wm8983 = devm_kzalloc(&i2c->dev, sizeof *wm8983, GFP_KERNEL);
+	wm8983 = devm_kzalloc(&i2c->dev, sizeof( struct wm8983_priv), GFP_KERNEL);
 	if (!wm8983)
 		return -ENOMEM;
 
@@ -1050,6 +1075,12 @@ static int wm8983_i2c_probe(struct i2c_client *i2c,
 		ret = PTR_ERR(wm8983->regmap);
 		dev_err(&i2c->dev, "Failed to init regmap: %d\n", ret);
 		return ret;
+	}
+
+	wm8983->mute = devm_gpiod_get(&i2c->dev, "mute", GPIOD_OUT_LOW);
+	if (IS_ERR(wm8983->mute)) {
+		dev_err(&i2c->dev, "Failed to get mute line: %ld\n", PTR_ERR(wm8983->mute));
+		wm8983->mute = NULL;
 	}
 
 	i2c_set_clientdata(i2c, wm8983);
@@ -1066,6 +1097,12 @@ static const struct i2c_device_id wm8983_i2c_id[] = {
 };
 MODULE_DEVICE_TABLE(i2c, wm8983_i2c_id);
 
+static const struct of_device_id wm8983_of_match[] = {
+	{ .compatible = "kuk,wm8983", },
+	{ },
+};
+MODULE_DEVICE_TABLE(of, wm8983_of_match);
+
 static struct i2c_driver wm8983_i2c_driver = {
 	.driver = {
 		.name = "wm8983",
@@ -1073,7 +1110,8 @@ static struct i2c_driver wm8983_i2c_driver = {
 	.probe = wm8983_i2c_probe,
 	.id_table = wm8983_i2c_id
 };
-#endif
+
+module_i2c_driver(wm8983_i2c_driver);
 
 static int __init wm8983_modinit(void)
 {

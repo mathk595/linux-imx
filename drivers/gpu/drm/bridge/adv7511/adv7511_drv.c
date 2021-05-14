@@ -86,6 +86,7 @@ static const int valid_clocks[] = {
 	148500,
 	135000,
 	132000,
+	119000,
 	108000,
 	78750,
 	74250,
@@ -379,6 +380,9 @@ static void __adv7511_power_on(struct adv7511 *adv7511)
 	regmap_update_bits(adv7511->regmap, ADV7511_REG_POWER2,
 			   ADV7511_REG_POWER2_HPD_SRC_MASK,
 			   ADV7511_REG_POWER2_HPD_SRC_NONE);
+
+	/* HACK: If we don't delay here edid probing doesn't work properly */
+	msleep(200);
 }
 
 static void adv7511_power_on(struct adv7511 *adv7511)
@@ -615,11 +619,18 @@ static int adv7511_get_edid_block(void *data, u8 *buf, unsigned int block,
 /* -----------------------------------------------------------------------------
  * ADV75xx helpers
  */
+static const struct drm_display_mode hdmi_mode_1080 = 
+	{ DRM_MODE("1920x1080", DRM_MODE_TYPE_DRIVER, 148500, 1920, 2008,
+		   2052, 2200, 0, 1080, 1084, 1089, 1125, 0,
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC),
+	          .picture_aspect_ratio = HDMI_PICTURE_ASPECT_16_9 
+	  };
 
 static struct edid *adv7511_get_edid(struct adv7511 *adv7511,
 				     struct drm_connector *connector)
 {
-	struct edid *edid;
+	struct edid *edid = NULL;
+	unsigned int count = 0;
 
 	/* Reading the EDID only works if the device is powered */
 	if (!adv7511->powered) {
@@ -633,11 +644,30 @@ static struct edid *adv7511_get_edid(struct adv7511 *adv7511,
 			     edid_i2c_addr);
 	}
 
-	edid = drm_do_get_edid(connector, adv7511_get_edid_block, adv7511);
+	if ( !adv7511->ignore_edid)
+	{
+		edid = drm_do_get_edid(connector, adv7511_get_edid_block, adv7511);
+	}
+	
 
 	if (!adv7511->powered)
 		__adv7511_power_off(adv7511);
 
+	if (edid)
+	{
+		drm_connector_update_edid_property(connector, edid);
+		count = drm_add_edid_modes(connector, edid);
+	}
+	if (count == 0)
+	{
+		struct drm_display_mode *newmode;
+		newmode = drm_mode_duplicate(connector->dev, &hdmi_mode_1080);
+		if ( newmode)
+		{
+			drm_mode_probed_add( connector, newmode);
+			count++;
+		}
+	}
 	adv7511_set_config_csc(adv7511, connector, adv7511->rgb,
 			       drm_detect_hdmi_monitor(edid));
 

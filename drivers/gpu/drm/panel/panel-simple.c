@@ -21,6 +21,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <linux/backlight.h>
 #include <linux/delay.h>
 #include <linux/gpio/consumer.h>
 #include <linux/iopoll.h>
@@ -32,6 +33,7 @@
 #include <video/display_timing.h>
 #include <video/of_display_timing.h>
 #include <video/videomode.h>
+#include <video/of_videomode.h>
 
 #include <drm/drm_crtc.h>
 #include <drm/drm_device.h>
@@ -56,6 +58,7 @@
  */
 struct panel_desc {
 	const struct drm_display_mode *modes;
+	struct drm_display_mode singlemode;
 	unsigned int num_modes;
 	const struct display_timing *timings;
 	unsigned int num_timings;
@@ -105,6 +108,7 @@ struct panel_simple {
 
 	const struct panel_desc *desc;
 
+	struct backlight_device *backlight;
 	struct regulator *supply;
 	struct i2c_adapter *ddc;
 
@@ -234,8 +238,16 @@ static int panel_simple_disable(struct drm_panel *panel)
 {
 	struct panel_simple *p = to_panel_simple(panel);
 
+	printk(KERN_ERR"panel_simple_disable\n");
+	
 	if (!p->enabled)
 		return 0;
+
+	if (p->backlight) {
+		p->backlight->props.power = FB_BLANK_POWERDOWN;
+		p->backlight->props.state |= BL_CORE_FBBLANK;
+		backlight_update_status(p->backlight);
+	}
 
 	if (p->desc->delay.disable)
 		msleep(p->desc->delay.disable);
@@ -252,9 +264,11 @@ static int panel_simple_unprepare(struct drm_panel *panel)
 	if (!p->prepared)
 		return 0;
 
-	gpiod_set_value_cansleep(p->enable_gpio, 0);
+	if (p->enable_gpio)
+		gpiod_set_value_cansleep(p->enable_gpio, 0);
 
-	regulator_disable(p->supply);
+	if ( p->supply)
+		regulator_disable(p->supply);
 
 	if (p->desc->delay.unprepare)
 		msleep(p->desc->delay.unprepare);
@@ -293,19 +307,23 @@ static int panel_simple_prepare(struct drm_panel *panel)
 {
 	struct panel_simple *p = to_panel_simple(panel);
 	unsigned int delay;
-	int err;
+	int err=0;
 	int hpd_asserted;
 
 	if (p->prepared)
 		return 0;
 
-	err = regulator_enable(p->supply);
-	if (err < 0) {
-		dev_err(panel->dev, "failed to enable supply: %d\n", err);
-		return err;
+	if ( p->supply)
+	{
+		err = regulator_enable(p->supply);
+		if (err < 0) {
+			dev_err(panel->dev, "failed to enable supply: %d\n", err);
+			return err;
+		}
 	}
 
-	gpiod_set_value_cansleep(p->enable_gpio, 1);
+	if (p->enable_gpio)
+		gpiod_set_value_cansleep(p->enable_gpio, 1);
 
 	delay = p->desc->delay.prepare;
 	if (p->no_hpd)
@@ -342,11 +360,18 @@ static int panel_simple_enable(struct drm_panel *panel)
 {
 	struct panel_simple *p = to_panel_simple(panel);
 
+	printk(KERN_ERR"panel_simple_enable\n");			
 	if (p->enabled)
 		return 0;
 
 	if (p->desc->delay.enable)
 		msleep(p->desc->delay.enable);
+
+	if (p->backlight) {
+		p->backlight->props.state &= ~BL_CORE_FBBLANK;
+		p->backlight->props.power = FB_BLANK_UNBLANK;
+		backlight_update_status(p->backlight);
+	}
 
 	p->enabled = true;
 
@@ -534,7 +559,7 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 		err = PTR_ERR(panel->enable_gpio);
 		if (err != -EPROBE_DEFER)
 			dev_err(dev, "failed to request GPIO: %d\n", err);
-		return err;
+		panel->enable_gpio = NULL;
 	}
 
 	err = of_drm_get_panel_orientation(dev->of_node, &panel->orientation);
@@ -628,6 +653,8 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 
 	dev_set_drvdata(dev, panel);
 
+	printk(KERN_ERR"panel_simple_probe OK ------------------------------------------------------\n");
+	
 	return 0;
 
 free_ddc:
@@ -648,13 +675,16 @@ static int panel_simple_remove(struct device *dev)
 	if (panel->ddc)
 		put_device(&panel->ddc->dev);
 
+	if (panel->backlight)
+		put_device(&panel->backlight->dev);
+
 	return 0;
 }
 
 static void panel_simple_shutdown(struct device *dev)
 {
 	struct panel_simple *panel = dev_get_drvdata(dev);
-
+	printk(KERN_ERR"panel_simple_shutdown\n");
 	drm_panel_disable(&panel->base);
 	drm_panel_unprepare(&panel->base);
 }
@@ -756,7 +786,7 @@ static const struct panel_desc armadeus_st0700_adapt = {
 		.height = 86,
 	},
 	.bus_format = MEDIA_BUS_FMT_RGB666_1X18,
-	.bus_flags = DRM_BUS_FLAG_DE_HIGH | DRM_BUS_FLAG_PIXDATA_SAMPLE_NEGEDGE,
+	.bus_flags = DRM_BUS_FLAG_DE_HIGH | DRM_BUS_FLAG_PIXDATA_DRIVE_POSEDGE,
 };
 
 static const struct drm_display_mode auo_b101aw03_mode = {
@@ -4591,6 +4621,136 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
 	.lanes = 4,
 };
 
+/*
+hdisplay = width
+hsync_start = hdisplay + hfp;
+hsync_end = hsync_start + hsw;
+htotal = hsync_end + hbp;
+
+vdisplay = y_res;
+vsync_start = vdisplay + vfp;
+vsync_end = vsync_start + vsw;
+vtotal = vsync_end + vbp;
+
+clock = htotal * vtotal * frame_rate / 1000;
+*/
+static const struct drm_display_mode dataimage_scf1001_mode = {
+	.clock = 41000,
+	.hdisplay = 1280,
+	.hsync_start = 1280 + 52,
+	.hsync_end = 1280 + 52 + 60,
+	.htotal = 1280 + 52 + 60 + 48,
+	.vdisplay = 800,
+	.vsync_start = 800 + 10,
+	.vsync_end = 800 + 10 + 3,
+	.vtotal = 800 + 10 + 10 + 3,
+	.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
+};
+
+static const struct panel_desc_dsi dataimage_scf1001 = {
+	.desc = {
+		.modes = &dataimage_scf1001_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 217,
+			.height = 136,
+		},
+		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+		.bus_flags = DRM_BUS_FLAG_DE_HIGH,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO /*| MIPI_DSI_CLOCK_NON_CONTINUOUS*/ | MIPI_DSI_MODE_VIDEO_SYNC_PULSE /* MIPI_DSI_MODE_VIDEO_BURST */,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 4,
+};
+
+static const struct drm_display_mode auo_p550hvn06_mode = {
+	.clock = 71000,
+	.hdisplay = 1920,
+	.hsync_start = 1920 + 10,
+	.hsync_end = 1920 + 10 + 140,
+	.htotal = 1920 + 10 + 140 + 10,
+	.vdisplay = 1080,
+	.vsync_start = 1080 + 10,
+	.vsync_end = 1080 + 10 + 25,
+	.vtotal = 1080 + 10 + 25 + 10,
+	.flags = DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC,
+};
+
+static const struct panel_desc_dsi auo_p550hvn06 = {
+	.desc = {
+		.modes = &auo_p550hvn06_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 1210,
+			.height = 680,
+		},
+		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+		.bus_flags = DRM_BUS_FLAG_DE_HIGH,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 4,
+};
+
+static const struct drm_display_mode az_atm0700_mode = {
+	.clock = 33300,
+	.hdisplay = 800,
+	.hsync_start = 800 + 210,
+	.hsync_end = 800 + 210 + 6,
+	.htotal = 800 + 210 + 40 + 6,
+	.vdisplay = 480,
+	.vsync_start = 480 + 22,
+	.vsync_end = 480 + 22 + 3,
+	.vtotal = 480 + 22 + 20 + 3,
+};
+
+static const struct panel_desc_dsi az_atm0700 = {
+	.desc = {
+		.modes = &az_atm0700_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 156,
+			.height = 88,
+		},
+		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE /*| MIPI_DSI_MODE_VIDEO_BURST*/,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 2,
+};
+
+static const struct drm_display_mode ipan7_edt_wvga_mode = {
+	.clock = 30000,
+	.hdisplay = 800,
+	.hsync_start = 800 + 91,
+	.hsync_end = 800 + 91 + 120,
+	.htotal = 800 + 91 + 120 + 16,
+	.vdisplay = 480,
+	.vsync_start = 480 + 11,
+	.vsync_end = 480 + 11 + 8,
+	.vtotal = 480 + 11 + 8 + 15,
+};
+
+static const struct panel_desc_dsi ipan7_edt_wvga = {
+	.desc = {
+		.modes = &ipan7_edt_wvga_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width = 156,
+			.height = 88,
+		},
+		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+	},
+	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE /*| MIPI_DSI_MODE_VIDEO_BURST*/,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 2,
+};
+
+
 static const struct of_device_id dsi_of_match[] = {
 	{
 		.compatible = "auo,b080uan01",
@@ -4608,6 +4768,18 @@ static const struct of_device_id dsi_of_match[] = {
 		.compatible = "panasonic,vvx10f004b00",
 		.data = &panasonic_vvx10f004b00
 	}, {
+		.compatible = "dataimage,scf1001",
+		.data = &dataimage_scf1001
+	}, {
+		.compatible = "auo,p550hvn06",
+		.data = &auo_p550hvn06
+	}, {
+		.compatible = "az,atm0700",
+		.data = &az_atm0700
+	}, {
+		.compatible = "ipan7,edt-wvga",
+		.data = &ipan7_edt_wvga
+	}, {
 		.compatible = "lg,acx467akm-7",
 		.data = &lg_acx467akm_7
 	}, {
@@ -4623,6 +4795,10 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 {
 	const struct panel_desc_dsi *desc;
 	const struct of_device_id *id;
+	struct device_node *timings;
+	struct panel_desc *paneldesc;	
+	u32 value;
+	int ret;
 	int err;
 
 	id = of_match_node(dsi_of_match, dsi->dev.of_node);
@@ -4631,13 +4807,77 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 
 	desc = id->data;
 
-	err = panel_simple_probe(&dsi->dev, &desc->desc);
+	paneldesc = devm_kzalloc(&dsi->dev, sizeof(*paneldesc), GFP_KERNEL);
+	if (paneldesc)
+	{
+		memcpy( paneldesc, &desc->desc, sizeof(*paneldesc));
+		ret = of_property_read_u32(dsi->dev.of_node, "panel-width-mm", &value);
+		if ( !ret) {
+			paneldesc->size.width = value;
+		}
+		ret = of_property_read_u32(dsi->dev.of_node, "panel-height-mm", &value);
+		if ( !ret) {
+			paneldesc->size.height = value;
+		}
+		
+		timings = of_get_child_by_name(dsi->dev.of_node, "display-timings");
+		if (timings) {
+			struct videomode vm;
+
+			of_node_put(timings);
+			of_get_videomode(dsi->dev.of_node, &vm, 0);
+			
+			memcpy( &paneldesc->singlemode, desc->desc.modes, sizeof(paneldesc->singlemode));			
+			paneldesc->modes = &paneldesc->singlemode;
+			paneldesc->num_modes = 1;
+
+			paneldesc->singlemode.clock 		= vm.pixelclock / 1000;
+			paneldesc->singlemode.hdisplay		= vm.hactive;
+			paneldesc->singlemode.hsync_start	= vm.hactive + vm.hfront_porch;
+			paneldesc->singlemode.hsync_end		= vm.hactive + vm.hfront_porch + vm.hsync_len;
+			paneldesc->singlemode.htotal		= vm.hactive + vm.hfront_porch + vm.hsync_len + vm.hback_porch;
+			paneldesc->singlemode.vdisplay		= vm.vactive;
+			paneldesc->singlemode.vsync_start	= vm.vactive + vm.vfront_porch;
+			paneldesc->singlemode.vsync_end		= vm.vactive + vm.vfront_porch + vm.vsync_len;
+			paneldesc->singlemode.vtotal		= vm.vactive + vm.vfront_porch + vm.vsync_len + vm.vback_porch;
+		}
+		dev_info( &dsi->dev, "[panel-simple] PixelClock: %d kHz \n", 
+			paneldesc->modes->clock);
+		dev_info( &dsi->dev, "[panel-simple] hdisplay: %d (%d mm) hfp %d, hsw %d, hbp %d\n",
+			paneldesc->modes->hdisplay, paneldesc->size.width, 
+			paneldesc->modes->hsync_start - paneldesc->modes->hdisplay,
+			paneldesc->modes->hsync_end - paneldesc->modes->hsync_start,
+			paneldesc->modes->htotal - paneldesc->modes->hsync_end);
+		dev_info( &dsi->dev, "[panel-simple] vdisplay: %d (%d mm) vfp %d, vsw %d, vbp %d\n",
+			paneldesc->modes->vdisplay, paneldesc->size.height, 
+			paneldesc->modes->vsync_start - paneldesc->modes->vdisplay,
+			paneldesc->modes->vsync_end - paneldesc->modes->vsync_start,
+			paneldesc->modes->vtotal - paneldesc->modes->vsync_end);
+
+		err = panel_simple_probe(&dsi->dev, paneldesc);
+	}else
+	{
+		dev_err( &dsi->dev, "[panel-simple] Could not allocated memory\n");
+		err = panel_simple_probe(&dsi->dev, &desc->desc);
+	}
 	if (err < 0)
 		return err;
 
 	dsi->mode_flags = desc->flags;
 	dsi->format = desc->format;
 	dsi->lanes = desc->lanes;
+
+	ret = of_property_read_u32(dsi->dev.of_node, "video-mode", &value);
+	if (!ret){
+		dsi->mode_flags = value;	// i.e. MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE => 5
+	}
+	ret = of_property_read_u32(dsi->dev.of_node, "dsi-lanes", &value);
+	if ( !ret) {
+		dsi->lanes = value;
+	}
+ 
+	printk(KERN_ERR"panel_simple_dsi_probe attaching panel: %s lanes:%d \n",
+	       id->compatible,dsi->lanes);
 
 	err = mipi_dsi_attach(dsi);
 	if (err) {

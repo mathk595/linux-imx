@@ -33,6 +33,22 @@
 #define FSL_SAI_FLAGS (FSL_SAI_CSR_SEIE |\
 		       FSL_SAI_CSR_FEIE)
 
+#define dprintk(fmt, args...)    
+
+//#define dprintk      if(sai->debug_flags&0x01) printk
+#define ifpatch_rcr4 if(sai->debug_flags&0x02)
+
+static struct fsl_sai_soc_data fsl_sai_kuk = {
+    //	.imx = true,
+	.dataline = 0x1,
+	.fifos = 1,
+	.fifo_depth = 128,
+	.flags = 0,
+	.reg_offset = 0,
+    //	.constrain_period_size = true,
+};
+
+
 static const unsigned int fsl_sai_rates[] = {
 	8000, 11025, 12000, 16000, 22050,
 	24000, 32000, 44100, 48000, 64000,
@@ -293,12 +309,35 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
 	bool tx = fsl_dir == FSL_FMT_TRANSMITTER;
 	u32 val_cr2 = 0, val_cr4 = 0;
 
+	dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr %s\n", ((tx)?"TX":"RX"));
+
 	if (!sai->is_lsb_first)
 		val_cr4 |= FSL_SAI_CR4_MF;
 
 	sai->is_dsp_mode = false;
 	/* DAI mode */
+	dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr fmt=0x%x 0x%x", fmt, fmt&& SND_SOC_DAIFMT_FORMAT_MASK);	  
 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+	case SND_SOC_DAIFMT_MARVELL_BT:
+		/*
+		 * Frame low, 1clk before data, one word length for frame sync,
+		 * frame sync starts one serial clock cycle earlier,
+		 * that is, together with the last bit of the previous
+		 * data word.
+		 */
+		val_cr4 |= FSL_SAI_CR4_FSE;
+		dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr SND_SOC_DAIFMT_MARVELL_BT <%s> val_cr2:0x%x val_cr4:0x%x",
+		       ((tx)?"TX":"RX"),val_cr2,val_cr4);		
+#if 0
+		if( ! tx )
+		{
+		  u32 temp
+		  temp=FSL_SAI_CR4_FRSZ(0);		  
+		  regmap_update_bits(sai->regmap, FSL_SAI_xCR4(tx,offset),FSL_SAI_CR4_SYWD_MASK, temp);
+		  regmap_write(      sai->regmap, FSL_SAI_xCR5(tx,offset),                0x0f0f0f00 );		  
+		}
+#endif		
+		break;	  
 	case SND_SOC_DAIFMT_I2S:
 		/*
 		 * Frame low, 1clk before data, one word length for frame sync,
@@ -307,16 +346,21 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
 		 * data word.
 		 */
 		val_cr2 |= FSL_SAI_CR2_BCP;
-		val_cr4 |= FSL_SAI_CR4_FSE | FSL_SAI_CR4_FSP;
+		val_cr4 |= FSL_SAI_CR4_FSE  | FSL_SAI_CR4_FSP;		
+		dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr SND_SOC_DAIFMT_I2S val_cr2:0x%x val_cr4:0x%x",	val_cr2,val_cr4);		
 		break;
 	case SND_SOC_DAIFMT_LEFT_J:
 		/*
 		 * Frame high, one word length for frame sync,
 		 * frame sync asserts with the first bit of the frame.
 		 */
-		val_cr2 |= FSL_SAI_CR2_BCP;
+		val_cr2 |= FSL_SAI_CR2_BCP;		
+	  	dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr  SND_SOC_DAIFMT_LEFT_J %s val_cr2:0x%x val_cr4:0x%x",
+		       ((tx)?"TX":"RX"), val_cr2,val_cr4);	  
+		
 		break;
 	case SND_SOC_DAIFMT_DSP_A:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr  SND_SOC_DAIFMT_DSP_A");	  
 		/*
 		 * Frame high, 1clk before data, one bit for frame sync,
 		 * frame sync starts one serial clock cycle earlier,
@@ -328,6 +372,7 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
 		sai->is_dsp_mode = true;
 		break;
 	case SND_SOC_DAIFMT_DSP_B:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr  SND_SOC_DAIFMT_DSP_B");	  	  
 		/*
 		 * Frame high, one bit for frame sync,
 		 * frame sync asserts with the first bit of the frame.
@@ -336,35 +381,43 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
 		sai->is_dsp_mode = true;
 		break;
 	case SND_SOC_DAIFMT_PDM:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr  SND_SOC_DAIFMT_PDM");	  	  	  
 		val_cr2 |= FSL_SAI_CR2_BCP;
 		val_cr4 &= ~FSL_SAI_CR4_MF;
 		sai->is_dsp_mode = true;
 		break;
 	case SND_SOC_DAIFMT_RIGHT_J:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr  SND_SOC_DAIFMT_RIGHT_J");	  	  	  	  
 		/* To be done */
 	default:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr  ????");	  	  	  	  
 		return -EINVAL;
 	}
 
 	/* DAI clock inversion */
 	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
 	case SND_SOC_DAIFMT_IB_IF:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr SND_SOC_DAIFMT_IB_IF");
 		/* Invert both clocks */
 		val_cr2 ^= FSL_SAI_CR2_BCP;
 		val_cr4 ^= FSL_SAI_CR4_FSP;
 		break;
 	case SND_SOC_DAIFMT_IB_NF:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr SND_SOC_DAIFMT_IB_NF");	  
 		/* Invert bit clock */
 		val_cr2 ^= FSL_SAI_CR2_BCP;
 		break;
 	case SND_SOC_DAIFMT_NB_IF:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr SND_SOC_DAIFMT_NB_IF");	  	  
 		/* Invert frame clock */
 		val_cr4 ^= FSL_SAI_CR4_FSP;
 		break;
 	case SND_SOC_DAIFMT_NB_NF:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr SND_SOC_DAIFMT_NB_NF");	  	  	  
 		/* Nothing to do for both normal cases */
 		break;
 	default:
+	        dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr SND_SOC_DAIFMT_INV_MASK ???");	  	  	  
 		return -EINVAL;
 	}
 
@@ -373,20 +426,25 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
 	/* DAI clock master masks */
 	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
 	case SND_SOC_DAIFMT_CBS_CFS:
+	  	dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr MASTER/SLAVE SND_SOC_DAIFMT_CBS_CFS");
 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
 		break;
 	case SND_SOC_DAIFMT_CBM_CFM:
+	  	dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr MASTER/SLAVE SND_SOC_DAIFMT_CBM_CFM");	  
 		sai->slave_mode[tx] = true;
 		break;
 	case SND_SOC_DAIFMT_CBS_CFM:
+	  	dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr MASTER/SLAVE SND_SOC_DAIFMT_CBS_CFM");	  	  
 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
 		break;
 	case SND_SOC_DAIFMT_CBM_CFS:
+	  	dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr MASTER/SLAVE SND_SOC_DAIFMT_CBM_CFS");	  	  
 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
 		sai->slave_mode[tx] = true;
 		break;
 	default:
+        	dprintk(KERN_ERR "fsl-sai fsl_sai_set_dai_fmt_tr MASTER?????: 0x%x",fmt & SND_SOC_DAIFMT_MASTER_MASK);	  
 		return -EINVAL;
 	}
 
@@ -397,6 +455,30 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
 			   FSL_SAI_CR4_FSP | FSL_SAI_CR4_FSD_MSTR, val_cr4);
 
 	return 0;
+}
+
+static void dump_sai(struct snd_soc_dai *cpu_dai)
+{
+       struct fsl_sai *sai  = dev_get_drvdata(cpu_dai->dev);
+       unsigned char offset = sai->soc_data->reg_offset;
+       u32          val=0;
+       bool         tx =0;
+       if(sai->debug_flags&0x01)
+       {	  
+	 regmap_read(sai->regmap, FSL_SAI_xCSR(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_RCSR  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR1(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_RCR1  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR2(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_RCR2  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR3(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_RCR3  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR4(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_RCR4  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR5(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_RCR5  0x%08lx", val);
+	 tx=1;	       
+	 regmap_read(sai->regmap, FSL_SAI_xCSR(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_TCSR  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR1(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_TCR1  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR2(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_TCR2  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR3(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_TCR3  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR4(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_TCR4  0x%08lx", val);
+	 regmap_read(sai->regmap, FSL_SAI_xCR5(tx, offset), &val); dprintk(KERN_ERR "FSL_SAI_TCR5  0x%08lx", val);
+       }       
 }
 
 static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
@@ -422,6 +504,9 @@ static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 	if (ret)
 		dev_err(cpu_dai->dev, "Cannot set rx format: %d\n", ret);
 
+
+	dump_sai(cpu_dai);	
+	
 	return ret;
 }
 
@@ -539,6 +624,8 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
 	int ret, i, trce_mask = 0, dl_cfg_cnt, dl_cfg_idx = 0;
 	struct fsl_sai_dl_cfg *dl_cfg;
 
+	dprintk(KERN_ERR "fsl-sai  fsl_sai_hw_params slots=%d rate=%d word_width=%d",slots,rate,word_width);
+
 	if (sai->slots)
 		slots = sai->slots;
 
@@ -612,9 +699,16 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
 
 	val_cr4 |= FSL_SAI_CR4_FRSZ(slots);
 
-	/* Set to output mode to avoid tri-stated data pins */
-	if (tx)
-		val_cr4 |= FSL_SAI_CR4_CHMOD;
+	/* Output Mode - data pins transmit 0 when slots are masked
+	 * or channels are disabled
+	 */
+	if(tx && !(sai->debug_flags&0x02))
+	{
+	   val_cr4 |= FSL_SAI_CR4_CHMOD;
+	}
+	
+	dprintk(KERN_ERR "fsl-sai  fsl_sai_hw_params val_cr4=0x%x val_cr5=0x%x sai->slave_mode[tx]=%d dataline=%d",
+	       val_cr4, val_cr5,sai->slave_mode[tx],sai->soc->dataline);
 
 	/*
 	 * For SAI master mode, when Tx(Rx) sync with Rx(Tx) clock, Rx(Tx) will
@@ -1366,23 +1460,40 @@ static int fsl_sai_probe(struct platform_device *pdev)
 
 	sai->dsd_dl_cfg_cnt = ret;
 
+ 	sai->debug_flags=0;	
+	if (!of_property_read_u32(np, "kuk,debugflag",&sai->debug_flags))
+	{
+	        printk(KERN_ERR "kuk,debugflag %x", sai->debug_flags);	  
+	}
+
 	if ((of_find_property(np, "fsl,i2s-xtor", NULL) != NULL) ||
 	    (of_find_property(np, "fsl,txm-rxs", NULL) != NULL))
 	{
+	        dprintk(KERN_ERR"fsl-sai fsl_sai_probe fsl,i2s-xtor fsl,txm-rxs .....");
 		sai->masterflag[FSL_FMT_TRANSMITTER] = SND_SOC_DAIFMT_CBS_CFS;
 		sai->masterflag[FSL_FMT_RECEIVER] = SND_SOC_DAIFMT_CBM_CFM;
 	} else {
 		if (!of_property_read_u32(np, "fsl,txmasterflag",
 			&sai->masterflag[FSL_FMT_TRANSMITTER]))
+		{
+		        dprintk(KERN_ERR "fsl-sai fsl,txmasterflag");
 			sai->masterflag[FSL_FMT_TRANSMITTER] <<= 12;
+		}
+		
 		if (!of_property_read_u32(np, "fsl,rxmasterflag",
 			&sai->masterflag[FSL_FMT_RECEIVER]))
+		{
+		        dprintk(KERN_ERR "fsl-sai fsl,rxmasterflag");
 			sai->masterflag[FSL_FMT_RECEIVER] <<= 12;
+		}
+		
 	}
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0)
+	if (irq < 0) {
+		dev_err(&pdev->dev, "no irq for node %s\n", pdev->name);
 		return irq;
+	}
 
 	ret = devm_request_irq(&pdev->dev, irq, fsl_sai_isr, IRQF_SHARED,
 			       np->name, sai);
@@ -1403,17 +1514,20 @@ static int fsl_sai_probe(struct platform_device *pdev)
 
 	if (of_find_property(np, "fsl,sai-synchronous-rx", NULL) &&
 	    of_find_property(np, "fsl,sai-asynchronous", NULL)) {
+	  	dprintk(KERN_ERR "fsl-sai  sl,sai-synchronous-rx && fsl,sai-asynchronous ERROR");
 		/* error out if both synchronous and asynchronous are present */
 		dev_err(&pdev->dev, "invalid binding for synchronous mode\n");
 		return -EINVAL;
 	}
 
 	if (of_find_property(np, "fsl,sai-synchronous-rx", NULL)) {
+	  	dprintk(KERN_ERR "fsl-sai fsl,sai-synchronous-rx");	  
 		/* Sync Rx with Tx */
 		sai->synchronous[RX] = false;
 		sai->synchronous[TX] = true;
 	} else if (of_find_property(np, "fsl,sai-asynchronous", NULL)) {
 		/* Discard all settings for asynchronous mode */
+	        dprintk(KERN_ERR "fsl-sai fsl,sai-asynchronous");	  
 		sai->synchronous[RX] = false;
 		sai->synchronous[TX] = false;
 		sai->cpu_dai_drv.symmetric_rates = 0;
@@ -1576,6 +1690,7 @@ static const struct of_device_id fsl_sai_ids[] = {
 	{ .compatible = "fsl,imx7ulp-sai", .data = &fsl_sai_imx7ulp_data },
 	{ .compatible = "fsl,imx8mq-sai", .data = &fsl_sai_imx8mq_data },
 	{ .compatible = "fsl,imx8qm-sai", .data = &fsl_sai_imx8qm_data },
+	{ .compatible = "fsl,imx8mm-sai-kuk", .data = &fsl_sai_kuk },	
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, fsl_sai_ids);
