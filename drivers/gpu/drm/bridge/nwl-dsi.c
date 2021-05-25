@@ -59,6 +59,8 @@
 
 /* Possible valid PHY reference clock rates*/
 static u32 phyref_rates[] = {
+	33000000,
+	30000000,
 	27000000,
 	25000000,
 	24000000,
