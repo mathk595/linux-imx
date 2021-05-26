@@ -29,6 +29,7 @@ obj-$(CONFIG_DRM_NWL_MIPI_DSI) += nwl-dsi.o
 obj-y += analogix/
 obj-y += cadence/
 obj-y += synopsys/
+obj-y += tr8fpga-dsi2rgb.o
 obj-$(CONFIG_DRM_ITE_IT6263) += it6263.o
 obj-$(CONFIG_DRM_SEC_MIPI_DSIM) += sec-dsim.o
 obj-$(CONFIG_DRM_NXP_SEIKO_43WVFIG) += nxp-seiko-43wvfig.o
