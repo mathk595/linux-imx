@@ -215,7 +215,7 @@ static int __init dummy_power_init(void)
 {
     struct power_supply_config psy_cfg = {};
     int i;
-    int ret;
+    int ret=0;
 
     usb_property = (struct dummy_usb_property*)kmalloc(sizeof(struct dummy_usb_property),GFP_KERNEL);
     usb_property->online = 1;
@@ -232,6 +232,7 @@ static int __init dummy_power_init(void)
             goto failed;
         }
     }
+
     return 0;
 failed:
     while (--i >= 0)
