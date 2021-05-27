@@ -10,10 +10,10 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
 
-    pinctrl_hog: hoggrp {
+        pinctrl_hog: hoggrp {
 		fsl,pins = < 
 	                TRIZEPS_HOGGRP_COMMON
-					SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                  */
+				SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                  */
 			    	SPIN123_GPIO		PAD_GPIO_PU   /* Camera Pwdn SODIMM Pin 123 */
      				SPIN125_GPIO		PAD_GPIO_PU   /* Camera nRST SODIMM Pin 125 */
 			    	SPIN59_GPIO		PAD_GPIO_PU   /* Card Detect Act.low     59 */
@@ -115,7 +115,26 @@
                             spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En */
                             spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN */
                         >;
-    };
+    	};
+	
+	reserved@mcu{
+		compatible     = "kk,trizeps8mcu-reserved";
+                kk,gpio-names  = "nRESET_OUT", "CAN1_RX", "CAN1_TX";
+
+		/* *********************************************************************************************
+		 * NAME   VIN_AD3  VIN_AD2  VIN_AD1  VIN_AD1  TSPX  TSMX  TSPY  TSMY  nRESET_O  CAN1_RX CAN1_TX
+		 * SODIMM       2       4        6        8     14    16    18    20         87      97      99
+		 * ---------------------------------------------------------------------------------------------
+		 * GPIO       1.0     1.1       1.2      1.3   1.4   1.5   1.6   1.7       1.8      1.9    1.10
+		 * *********************************************************************************************
+		 */		 
+                kk,os-gpios    = <\
+				&gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) \
+				&gpio1  9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) \
+				&gpio1 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) \
+                                >;
+        };
+	
 
 #if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
 	gpio-keys {
@@ -168,11 +187,10 @@
 	status = "okay";	
 };
 
-#if 0
+
 &wm8983 {
 	mute-gpios = <spin102_gpio GPIO_ACTIVE_HIGH>; /* Works but leads to "plops" */
 };
-#endif
 
 
 /************************************************************************/
@@ -180,30 +198,30 @@
 / {
 	reserved@mcu{
 		compatible     = "kk,trizeps8mcu-reserved";
-        kk,gpio-names  = "nRESET_OUT", "CAN1_RX", "CAN1_TX";
-        /* gpio1 -- 0:AD3, 1:AD2, 2:AD1, 3:AD0, 4:TSPX, 5:TSMX, 6:TSPY, 7:TSMY, 8:RESET_OUT, 9:CAN1_RX, 10:CAN1_TX */
-        kk,os-gpios = <\
-                		&gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* RESET_OUT */
-			            &gpio1  9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* CAN1_RX */
-			            &gpio1 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* CAN1_TX */
-                    >;
+		kk,gpio-names  = "nRESET_OUT", "CAN1_RX", "CAN1_TX";
+                /* gpio1 -- 0:AD3, 1:AD2, 2:AD1, 3:AD0, 4:TSPX, 5:TSMX, 6:TSPY, 7:TSMY, 8:RESET_OUT, 9:CAN1_RX, 10:CAN1_TX */
+	        kk,os-gpios = <\
+                      &gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* RESET_OUT */
+		      &gpio1  9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* CAN1_RX */
+		      &gpio1 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* CAN1_TX */
+                     >;
     };
 	
     /* VIN_AD2 is connected. Other ADC not connected on i-PAN T7. !! Need to check use !!*/
 	powerCapUSV {
 		compatible      = "sub,tr8_cap";
-		batt_aux		= <4>;						/* ADC 2, SODIMM-Pin 4 (capacitors voltage) */
-		temp_aux		= <8>;	 					/* ADC 0, SODIMM-Pin 8 (Main power supply voltage) */
-		charging_low   	= <1>;		 				/* not needed */
-		batt_mult		= <18077>; 					/* ADC to Voltage convert values (WM97xx use 12Bit ADC (0xfff[4095]) and K&K 0V-7,5V max voltage attach */
-		batt_div		= <1>;			 		    /*  "         "              "    a voltage divider of 6,583 to the main voltage => 1,823V on ADC ==> 12V backup voltage) */
-  		temp_mult		= <(7500000/0xfff*2)>; 		/* ADC to Voltage convert values (WM97xx use 12Bit ADC (0xfff[4095]) and K&K 0V-7,5V max voltage attach */
-		temp_div		= <1>;			 		    /*  "         "              "    a voltage divider of 20,14 to the main voltage => 2,234V on ADC ==> 45V main voltage) */
-		min_voltage		= <3300000>;  		 		/* 3.3V */
-		max_voltage		= <12000000>;  		 		/* 12 V Direct power supply */
-		batt_tech		= <7>;   // Capacitor USV is not defined -> define new one: (POWER_SUPPLY_TECHNOLOGY_LiMn+1)
-		batt_name		= "CapUSV";		 			/* capacitors as USV */
-		status 			= "okay";
+		batt_aux		= <4>;			/* ADC 2, SODIMM-Pin 4 (capacitors voltage) */
+		temp_aux		= <8>;	 		/* ADC 0, SODIMM-Pin 8 (Main power supply voltage) */
+		charging_low   	= <1>;		 		/* not needed */
+		batt_mult		= <18077>; 		/* ADC to Voltage convert values (WM97xx use 12Bit ADC (0xfff[4095]) and K&K 0V-7,5V max voltage attach */
+		batt_div		= <1>;			/*  "         "              "    a voltage divider of 6,583 to the main voltage => 1,823V on ADC ==> 12V backup voltage) */
+  		temp_mult		= <(7500000/0xfff*2)>; 	/* ADC to Voltage convert values (WM97xx use 12Bit ADC (0xfff[4095]) and K&K 0V-7,5V max voltage attach */
+		temp_div		= <1>;			/*  "         "              "    a voltage divider of 20,14 to the main voltage => 2,234V on ADC ==> 45V main voltage) */
+		min_voltage		= <3300000>;  		/* 3.3V */
+		max_voltage		= <12000000>;  		/* 12 V Direct power supply */
+		batt_tech		= <7>;                  /* Capacitor USV is not defined -> define new one: (POWER_SUPPLY_TECHNOLOGY_LiMn+1) */
+		batt_name		= "CapUSV";		/* capacitors as USV */
+		status 			= "okay"; 
 	};
 
 };
