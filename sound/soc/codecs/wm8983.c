@@ -1001,7 +1001,7 @@ static int wm8983_probe(struct snd_soc_component *component)
 static const struct snd_soc_dai_ops wm8983_dai_ops = {
 	.startup	= wm8983_startup,
 	.shutdown	= wm8983_shutdown,
-	.digital_mute 	= wm8983_dac_mute,
+	.mute_stream 	= wm8983_dac_mute,
 	.hw_params = wm8983_hw_params,
 	.set_fmt = wm8983_set_fmt,
 	.set_sysclk = wm8983_set_sysclk,
@@ -1113,6 +1113,7 @@ static struct i2c_driver wm8983_i2c_driver = {
 
 module_i2c_driver(wm8983_i2c_driver);
 
+#if 0
 static int __init wm8983_modinit(void)
 {
 	int ret = 0;
@@ -1145,6 +1146,7 @@ static void __exit wm8983_exit(void)
 #endif
 }
 module_exit(wm8983_exit);
+#endif
 
 MODULE_DESCRIPTION("ASoC WM8983 driver");
 MODULE_AUTHOR("Dimitris Papastamos <dp@opensource.wolfsonmicro.com>");
