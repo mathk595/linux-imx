@@ -36,12 +36,12 @@ Switches:
 		android {
 			compatible = "android,firmware";
 			/* default emmc node used for GSI */
-			boot_devices = "soc@0/soc@0:bus@30800000/30b40000.mmc";
+			boot_devices         = "soc@0/soc@0:bus@30800000/30b40000.mmc";
 			/* sd card node which used if androidboot.boot_device_root=mmcblk0 */
-			boot_devices_mmcblk1 = "soc@0/soc@0:bus@30800000/30b40000.mmc";
+			boot_devices_mmcblk0 = "soc@0/soc@0:bus@30800000/30b40000.mmc";
 			/* emmc node which used if androidboot.boot_device_root=mmcblk2 */
 			/* boot_devices_mmcblk2 = "soc@0/soc@0:bus@30800000/30b60000.mmc"; */
-			boot_devices_mmcblk2 = "soc@0/soc@0:bus@30800000/30b40000.mmc";
+			boot_devices_mmcblk1 = "soc@0/soc@0:bus@30800000/30b50000.mmc";
 			fstab {
 				compatible = "android,fstab";
 				system {
@@ -89,7 +89,7 @@ Switches:
 		};
 	};
 };
-
+#if 0
 / {
 	trusty {
 		compatible = "android,trusty-smc-v1";
@@ -114,7 +114,7 @@ Switches:
 		#interrupt-cells = <1>;
 	};
 };
-
+#endif
 / {
 	chosen {
 		stdout-path = &uart1;
@@ -364,6 +364,11 @@ Switches:
 };
 #endif
 
+&gpio5 {
+
+       kukmiscinit = <1>;
+};
+
 &sai3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai3>;
@@ -419,7 +424,7 @@ Switches:
 	pinctrl-0 = <&pinctrl_uart2>;
 	assigned-clocks = <&clk IMX8MM_CLK_UART2>;
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
-    fsl,uart-has-rtscts;
+        fsl,uart-has-rtscts;
 	status = "okay";
 };
 
@@ -474,6 +479,8 @@ Switches:
 	non-removable;
 #if defined(TRIZEPS8MINI_USDHC1_VQMMC_MCU) && (TRIZEPS8MINI_USDHC1_VQMMC_MCU==1)
     vqmmc-supply = <&mcutouch>;
+#else
+    no-1-8-v;    
 #endif
 	status = "okay";
 };
