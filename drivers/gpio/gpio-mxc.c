@@ -33,11 +33,14 @@
 #define IMX_SC_IRQ_PAD			(1 << 1)
 #endif
 
+extern int handle_reserved_gpio(void);
+
 enum mxc_gpio_hwtype {
 	IMX1_GPIO,	/* runs on i.mx1 */
 	IMX21_GPIO,	/* runs on i.mx21 and i.mx27 */
 	IMX31_GPIO,	/* runs on i.mx31 */
 	IMX35_GPIO,	/* runs on all other i.mx */
+	IMX8MM_GPIO,	/* runs on all other i.mx */	
 };
 
 #ifdef CONFIG_GPIO_MXC_PAD_WAKEUP
@@ -192,6 +195,9 @@ static const struct platform_device_id mxc_gpio_devtype[] = {
 		.name = "imx35-gpio",
 		.driver_data = IMX35_GPIO,
 	}, {
+		.name = "imx8mm-gpio",
+		.driver_data = IMX8MM_GPIO,
+	}, {
 		/* sentinel */
 	}
 };
@@ -202,6 +208,7 @@ static const struct of_device_id mxc_gpio_dt_ids[] = {
 	{ .compatible = "fsl,imx31-gpio", .data = &mxc_gpio_devtype[IMX31_GPIO], },
 	{ .compatible = "fsl,imx35-gpio", .data = &mxc_gpio_devtype[IMX35_GPIO], },
 	{ .compatible = "fsl,imx7d-gpio", .data = &mxc_gpio_devtype[IMX35_GPIO], },
+	{ .compatible = "fsl,imx8mm-gpio",.data = &mxc_gpio_devtype[IMX8MM_GPIO], },	
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, mxc_gpio_dt_ids);
@@ -544,7 +551,7 @@ static void mxc_gpio_get_hw(struct platform_device *pdev)
 		return;
 	}
 
-	if (hwtype == IMX35_GPIO)
+	if (hwtype >= IMX35_GPIO)
 		mxc_gpio_hwdata = &imx35_gpio_hwdata;
 	else if (hwtype == IMX31_GPIO)
 		mxc_gpio_hwdata = &imx31_gpio_hwdata;
@@ -739,6 +746,12 @@ static int mxc_gpio_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, port);
 	pm_runtime_put(&pdev->dev);
+
+	if (of_property_read_bool(np, "kukmiscinit"))
+	{
+	  handle_reserved_gpio();	  
+	}
+
 
 	return 0;
 
