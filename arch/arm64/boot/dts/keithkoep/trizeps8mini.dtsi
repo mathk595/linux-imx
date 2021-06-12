@@ -262,7 +262,7 @@ Switches:
 	};
 
 	backlight: backlight {
-		compatible = "pwm-backlight";
+		compatible = "pwm-legacy-backlight";
 		pwms = <&pwm1 0 100000 0>;
 		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
 				     10 11 12 13 14 15 16 17 18 19
@@ -651,7 +651,17 @@ Switches:
 		clocks = <&clk IMX8MM_CLK_SAI2_ROOT>;
 		clock-names = "mclk";		
 	};
+#if 0
+	sn65dsi84@2c {
+		status = "disabled";
+		compatible = "ti,sn65dsi84";
+		reg = <0x2c>;
+		enable-gpios =<lvds_en_gpio GPIO_ACTIVE_HIGH>;
 
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_i2c3_sn65dsi84_en>;
+	};
+	
 	mcutouch: kuk_tr8mcu_touch@10 { /* Kinetis MCU and touch-controller */
 		compatible = "kuk,kuk-tr8mcu-touch";
 		reg = <0x10>;
@@ -673,16 +683,7 @@ Switches:
         enable_touch        = "false";
 		linux,wakeup;
 	};
-
-	sn65dsi84@2c {
-		status = "disabled";
-		compatible = "ti,sn65dsi84";
-		reg = <0x2c>;
-		enable-gpios =<lvds_en_gpio GPIO_ACTIVE_HIGH>;
-
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_i2c3_sn65dsi84_en>;
-	};        
+#endif
 };
 
 

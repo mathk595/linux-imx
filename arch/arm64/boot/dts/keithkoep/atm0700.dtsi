@@ -79,7 +79,8 @@ Defines:
 };
 
 &mipi_dsi {
-	status              = "okay";
+
+	status                  = "okay";
 	panel@0 {
 		status          = "okay";
 		compatible      = "az,atm0700";   /* call driver Panel-simple.c */
@@ -96,10 +97,18 @@ Defines:
 				remote-endpoint = <&mipi_dsi_out>;
 			};
 		};
+
+	};
+	
+	port@1 {
+	              	mipi_dsi_out: endpoint {
+			remote-endpoint = <&panel1_in>;
+			};
 	};
 };
 
 /************************************************************************/
+#if 0
 #if defined (__DTS_TRIZEPS8_PINFUNC_H)
 &hdmi {
 	status = "disabled";
@@ -138,6 +147,7 @@ Defines:
 		};
 	};
 };
+
 &mipi_dsi {
     fsl,clock-drop-level = <2>;
 	ports {
@@ -158,15 +168,27 @@ Defines:
 	};
 };
 #endif
+#endif
 /************************************************************************/
 #if defined (__DTS_IMX8MM_PINFUNC_H) || defined (__DTS_IMX8MN_PINFUNC_H)
+
+&lcdif {
+	status = "okay";
+};
+
+#if 0
 &mipi_dsi {
+
+    ports {
 	port@1 {
 		mipi_dsi_out: endpoint {
 			remote-endpoint = <&panel1_in>;
 		};
 	};
+    };
+
 };
+#endif
 #endif
 /************************************************************************/
 

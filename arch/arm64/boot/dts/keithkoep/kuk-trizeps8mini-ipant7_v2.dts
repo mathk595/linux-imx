@@ -14,7 +14,7 @@
 #include "ov5640.dtsi"
 
 / {
-	model      = "Keith & Koep GmbH iPANT7 i.MX8MM Trizeps8-Mini";
+	model      = "Keith & Koep GmbH iPANT7_V2MX8MM Trizeps8-Mini";
 	compatible = "kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mm-evk", "fsl,imx8mm";
 
 	chosen {

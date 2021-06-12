@@ -4,6 +4,7 @@
  */
 
 #define TOUCH_USE_INT2      1
+#define NOBACKLIGHT         1
 
 &iomuxc {
 
@@ -16,27 +17,38 @@
 				SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                  */
 			    	SPIN123_GPIO		PAD_GPIO_PU   /* Camera Pwdn SODIMM Pin 123 */
      				SPIN125_GPIO		PAD_GPIO_PU   /* Camera nRST SODIMM Pin 125 */
-			    	SPIN59_GPIO		PAD_GPIO_PU   /* Card Detect Act.low     59 */
+				SPIN77_GPIO             PAD_GPIO_PU   /* Gpio PWM */
 			    >;
+/* already in trizep8mini   	SPIN59_GPIO		PAD_GPIO_PU *//* Card Detect Act.low     59 */
+			    
 	};
 
 #if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
-    pinctrl_gpio_keys: gpio_keys {
+        pinctrl_gpio_keys: gpio_keys {
 		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
 	};
 #endif        
 
-	pinctrl_backlight_pwm1: pwm-backlight {
-		fsl,pins = < SPIN77_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM */
+#ifndef NOBACKLIGHT
+        pinctrl_backlight_pwm1: pwm-backlight {
+		fsl,pins = < SPIN77_PWM1_OUT                0x16 >; /* BACKLIGHT_PWM */
 	};
-		
+#endif
+
 	pinctrl_usbhost_enable: usbhost-enable 	{
 		fsl,pins = < SPIN129_GPIO		PAD_GPIO >; /* USBH_PWR */
 	};
 
 	pinctrl_usbotg_enable: usbotg-enable 	{
 		fsl,pins = < SPIN127_GPIO		PAD_GPIO >; /* USBOTG_PWR */
-	};		
+	};
+
+#if defined (__DTS_IMX8MM_PINFUNC_H)
+	 pinctrl_ipan5_led_yellow: gpio_leds    {
+ 	 	fsl,pins = < MX8MM_IOMUXC_SAI3_MCLK_GPIO5_IO2  MX8MM_PAD_GPIO_PU>;  /* Heartbeat LED SODIMM Pin 69 J12-9 */
+	}; 
+#endif
+
 };
 
 / {
@@ -109,11 +121,12 @@
 
   	reserved@board {
         compatible      = "kk,trizeps7-reserved";
-        kk,gpio-names   = "EN-Audio","CAM-PWDN";
+        kk,gpio-names   = "EN-Audio", "PWM";
         kk,os-gpios     = < 
-                            spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST */
-                            spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En */
+                            spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST */	
+			    spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En */
                             spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN */
+                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* PWM Backl*/			    
                         >;
     	};
 	
@@ -135,6 +148,19 @@
                                 >;
         };
 	
+#if defined (__DTS_IMX8MM_PINFUNC_H)
+        leds {
+      	   compatible = "gpio-leds";
+	   ipant7_yellow {
+	   	   pinctrl-names = "default";
+ 		   pinctrl-0     = <&pinctrl_ipan5_led_yellow>;
+ 		   label         = "iPan5:yellow";
+ 		   linux,default-trigger = "heartbeat";
+ 		   gpios         = <&gpio5 2 0>;
+ 		   };
+	};
+#endif
+
 
 #if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
 	gpio-keys {
@@ -151,11 +177,13 @@
 #endif    
 };
 
+#ifndef NOBACKLIGHT
 &pwm1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_backlight_pwm1>;
 	status = "okay";
 };
+#endif
 
 &backlight {
 	status = "okay";
