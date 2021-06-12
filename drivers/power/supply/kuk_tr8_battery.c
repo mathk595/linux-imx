@@ -36,6 +36,9 @@
 #include <linux/sort.h>
 #include <linux/of_gpio.h>
 
+#define POWER_SUPPLY_PROP_CYCLE_COUNT_VALUE     32
+#define POWER_SUPPLY_PROP_CURRENT_NOW_VALUE 400000
+
 #define  FAKE_ADC_SAMPLE        0	// TODO
 
 #define  FAKE_ADC_READING       0xfff
@@ -93,15 +96,46 @@ static int offset_charger 	= 0;
 // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + 20.11.2014 S&B HH/HL
 
 static int voltage_uV     =11000000;
-static int voltage_temp_uV=1024;	//     20.11.2014 S&B HH/HL
-static int charger_online = 0;
-static int percent;
-static int old_percent;
+static int voltage_temp_uV=    1024;	//     20.11.2014 S&B HH/HL
+static int charger_online =       0;
+static int percent        =     100;
+static int old_percent    =     100;
 
 static int batChangeGpio;
 static int batChangeCount = TOUT_BATCHANGE_WARN / DELAY;
 
 static int yMutexIsInit = false;	//		@+08.05.2018 S&B WR/HL
+
+static int usb_power_get_property(struct power_supply *psy,
+                                  enum power_supply_property psp,
+                                  union power_supply_propval *val)
+{
+    int ret = 0;
+    switch (psp) {
+        case POWER_SUPPLY_PROP_ONLINE:
+#ifdef CONFIG_BATTERY_DUMMY_OFFLINE	  
+	  val->intval = 0;	    
+#else
+	  val->intval = (bat_status==POWER_SUPPLY_STATUS_CHARGING) ? 1 : 0;
+#endif
+            break;
+        default:
+            ret = -EINVAL;
+            break;
+    }
+    return ret;
+}
+
+static enum power_supply_property usb_power_props[] = {
+    POWER_SUPPLY_PROP_ONLINE,
+};
+static const struct power_supply_desc usb_power_desc = {
+        .properties = usb_power_props,
+        .num_properties = ARRAY_SIZE(usb_power_props),
+        .get_property = usb_power_get_property,
+        .name = "usb-charger",
+        .type = POWER_SUPPLY_TYPE_MAINS,
+};
 
 typedef struct {
 	u32 voltage;
@@ -243,7 +277,7 @@ static unsigned long tr8_read_bat(struct power_supply *bat_ps)
 #if FAKE_ADC_SAMPLE
 	return FAKE_ADC_READING * pdata->batt_mult / pdata->batt_div;
 #else
-	return tr8_read_adc(pdata->batt_aux)*pdata->batt_mult/pdata->batt_div;	
+	return tr8_read_adc(pdata->batt_aux)*pdata->batt_mult/pdata->batt_div;		  
 #endif
 }
 
@@ -273,6 +307,18 @@ static int tr8_bat_get_property(struct power_supply *bat_ps,
 	struct tr8_batt_pdata *pdata = tr8data->batt_pdata;
 
 	switch (psp) {
+
+	case POWER_SUPPLY_PROP_CHARGE_FULL:
+	       val->intval = dischargingTable[0].voltage;
+	       break;
+	       
+        case POWER_SUPPLY_PROP_CYCLE_COUNT:
+            val->intval = POWER_SUPPLY_PROP_CYCLE_COUNT_VALUE;
+            break;
+	case POWER_SUPPLY_PROP_CURRENT_NOW:
+            val->intval = POWER_SUPPLY_PROP_CURRENT_NOW_VALUE;
+            break;
+	    
 	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
 		if (bat_status == POWER_SUPPLY_STATUS_FULL)
 		  val->intval = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
@@ -280,17 +326,17 @@ static int tr8_bat_get_property(struct power_supply *bat_ps,
 		  val->intval = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
 		else
 		  val->intval = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-		printk (KERN_ERR "##### KUKTR8BATXX - CAPACITY_LEVEL:%d \n", val->intval);
+		//printk (KERN_ERR "##### KUKTR8BATXX - CAPACITY_LEVEL:%d \n", val->intval);
 		break;
 
 	case POWER_SUPPLY_PROP_CAPACITY:
 	        val->intval = (percent < 0) ? 0:((percent>100)?100:percent);
-	        printk (KERN_ERR "##### KUKTR8BATXX - CAPACITY:%d \n", val->intval);
+	  //    printk (KERN_ERR "##### KUKTR8BATXX - CAPACITY:%d \n", val->intval);
 		break;	
 
 	case POWER_SUPPLY_PROP_STATUS:
 		val->intval = bat_status;
-		printk (KERN_ERR "##### KUKTR8BATXX - STATUS:%d \n", val->intval);
+		//printk (KERN_ERR "##### KUKTR8BATXX - STATUS:%d \n", val->intval);
 		break;
 
 	case POWER_SUPPLY_PROP_TECHNOLOGY:
@@ -302,11 +348,11 @@ static int tr8_bat_get_property(struct power_supply *bat_ps,
 			val->intval = voltage_uV;
 		else
 			return -EINVAL;
- printk (KERN_ERR "##### KUKTR8BATXX - VOLTAGE_NOW:%d \n", val->intval);
+		//printk (KERN_ERR "##### KUKTR8BATXX - VOLTAGE_NOW:%d \n", val->intval);
 		break;
 	case POWER_SUPPLY_PROP_TEMP:
 		if (pdata->temp_aux >= 0)
-			val->intval = voltage_temp_uV;			// 20.11.2014 S&B HH/HL
+		  val->intval = 350; // voltage_temp_uV;			// 20.11.2014 S&B HH/HL
 		else
 		  return -EINVAL;
 		break;
@@ -427,7 +473,7 @@ static u32 get_voltage_temp(struct power_supply *bat_ps)
 //------------------------------------------------------------------------
 static void tr8_bat_external_power_changed(struct power_supply *bat_ps)
 {
-  printk (KERN_ERR "######## KUKTR8BATXX - EXTERN POWER CHANGED\n");
+  // printk (KERN_ERR "######## KUKTR8BATXX - EXTERN POWER CHANGED\n");
   schedule_work(&bat_work);
 }
 
@@ -516,20 +562,23 @@ static void tr8_bat_update(struct power_supply *bat_ps)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 static struct power_supply *bat_psy;
+static struct power_supply *usb_psy;
 static struct power_supply_desc bat_psy_desc = {
-	.type				= POWER_SUPPLY_TYPE_BATTERY,
+	.type			= POWER_SUPPLY_TYPE_BATTERY,
 	.get_property		= tr8_bat_get_property,
 	.external_power_changed = tr8_bat_external_power_changed,
 	.use_for_apm		= 1,
+	.type = POWER_SUPPLY_TYPE_BATTERY,
 };
 
 
 //------------------------------------------------------------------------
 static void tr8_bat_work(struct work_struct *work)
 {
-    if( tr8_adc_get_i2c_client() != NULL )
+  // if mcu not mounted tr8_bat_update is not called  
+  if( tr8_adc_get_i2c_client() != NULL ) 
     {
-      tr8_bat_update(bat_psy);
+	  tr8_bat_update(bat_psy); 
     }
 }
 
@@ -700,6 +749,11 @@ static struct tr8_pdata *tr8_bat_of_populate_pdata(struct device *dev)
 }
 #endif
 
+static char *supply_interface[] = {
+	"wallmount",
+	"usb",
+};
+
 static int tr8_bat_probe(struct platform_device *dev)
 {
 	int ret = 0;
@@ -769,6 +823,10 @@ static int tr8_bat_probe(struct platform_device *dev)
 
 	prop[i++] = POWER_SUPPLY_PROP_PRESENT;
 	prop[i++] = POWER_SUPPLY_PROP_STATUS;
+	prop[i++] = POWER_SUPPLY_PROP_CURRENT_NOW; props++;
+	prop[i++] = POWER_SUPPLY_PROP_CHARGE_FULL; props++;
+	prop[i++] = POWER_SUPPLY_PROP_CYCLE_COUNT; props++;		
+	
 	if (pdata->batt_tech >= 0)
 		prop[i++] = POWER_SUPPLY_PROP_TECHNOLOGY;
 	if (pdata->batt_aux >= 0) {
@@ -794,19 +852,22 @@ static int tr8_bat_probe(struct platform_device *dev)
 	} else
 		bat_psy_desc.name = pdata->batt_name;
 
-	bat_psy_desc.properties = prop;
+	bat_psy_desc.properties     = prop;
 	bat_psy_desc.num_properties = props;
 
-	psy_cfg.drv_data = tr8data;
+	psy_cfg.of_node          = dev->dev.of_node;
+        psy_cfg.drv_data         = tr8data;
+	psy_cfg.supplied_to      = supply_interface;
+	psy_cfg.num_supplicants  = ARRAY_SIZE(supply_interface);
 
 	mutex_init(&work_lock);
 	yMutexIsInit = true;																		//	@+08.05.2018 S&B WR/HL
 	INIT_WORK(&bat_work, tr8_bat_work);
 	INIT_DELAYED_WORK(&bat_delayed_work, tr8_bat_delayed_work);
 
-//	bat_psy = power_supply_register(&dev->dev, &bat_psy_desc, &psy_cfg);
-	bat_psy = power_supply_register(&dev->dev, &bat_psy_desc, NULL);
-
+	bat_psy = power_supply_register(&dev->dev, &bat_psy_desc,   &psy_cfg);
+	usb_psy = power_supply_register(&dev->dev, &usb_power_desc, &psy_cfg);
+	
 	if (!IS_ERR(bat_psy))
 	{	    
 	  schedule_delayed_work(&bat_delayed_work, DELAY * HZ);
