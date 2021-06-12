@@ -120,7 +120,7 @@ struct kuk_tr8mcu_ts_data {
 	struct touchscreen_properties prop;
 
 	int reset_pin;
-    int enable_touch;
+	int enable_touch;
 	int enable_wakeup;
 	int irq_pin;
         int swapxy;
@@ -137,7 +137,7 @@ struct kuk_tr8mcu_ts_data {
 	u8 settle;
 	u8 average;
 
-	u8 reg_config1;    
+	u8 reg_config1;
 
 	char name[KUK_NAME_LEN];
 
@@ -722,11 +722,11 @@ static int kuk_tr8mcu_i2c_ts_probe_dt(struct device *dev,
 
 	prop = of_get_property(np,    "enable_wakeup", NULL);
 	if (prop && (strcmp(prop,     "true")==0))		tsdata->enable_wakeup = 1;
-	else		                                    tsdata->enable_wakeup = 0;
+	else		                                        tsdata->enable_wakeup = 0;
 
 	prop = of_get_property(np,    "enable_touch", NULL);
 	if (prop && (strcmp(prop,     "true")==0))		tsdata->enable_touch = 1;
-	else		                                    tsdata->enable_touch = 0;
+	else		                                        tsdata->enable_touch = 0;
 
 	if ( of_property_read_u32(np, "xscale"	, &val	) == 0)
 		tsdata->xscale = (u16)val;
@@ -791,6 +791,12 @@ static int probe_mcu_gpio(struct i2c_client          *client,
     printk("KERN_ERR *** probe_mcu_gpio No client->adapter \n");
   }
   //  i2c_set_clientdata(client, tsdata);
+
+  if( kuk_tr8mcu_ts_read8(client, MCU_REG_ID) != 0x61 )
+  {
+    printk(KERN_ERR " *** probe_mcu_gpio No MCU found ! \n");    
+    return -ENODEV;	  	
+  }
 
   status = devm_gpiochip_add_data(&gpio->client->dev, &gpio->chip, gpio);
   //status = devm_gpiochip_add_data(&client->dev,       &gpio->chip, gpio);
@@ -886,7 +892,8 @@ static int probe_mcu_regulator(struct i2c_client          *client,
 	struct regulator_desc *rdesc = &tsdata->mcu_regulator_desc;
 	struct regulator_config cfg = { };
 	const struct regulator_init_data *init_data;
-
+	int id=0;
+	
 	dev_dbg(&client->dev, "MCU probe regulator\n");
 	rdesc->name = "mcu-reg";
 	rdesc->supply_name = "vdd_sdcard";
@@ -903,9 +910,28 @@ static int probe_mcu_regulator(struct i2c_client          *client,
 	cfg.driver_data = tsdata;
 	cfg.of_node = client->dev.of_node;
 
+	id = kuk_tr8mcu_ts_read8(tsdata->client, MCU_REG_ID);
+	if( id != 0x61 )
+	{
+	  return -ENODEV;	  	
+	}
+	
 	tsdata->reg_config1 = kuk_tr8mcu_ts_read8(tsdata->client, MCU_REG_CONFIG1);
 	tsdata->mcu_regulator_dev = devm_regulator_register(&client->dev, rdesc, &cfg);
-	return PTR_ERR_OR_ZERO(tsdata->mcu_regulator_dev);	
+
+	if( tsdata->mcu_regulator_dev == NULL )
+	  return -ENODEV;	  
+	
+	if(IS_ERR(tsdata->mcu_regulator_dev))
+	{
+	  dev_dbg(&client->dev, "MCU probe regulator Failed\n");
+	  // return(PTR_ERR(tsdata->mcu_regulator_dev));	  
+	  return -ENODEV;
+	}
+	
+	dev_err(&client->dev, "mcu-reg regulator probe OK!\n");
+	
+	return 0; // PTR_ERR_OR_ZERO(tsdata->mcu_regulator_dev);	
 }
 
 struct i2c_client *tr8_adc_get_handle(void)
@@ -924,8 +950,8 @@ struct i2c_client *tr8_adc_get_i2c_client(void)
   return(tr8_i2c_client);  
 }
 
-
  
+
 int tr8_read_aux_adc(struct i2c_client *client, int adcsel)
 {
 	int data;
@@ -997,6 +1023,11 @@ static int kuk_tr8mcu_ts_probe(struct i2c_client *client,
 	tsdata->settle		= 3;
 	tsdata->average		= 2;
 
+	if( kuk_tr8mcu_ts_read8(client, MCU_REG_ID) != 0x61 )
+	{
+	  dev_err(&client->dev," *** kuk_tr8mcu_ts_probe No MCU found ! \n");    
+	  return -ENODEV;	  	
+	}
 
 	error = kuk_tr8mcu_i2c_ts_probe_dt(&client->dev, tsdata);
 	if (error) {
@@ -1033,7 +1064,12 @@ static int kuk_tr8mcu_ts_probe(struct i2c_client *client,
 	printk( KERN_ERR "TR8MCU_TOUCH : swapxy=0x%x enable_wakeup=%d irq_pin=0x%x reset_pin=0x%x\n",
 		tsdata->swapxy, tsdata->enable_wakeup, tsdata->irq_pin, tsdata->reset_pin);
 
-
+	
+	if(kuk_tr8mcu_ts_read8(client, MCU_REG_ID) != 0x61)
+	{
+	  dev_err(&client->dev, "TR8MCU_TOUCH : probe No MCU found ! \n");
+	  return -ENODEV;
+	}
 	kuk_tr8mcu_ts_write16(tsdata->client , TOUCH_XSCALE_LSB		, tsdata->xscale);
 	kuk_tr8mcu_ts_write16(tsdata->client , TOUCH_YSCALE_LSB		, tsdata->yscale);
 	kuk_tr8mcu_ts_write16(tsdata->client , TOUCH_XMIN_LSB		, tsdata->xmin);
@@ -1080,16 +1116,18 @@ static int kuk_tr8mcu_ts_probe(struct i2c_client *client,
 
 	input_set_drvdata(input, tsdata);
 	i2c_set_clientdata(client, tsdata);
-
-	kuk_tr8mcu_ts_write16(tsdata->client , TOUCH_CONFIG, tsdata->threshold | (tsdata->enable_touch?0x80:0x00));	// Enable Touch!
+	if( tsdata->enable_touch != 0 )
+	{
+		kuk_tr8mcu_ts_write16(tsdata->client , TOUCH_CONFIG, tsdata->threshold | (tsdata->enable_touch?0x80:0x00));	// Enable Touch!
 	
-	error = devm_request_threaded_irq(&client->dev, client->irq, NULL,
+		error = devm_request_threaded_irq(&client->dev, client->irq, NULL,
 					kuk_tr8mcu_ts_isr,
 					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
 					client->name, tsdata);
-	if (error) {
-		dev_err(&client->dev, "Unable to request touchscreen IRQ.\n");
-		return error;
+		if (error) {
+			dev_err(&client->dev, "Unable to request touchscreen IRQ.\n");
+			return error;
+		}
 	}
 
 	error = sysfs_create_group(&client->dev.kobj, &kuk_tr8mcu_attr_group);
