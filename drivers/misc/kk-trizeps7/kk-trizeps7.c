@@ -308,13 +308,22 @@ int kk_t7_handle_reserved(void)
 
 	return rc;
 }
-
+#if 0
 int __init kk_t7_handle_reserved_init(void)
 {
   return(kk_t7_handle_reserved());  
 }
+#endif
 
-subsys_initcall(kk_t7_handle_reserved_init);
+int handle_reserved_gpio(void)
+{
+  read_alternative_data=0;
+  return(kk_t7_handle_reserved());  
+}
+
+
+// device_initcall(kk_t7_handle_reserved_init);
+// subsys_initcall(kk_t7_handle_reserved_init);
 // arch_initcall_sync(kk_t7_handle_reserved);
 
 int handle_reserved_mcu(void)
@@ -503,6 +512,8 @@ static int __init get_print_trizeps_version(void)
   xEntry = proc_create("kk-trizeps7",0660,NULL,&tKKOps); 	// Create /proc/kk-trizeps7 entry	@+01.08.2018 S&B HL 
   return(0);  
 }
+
+// postcore_initcall(get_print_trizeps_version);
 arch_initcall(get_print_trizeps_version);
 #endif
 
