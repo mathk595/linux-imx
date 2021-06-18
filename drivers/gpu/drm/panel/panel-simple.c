@@ -310,6 +310,8 @@ static int panel_simple_prepare(struct drm_panel *panel)
 	int err=0;
 	int hpd_asserted;
 
+	printk(KERN_ERR"panel_simple_prepare(%d)\n",p->prepared);
+
 	if (p->prepared)
 		return 0;
 
@@ -384,6 +386,7 @@ static int panel_simple_get_modes(struct drm_panel *panel,
 	struct panel_simple *p = to_panel_simple(panel);
 	int num = 0;
 
+	printk(KERN_ERR"panel_simple_getmodes\n");
 	/* probe EDID if a DDC bus is available */
 	if (p->ddc) {
 		struct edid *edid = drm_get_edid(connector, p->ddc);
@@ -442,6 +445,8 @@ static int panel_dpi_probe(struct device *dev,
 	struct videomode vm;
 	int ret;
 
+	printk(KERN_ERR"******************panel_dpi_probe**************************\n");
+ 
 	np = dev->of_node;
 	desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
 	if (!desc)
@@ -533,6 +538,10 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 	int connector_type;
 	u32 bus_flags;
 	int err;
+
+
+	printk("\n**************** Panel_simple_probe ***********\n************************\n");
+	
 
 	panel = devm_kzalloc(dev, sizeof(*panel), GFP_KERNEL);
 	if (!panel)
@@ -4384,6 +4393,8 @@ static int panel_simple_platform_probe(struct platform_device *pdev)
 {
 	const struct of_device_id *id;
 
+	printk(KERN_ERR"******************panel_simple_platform_probe************************\n");
+ 
 	id = of_match_node(platform_of_match, pdev->dev.of_node);
 	if (!id)
 		return -ENODEV;
@@ -4658,6 +4669,7 @@ static const struct panel_desc_dsi dataimage_scf1001 = {
 		},
 		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
 		.bus_flags = DRM_BUS_FLAG_DE_HIGH,
+		.connector_type = DRM_MODE_CONNECTOR_DSI,
 	},
 	.flags = MIPI_DSI_MODE_VIDEO /*| MIPI_DSI_CLOCK_NON_CONTINUOUS*/ | MIPI_DSI_MODE_VIDEO_SYNC_PULSE /* MIPI_DSI_MODE_VIDEO_BURST */,
 	.format = MIPI_DSI_FMT_RGB888,
@@ -4695,7 +4707,8 @@ static const struct panel_desc_dsi auo_p550hvn06 = {
 };
 
 static const struct drm_display_mode az_atm0700_mode = {
-	.clock = 33300,
+//	.clock = 33300,
+	.clock = 33636,							
 	.hdisplay = 800,
 	.hsync_start = 800 + 210,
 	.hsync_end = 800 + 210 + 6,
@@ -4716,6 +4729,7 @@ static const struct panel_desc_dsi az_atm0700 = {
 			.height = 88,
 		},
 		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+		.connector_type = DRM_MODE_CONNECTOR_DSI,		
 	},
 	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE /*| MIPI_DSI_MODE_VIDEO_BURST*/,
 	.format = MIPI_DSI_FMT_RGB888,
@@ -4744,6 +4758,7 @@ static const struct panel_desc_dsi ipan7_edt_wvga = {
 			.height = 88,
 		},
 		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+		.connector_type = DRM_MODE_CONNECTOR_DSI,		
 	},
 	.flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE /*| MIPI_DSI_MODE_VIDEO_BURST*/,
 	.format = MIPI_DSI_FMT_RGB888,
@@ -4800,6 +4815,8 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 	u32 value;
 	int ret;
 	int err;
+
+	printk(KERN_ERR"******************panel_simple_dsi_probe*************************\n");	
 
 	id = of_match_node(dsi_of_match, dsi->dev.of_node);
 	if (!id)
