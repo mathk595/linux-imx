@@ -47,6 +47,7 @@ AUXL	n.c.
 
 static const struct reg_default wm8983_defaults[] = {
 	{ 0x01, 0x0000 },     /* R1  - Power management 1 */
+	//{ 0x01, 0x0010 },     /* R1  - Power management 1 */ // MICBEN=ON
 	{ 0x02, 0x0000 },     /* R2  - Power management 2 */
 	{ 0x03, 0x0000 },     /* R3  - Power management 3 */
 	{ 0x04, 0x0050 },     /* R4  - Audio Interface */
@@ -861,7 +862,12 @@ static int wm8983_startup(struct snd_pcm_substream *substream,
 
 	if (wm8983->mute)
 		gpiod_set_value_cansleep(wm8983->mute, 1);
-
+/*
+	printk(KERN_INFO "%s: 0x%08x = 0x%08x\n",
+		   __FUNCTION__,
+		   WM8983_POWER_MANAGEMENT_1,
+		   snd_soc_component_read(component,WM8983_POWER_MANAGEMENT_1));
+*/
 	return 0;
 }
 
@@ -874,6 +880,12 @@ static void wm8983_shutdown(struct snd_pcm_substream *substream,
 
 	if (wm8983->mute)
 		gpiod_set_value_cansleep(wm8983->mute, 0);
+	/*
+	printk(KERN_INFO "%s: 0x%08x = 0x%08x\n",
+		   __FUNCTION__,
+		   WM8983_POWER_MANAGEMENT_1,
+		   snd_soc_component_read(component,WM8983_POWER_MANAGEMENT_1));
+	*/
 }
 
 static int wm8983_set_sysclk(struct snd_soc_dai *dai,
@@ -906,13 +918,18 @@ static int wm8983_set_bias_level(struct snd_soc_component *component,
 	struct wm8983_priv *wm8983 = snd_soc_component_get_drvdata(component);
 	int ret;
 
+	//printk(KERN_INFO "%s: level=%d\n",__FUNCTION__,level);
 	switch (level) {
 	case SND_SOC_BIAS_ON:
 	case SND_SOC_BIAS_PREPARE:
 		/* VMID at 100k */
 		snd_soc_component_update_bits(component, WM8983_POWER_MANAGEMENT_1,
 				    WM8983_VMIDSEL_MASK,
-				    1 << WM8983_VMIDSEL_SHIFT);	
+				    1 << WM8983_VMIDSEL_SHIFT);
+		// Microphone BIAS must be enabled too
+		snd_soc_component_update_bits(component, WM8983_POWER_MANAGEMENT_1,
+				    WM8983_MICBEN_MASK,
+				    WM8983_MICBEN);	
 		break;
 	case SND_SOC_BIAS_STANDBY:
 		if (snd_soc_component_get_bias_level(component) == SND_SOC_BIAS_OFF) {
@@ -962,7 +979,12 @@ static int wm8983_set_bias_level(struct snd_soc_component *component,
 		snd_soc_component_write(component, WM8983_POWER_MANAGEMENT_3, 0);
 		break;
 	}
-
+/*
+	printk(KERN_INFO "%s: 0x%08x = 0x%08x\n",
+		   __FUNCTION__,
+		   WM8983_POWER_MANAGEMENT_1,
+		   snd_soc_component_read(component,WM8983_POWER_MANAGEMENT_1));
+*/
 	return 0;
 }
 
