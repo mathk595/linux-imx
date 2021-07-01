@@ -227,6 +227,9 @@
 #define dsim_read(dsim, reg)		readl(dsim->base + reg)
 #define dsim_write(dsim, val, reg)	writel(val, dsim->base + reg)
 
+/* fixed phy ref clk rate */
+#define PHY_REF_CLK		27000
+
 #define MAX_MAIN_HRESOL		2047
 #define MAX_MAIN_VRESOL		2047
 #define MAX_SUB_HRESOL		1024
@@ -301,6 +304,11 @@ struct sec_mipi_dsim {
 	struct device *dev;
 
 	void __iomem *base;
+	int irq;
+
+	struct clk *clk_cfg;
+	struct clk *clk_pllref;
+	struct clk *pclk;			/* pixel clock */
 
 	/* kHz clocks */
 	uint32_t pix_clk;
@@ -1858,6 +1866,8 @@ int sec_mipi_dsim_bind(struct device *dev, struct device *master, void *data,
 
 	dev_dbg(dev, "sec-dsim bridge bind begin\n");
 
+	printk("sec_mipi_dsim_bind......");
+	
 	dsim = devm_kzalloc(dev, sizeof(*dsim), GFP_KERNEL);
 	if (!dsim) {
 		dev_err(dev, "Unable to allocate 'dsim'\n");
@@ -1865,6 +1875,7 @@ int sec_mipi_dsim_bind(struct device *dev, struct device *master, void *data,
 	}
 
 	dsim->dev = dev;
+	dsim->irq = irq;
 	dsim->base = base;
 	dsim->pdata = pdata;
 	dsim->encoder = encoder;
@@ -1884,13 +1895,15 @@ int sec_mipi_dsim_bind(struct device *dev, struct device *master, void *data,
 	/* set suitable rate for phy ref clock */
 	ret = sec_mipi_dsim_set_pref_rate(dsim);
 	if (ret) {
-		dev_err(dev, "failed to set pll ref clock rate\n");
+	  printk("sec_mipi_dsim_bind.failed to set pll ref clock rate.....");
+	  dev_err(dev, "failed to set pll ref clock rate\n");
 		return ret;
 	}
 
 	ret = devm_request_irq(dev, irq, sec_mipi_dsim_irq_handler,
 			       0, dev_name(dev), dsim);
 	if (ret) {
+	  printk("sec_mipi_dsim_bind.failed failed to request dsim irq");	  
 		dev_err(dev, "failed to request dsim irq: %d\n", ret);
 		return ret;
 	}
@@ -1920,6 +1933,7 @@ int sec_mipi_dsim_bind(struct device *dev, struct device *master, void *data,
 	 */
 	ret = mipi_dsi_host_register(&dsim->dsi_host);
 	if (ret) {
+	  printk("sec_mipi_dsim_bind.failed failed Unable to register mipi dsi host: %d\n", ret);	  	  
 		dev_err(dev, "Unable to register mipi dsi host: %d\n", ret);
 		return ret;
 	}
@@ -1931,16 +1945,17 @@ int sec_mipi_dsim_bind(struct device *dev, struct device *master, void *data,
 	bridge->encoder = encoder;
 
 	/* attach sec dsim bridge and its next bridge if exists */
+	dev_err(dev, "drm_bridge_attach encoder %s\n", encoder->name);	
 	ret = drm_bridge_attach(encoder, bridge, NULL, 0);
 	if (ret) {
 		dev_err(dev, "Failed to attach bridge: %s\n", dev_name(dev));
-
 		/* no bridge exists, so defer probe to wait
 		 * panel driver loading
 		 */
 		if (ret != -EPROBE_DEFER) {
 			for_each_available_child_of_node(dev->of_node, node) {
 				/* skip nodes without reg property */
+dev_err(dev, "searching for panel: %s\n", dev_name(dev));			  
 				if (!of_find_property(node, "reg", NULL))
 					continue;
 
@@ -1959,8 +1974,10 @@ int sec_mipi_dsim_bind(struct device *dev, struct device *master, void *data,
 
 panel:
 	if (dsim->panel) {
+
 		/* A panel has been attached */
 		connector = &dsim->connector;
+		dev_err(dev, "Panel Attached: %s %d\n", connector->name,connector->connector_type);			  	  
 
 		drm_connector_helper_add(connector,
 					 &sec_mipi_dsim_connector_helper_funcs);
@@ -1977,7 +1994,8 @@ panel:
 		if (ret)
 			goto cleanup_connector;
 	}
-
+	
+	printk("sec_mipi_dsim_bind end");	
 	dev_dbg(dev, "sec-dsim bridge bind end\n");
 
 	return 0;
