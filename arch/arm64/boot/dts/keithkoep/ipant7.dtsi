@@ -121,12 +121,12 @@
 
   	reserved@board {
         compatible      = "kk,trizeps7-reserved";
-        kk,gpio-names   = "EN-Audio", "PWM";
+        kk,gpio-names   = "Cam-nRST","EN-Audio","Cam-PWDN","PWM-BL";
         kk,os-gpios     = < 
-                            spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST */	
-			    spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En */
-                            spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN */
-                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* PWM Backl*/			    
+                            spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST  gpio1 6  */	
+			    spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En  gpio1 8  */
+                            spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3  */
+                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* PWM Backl gpio3 22 */			    
                         >;
     	};
 	
@@ -217,7 +217,7 @@
 
 
 &wm8983 {
-	mute-gpios = <spin102_gpio GPIO_ACTIVE_HIGH>; /* Works but leads to "plops" */
+/*	mute-gpios = <spin102_gpio GPIO_ACTIVE_HIGH>; *//* Works but leads to "plops" */ 
 };
 
 
