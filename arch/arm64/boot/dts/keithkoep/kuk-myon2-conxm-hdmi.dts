@@ -6,10 +6,15 @@
 /dts-v1/;
 
 // Add defines here, which control behaviour of .dtsi:
+#define  OTG_HOST                0
+#define  OTG_SLAVE               1
+#define  OTG_OTG                 2
+
+#define  USB1_OTG_FUNC           OTG_HOST
 
 #include "myon2.dtsi"
 #include "conxm.dtsi"
-#include "adv7533.dtsi"
+/* #include "adv7533.dtsi" */
 
 / {
 	model      = "Keith & Koep GmbH ConXM-HDMI i.MX8MM Myon2";

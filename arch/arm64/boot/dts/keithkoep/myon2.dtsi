@@ -19,11 +19,12 @@ Defines:
 		android {
 			compatible = "android,firmware";
 			/* default emmc node used for GSI */
-			boot_devices = "soc@0/soc@0:bus@30800000/30b40000.mmc";
-			/* sd card node which used if androidboot.boot_device_root=mmcblk1 */
-			boot_devices_mmcblk1 = "soc@0/soc@0:bus@30800000/30b40000.mmc";
+			boot_devices         = "soc@0/soc@0:bus@30800000/30b40000.mmc";
+			/* sd card node which used if androidboot.boot_device_root=mmcblk0 */
+			boot_devices_mmcblk0 = "soc@0/soc@0:bus@30800000/30b40000.mmc";
 			/* emmc node which used if androidboot.boot_device_root=mmcblk2 */
-			boot_devices_mmcblk2 = "soc@0/soc@0:bus@30800000/30b40000.mmc";
+			/* boot_devices_mmcblk2 = "soc@0/soc@0:bus@30800000/30b60000.mmc"; */
+			boot_devices_mmcblk1 = "soc@0/soc@0:bus@30800000/30b50000.mmc";
 			fstab {
 				compatible = "android,fstab";
 				system {
@@ -31,7 +32,14 @@ Defines:
 					dev = "system";
 					type = "ext4";
 					mnt_flags = "noatime,errors=panic,ro,barrier=1,inode_readahead_blks=8";
-					fsmgr_flags = "wait,slotselect,avb,avb_keys=/avb/q-gsi.avbpubkey:/avb/r-gsi.avbpubkey:/avb/s-gsi.avbpubkey,logical,first_stage_mount";
+					fsmgr_flags = "wait,slotselect,avb,avb_keys=/avb,logical,first_stage_mount";
+				};
+				system_ext {
+					compatible = "android,system_ext";
+					dev = "system_ext";
+					type = "ext4";
+					mnt_flags = "noatime,ro,errors=panic";
+					fsmgr_flags = "wait,slotselect,avb,logical,first_stage_mount";
 				};
 				vendor {
 					compatible = "android,vendor";
@@ -47,6 +55,13 @@ Defines:
 					mnt_flags = "noatime,errors=panic,ro,barrier=1,inode_readahead_blks=8";
 					fsmgr_flags = "wait,slotselect,avb,logical,first_stage_mount";
 				};
+				metadata {
+					compatible = "android,metadata";
+					dev = "/dev/block/by-name/metadata";
+					type = "ext4";
+					mnt_flags = "noatime,nosuid,nodev,discard,sync";
+					fsmgr_flags = "wait,formattable,first_stage_mount,check";
+				};
 			};
 			vbmeta {
 				/*we need use FirstStageMountVBootV2 if we enable avb*/
@@ -57,7 +72,7 @@ Defines:
 		};
 	};
 };
-
+#if 0
 / {
 	trusty {
 		compatible = "android,trusty-smc-v1";
@@ -82,8 +97,17 @@ Defines:
 		#interrupt-cells = <1>;
 	};
 };
-
+#endif
 / {
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x0 0x40000000 0 0x80000000>;
+	};
+
 	reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
@@ -130,6 +154,41 @@ Defines:
 	};
 
 	sound-wm8983 {
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "wm8983-audio";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,frame-master = <&cpudai>;
+		simple-audio-card,bitclock-master = <&cpudai>;
+		simple-audio-card,widgets =
+			"Headphone", "Headphone Jack",
+			"Speaker", "Speaker", 
+			"Line","LineIn Jack",
+			"Microphone", "Microphone";
+		simple-audio-card,routing =
+			"Headphone Jack", "HPL",
+			"Headphone Jack", "HPR",
+			"Headphone Jack", "OUT4",
+			"Speaker", "SPKL",
+			"Speaker", "SPKR",
+			"LineIn Jack", "L2",
+			"LineIn Jack", "R2",
+			"Microphone", "LIP",
+			"Microphone", "LIN",
+			"Microphone", "MICBIAS";
+
+		cpudai: simple-audio-card,cpu {
+			sound-dai = <&sai2>;
+			dai-tdm-slot-num = <2>;
+			dai-tdm-slot-width = <32>;
+		};
+
+		simple-audio-card,codec {
+			sound-dai = <&wm8983>;
+			clocks = <&clk IMX8MM_CLK_SAI2_ROOT>;
+		};
+	};
+#if 0
+	sound-wm8983 {
 		compatible = "kuk,imx-audio-wm8983";
 		model = "wm8983-audio";
 		audio-cpu = <&sai2>;
@@ -147,7 +206,7 @@ Defines:
 			"Microphone", "MICBIAS";
 		codec-master;
 	};
-
+#endif
 	sound-spdif {
 		compatible = "fsl,imx-audio-spdif";
 		model = "imx-spdif";
@@ -163,7 +222,7 @@ Defines:
 	};
 
 	backlight: backlight {
-		compatible = "pwm-backlight";
+		compatible = "pwm-legacy-backlight";
 		pwms = <&pwm1 0 100000 0>;
 		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
 				     10 11 12 13 14 15 16 17 18 19
@@ -185,6 +244,37 @@ Defines:
 	cpu-supply = <&buck2_reg>;
 };
 
+&A53_1 {
+	cpu-supply = <&buck2_reg>;
+};
+
+&A53_2 {
+	cpu-supply = <&buck2_reg>;
+};
+
+&A53_3 {
+	cpu-supply = <&buck2_reg>;
+};
+
+#if 0
+&ddrc {
+	operating-points-v2 = <&ddrc_opp_table>;
+	ddrc_opp_table: opp-table {
+	compatible = "operating-points-v2";
+	opp-25M {
+			opp-hz = /bits/ 64 <25000000>;
+		};
+
+	opp-100M {
+			opp-hz = /bits/ 64 <100000000>;
+		};
+
+	opp-750M {
+			opp-hz = /bits/ 64 <750000000>;
+		};
+	};
+};
+#endif
 &pcie0{
 	pinctrl-names   = "default";
 	pinctrl-0       = <&pinctrl_pcie0>;
@@ -196,15 +286,25 @@ Defines:
 		                <&pcie0_refclk>;
 	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
 	hard-wired      = <1>;
-    ext_osc         = <0>;
+        ext_osc         = <0>;
 	reserved-region = <&rpmsg_reserved>;
 	status = "disabled";
 };
 
+#if 0
 &clk {
 	assigned-clocks = <&clk IMX8MM_AUDIO_PLL1>, <&clk IMX8MM_AUDIO_PLL2>;
 	assigned-clock-rates = <786432000>, <722534400>;
+/*	assigned-clock-rates = <393216000>, <361267200>; */
 };
+#endif
+
+&gpio5 {
+
+       kukmiscinit = <1>;
+};
+
+
 
 &sai2 {
 	#sound-dai-cells = <0>;
@@ -280,6 +380,7 @@ Defines:
 };
 
 &usdhc1 {
+	compatible = "fsl,imx8mm-usdhc";
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc1>, <&pinctrl_usdhc1_gpio>;
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_usdhc1_gpio>;
@@ -448,12 +549,13 @@ Defines:
 	};
 
 	wm8983: wm8983@1a {	/* Audio-Codec */
+        #sound-dai-cells = <0>;
 		compatible = "kuk,wm8983";
 		reg = <0x1a>;
 		clocks = <&clk IMX8MM_CLK_SAI2_ROOT>;
 		clock-names = "mclk";		
 	};
-
+#if 0
 	sn65dsi84@2c {
 		status = "ok";
 		compatible = "ti,sn65dsi84";
@@ -462,7 +564,8 @@ Defines:
 					
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3_sn65dsi84_en>;
-	};    
+	};
+#endif    
 };
 
 
@@ -692,6 +795,10 @@ Defines:
 };
 
 &vpu_h1 {
+	status = "okay";
+};
+
+&vpu_v4l2 {
 	status = "okay";
 };
 

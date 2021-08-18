@@ -8,13 +8,13 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
     
-    pinctrl_hog: hoggrp {
+	pinctrl_hog: hoggrp {
     	fsl,pins = < 
 					MYON2_HOGGRP_COMMON			            
 		       >;
 	};
 
-    pinctrl_gpio_keys: gpio_keys {
+	pinctrl_gpio_keys: gpio_keys {
 	    fsl,pins = < PIN1_6_GPIO       PAD_GPIO_PU >;  /* PowerButton SODIMM Pin 122 */
 	};
 
@@ -104,13 +104,20 @@
 };
 
 &usbotg1 {
-	dr_mode = "host";    
-	disable-over-current; 
+	disable-over-current;
+#if USB1_OTG_FUNC == OTG_HOST	
+	dr_mode = "host";
+#endif
+#if USB1_OTG_FUNC == OTG_OTG
+	dr_mode = "otg";
+#endif
 };
+
 
 #if !defined (__DTS_IMX8MN_PINFUNC_H)
 &usbotg2 {
-	disable-over-current; 
+	disable-over-current;
+	disabled;
 };
 #endif
 
@@ -131,7 +138,7 @@
 	};
 };
 
-&i2c3 {
+&i2c2 {
 	adv_bridge: adv7533@39 {
 		compatible = "adi,adv7533";
 		reg = <0x39>;
@@ -141,7 +148,7 @@
 
 		adi,ignore-edid;
 		adi,dsi-lanes = <4>;
-        pinctrl-names = "default";
+		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_hdmi_int>;        
 		status = "okay";
 
