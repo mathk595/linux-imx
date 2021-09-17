@@ -67,6 +67,7 @@ Switches:
 	};
 };
 
+/*
 / {
 	trusty {
 		compatible = "android,trusty-smc-v1";
@@ -91,6 +92,7 @@ Switches:
 		#interrupt-cells = <1>;
 	};
 };
+*/
 
 / {
 	reserved-memory {
@@ -126,7 +128,7 @@ Switches:
 		regulator-always-on;
 		vin-supply = <&reg_vin_fused>;
 	};
-
+/*
 	reg_usb1_pwr: usb1-pwr {
 		compatible = "regulator-fixed";
 		regulator-name = "USB1 PWR";
@@ -139,7 +141,7 @@ Switches:
 		regulator-always-on;
 		vin-supply = <&reg_board_5v>;
 	};
-
+*/
 	reg_usdhc1_vmmc: usdhc1_vmmc {
 		compatible = "regulator-fixed";
 		regulator-name = "VMMC_USDHC1";
@@ -175,14 +177,14 @@ Switches:
 		regulator-max-microvolt = <3300000>;
 		enable-active-high;
 	};
-
+/*
 	sound-xtor {
 		compatible = "fsl,imx-audio-xtor";
 		model = "xtor-audio";
 		cpu-dai = <&sai3>;
 		status = "okay";
 	};
-
+*/
 	sound-wm8983 {
 		compatible = "simple-audio-card";
 		simple-audio-card,name = "wm8983-audio";
@@ -303,12 +305,13 @@ Switches:
 	reserved-region = <&rpmsg_reserved>;
 	status = "okay";
 };
-
+/*
 &clk {
 	assigned-clocks = <&clk IMX8MM_AUDIO_PLL1>, <&clk IMX8MM_AUDIO_PLL2>;
-	assigned-clock-rates = <786432000>, <722534400>;
+	//assigned-clock-rates = <786432000>, <722534400>;
+	assigned-clock-rates = <393216000>, <361267200>;
 };
-
+*/
 &sai3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai3>;
@@ -389,7 +392,7 @@ Switches:
 
 &usbotg1 {
 	dr_mode = "otg";
-    vbus-supply = <&reg_usb1_pwr>;
+    //vbus-supply = <&reg_usb1_pwr>;
 	hnp-disable;
 	srp-disable;
 	adp-disable;
@@ -613,11 +616,12 @@ Switches:
 		pagesize = <32>;
 	};
 
-	rtc@52 {
+	rtc@32 {
 		compatible = "microcrystal,rv3028";
 		reg = <0x32>;
 		trickle-diode-disable;
 	};
+
 };
 
 
