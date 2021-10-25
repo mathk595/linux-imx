@@ -2103,7 +2103,7 @@ static void sdma_load_firmware(const struct firmware *fw, void *context)
 
 	sdma->fw_loaded = true;
 
-	dev_info_once(sdma->dev, "loaded firmware %d.%d\n",
+	dev_info(sdma->dev, "loaded firmware %d.%d\n",
 			header->version_major,
 			header->version_minor);
 
