@@ -194,7 +194,7 @@ static int imx_irqsteer_chans_enable(struct irqsteer_data *data)
 {
 	int ret;
 
-	ret = clk_prepare_enable(irqsteer_data->ipg_clk);
+	ret = clk_prepare_enable(data->ipg_clk);
 	if (ret) {
 		dev_err(data->dev, "failed to enable ipg clk: %d\n", ret);
 		return ret;
@@ -384,10 +384,12 @@ static int imx_irqsteer_runtime_resume(struct device *dev)
 #endif
 
 static const struct dev_pm_ops imx_irqsteer_pm_ops = {
+#ifdef CONFIG_PM_SLEEP
 	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
 				      pm_runtime_force_resume)
 	SET_RUNTIME_PM_OPS(imx_irqsteer_runtime_suspend,
 			   imx_irqsteer_runtime_resume, NULL)
+#endif
 };
 
 static const struct of_device_id imx_irqsteer_dt_ids[] = {
