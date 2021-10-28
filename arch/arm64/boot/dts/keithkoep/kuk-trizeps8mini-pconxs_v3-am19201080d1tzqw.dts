@@ -7,6 +7,8 @@
 
 // Add defines here, which control behaviour of .dtsi:
 #define ETHERNET_ONLY_100MBIT       0
+#define PCONXS_NOT_USE_PCIE_PWR     0
+#define PCONXS_III_OTG_ACTIVE_HIGH  1
 
 #include "trizeps8mini.dtsi"
 #include "pconxs.dtsi"
