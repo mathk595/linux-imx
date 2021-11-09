@@ -449,12 +449,14 @@ Switches:
 
 &usbotg1 {
 	dr_mode = "otg";
-	hnp-disable;
-	srp-disable;
-	adp-disable;
-	usb-role-switch;
-	picophy,pre-emp-curr-control = <3>;
-	picophy,dc-vol-level-adjust = <7>;
+/*	hnp-disable;
+ *	srp-disable;
+ *	adp-disable;
+ *	usb-role-switch;
+ */
+        extcon = <0>;
+	samsung,picophy-pre-emp-curr-control = <3>;
+	samsung,picophy-dc-vol-level-adjust = <7>;
 	status = "okay";
 };
 
