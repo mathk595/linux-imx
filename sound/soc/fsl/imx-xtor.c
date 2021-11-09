@@ -29,6 +29,10 @@
 #define RX 0
 #define TX 1
 
+//#define XTOR_USE_DAIFMT      (SND_SOC_DAIFMT_MSB        | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM)
+#define XTOR_USE_DAIFMT        (SND_SOC_DAIFMT_MARVELL_BT | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM)
+//#define XTOR_USE_DAIFMT      (SND_SOC_DAIFMT_MARVELL_BT | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBS_CFS)
+#define SND_CLKDIR              SND_SOC_CLOCK_IN
 /**
  * CPU private data
  *
@@ -73,56 +77,61 @@ static int imx_xtor_startup(struct snd_pcm_substream *substream)
 }
 
 static int imx_xtor_hw_params(struct snd_pcm_substream *substream,
-				     struct snd_pcm_hw_params *params)
+			      struct snd_pcm_hw_params *params)
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct imx_xtor_data *data = snd_soc_card_get_drvdata(rtd->card);
+	struct snd_soc_dai     *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
+	struct imx_xtor_data      *data = snd_soc_card_get_drvdata(rtd->card);
 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
 	struct cpu_priv *cpu_priv = &data->cpu_priv;
 	struct device *dev = rtd->card->dev;
 	u32 channels = params_channels(params);
-	unsigned int fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF;
-	unsigned int ms_fmt = 0;
+	unsigned int fmt = XTOR_USE_DAIFMT;
 	int ret, dir;
 
-#define KUK_FORCE_USE_DAIFMT_MSB    1
-#if KUK_FORCE_USE_DAIFMT_MSB
-	fmt = SND_SOC_DAIFMT_MSB | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM;
-	dir = SND_SOC_CLOCK_OUT;
-#else
-	if(tx) {
-		if(data->tx_codec_slave)
-			ms_fmt = SND_SOC_DAIFMT_CBS_CFS;
-		else
-			ms_fmt = SND_SOC_DAIFMT_CBM_CFM;
-	} else {
-		if(data->rx_codec_slave)
-			ms_fmt = SND_SOC_DAIFMT_CBS_CFS;
-		else
-			ms_fmt = SND_SOC_DAIFMT_CBM_CFM;
+	//printk(KERN_ERR"%s,channels=%ld,bclk=%d\n",__func__, channels, cpu_priv->sysclk_id[tx]);
+
+	if( tx )
+	{	    
+	//	fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_CBM_CFM;
+	//	fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF | SND_SOC_DAIFMT_MSB | SND_SOC_DAIFMT_CBM_CFM;	
+                dir = SND_CLKDIR;	
+		fmt = XTOR_USE_DAIFMT;
+	}else
+	{
+                dir = SND_CLKDIR;
+		fmt = XTOR_USE_DAIFMT;		
 	}
 
-	fmt |= ms_fmt;
-	dir = (ms_fmt == SND_SOC_DAIFMT_CBS_CFS) ? SND_SOC_CLOCK_OUT : SND_SOC_CLOCK_IN;
-#endif
 
 	/* set cpu DAI configuration */
-	ret = snd_soc_dai_set_fmt(rtd->cpu_dai, fmt);
-	if (ret) {
+	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
+	
+	if (ret)
+	{
 		dev_err(dev, "failed to set cpu dai fmt: %d\n", ret);
 		return ret;
 	}
 
 	/* Specific configurations of DAIs starts from here */
-	ret = snd_soc_dai_set_sysclk(rtd->cpu_dai, cpu_priv->sysclk_id[tx],
-				     0, dir);
+	//printk(KERN_ERR"%s,snd_soc_dai_set_sysclk(dai, %d,%d,%d)",__func__, cpu_priv->sysclk_id[tx], 0, dir);		
+
+	ret = snd_soc_dai_set_bclk_ratio(cpu_dai,   64);	
+				     
+	ret = snd_soc_dai_set_sysclk(cpu_dai,       cpu_priv->sysclk_id[tx], 0, dir);
+
 	if (ret) {
-		dev_err(dev, "failed to set cpu sysclk: %d\n", ret);
+                dev_err(dev, "failed to set cpu sysclk: %d\n", ret);
 		return ret;
 	}
 
-	ret = snd_soc_dai_set_tdm_slot(rtd->cpu_dai, BIT(channels) - 1,
+	//printk(KERN_ERR "%s,snd_soc_dai_set_tdm_slot(dai, rx,tx %ld, slots:%d, slotwidth:%d)",
+        //               __func__, BIT(channels) - 1, cpu_priv->slots, params_width(params));	
+
+	
+	ret = snd_soc_dai_set_tdm_slot(cpu_dai, BIT(channels) - 1,
 		BIT(channels) - 1, cpu_priv->slots, params_width(params));
+
 	if (ret) {
 		dev_err(dev, "failed to set cpu dai tdm slot: %d\n", ret);
 		return ret;
@@ -166,6 +175,13 @@ static int be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 
 	return 0;
 }
+
+static const struct snd_soc_dapm_route audio_map[] = {
+	{"Playback",  NULL, "CPU-Playback"},
+	{"CPU-Capture",  NULL, "Capture"},
+	{"CPU-Playback",  NULL, "ASRC-Playback"},
+	{"ASRC-Capture",  NULL, "CPU-Capture"},
+};
 
 static struct snd_soc_ops imx_xtor_ops = {
 	.startup = imx_xtor_startup,
@@ -262,8 +278,11 @@ static int imx_xtor_probe(struct platform_device *pdev)
 	data->dai[0].ops = &imx_xtor_ops;
 	data->dai[0].playback_only = false;
 	data->dai[0].capture_only = false;
+	data->dai[0].dai_fmt      = XTOR_USE_DAIFMT;
 	data->card.num_links = 1;
 	data->card.dai_link = data->dai;
+	data->card.dapm_routes = audio_map;
+	data->card.num_dapm_routes = 2;
 
 	/*if there is no asrc controller, we only enable one device*/
 	if (asrc_pdev) {
