@@ -466,18 +466,19 @@
 #define PIN0_70_GPIO5_IO0                                   0x1DC 0x444 0x000 0x5 0x0
 #define PIN0_70_GPIO                                        0x1DC 0x444 0x000 0x5 0x0
 #define PIN0_70_TPSMP_HDATA2                                0x1DC 0x444 0x000 0x7 0x0
-#define PIN1_33_SAI3_TX_DATA0                               0x1E0 0x448 0x000 0x0 0x0
-#define PIN1_33_GPT1_COMPARE3                               0x1E0 0x448 0x000 0x1 0x0
-#define PIN1_33_SAI5_RX_DATA3                               0x1E0 0x448 0x4E0 0x2 0x2
-#define PIN1_33_GPIO5_IO1                                   0x1E0 0x448 0x000 0x5 0x0
-#define PIN1_33_GPIO                                        0x1E0 0x448 0x000 0x5 0x0
-#define PIN1_33_TPSMP_HDATA3                                0x1E0 0x448 0x000 0x7 0x0
-#define PIN1_75_SAI3_MCLK                                    0x1E4 0x44C 0x000 0x0 0x0
-#define PIN1_75_PWM4_OUT                                     0x1E4 0x44C 0x000 0x1 0x0
-#define PIN1_75_SAI5_MCLK                                    0x1E4 0x44C 0x52C 0x2 0x3
-#define PIN1_75_GPIO5_IO2                                    0x1E4 0x44C 0x000 0x5 0x0
-#define PIN1_75_GPIO                                         0x1E4 0x44C 0x000 0x5 0x0
-#define PIN1_75_TPSMP_HDATA4                                 0x1E4 0x44C 0x000 0x7 0x0
+#define PIN1_33_SAI3_TX_DATA0                               MX8MM_IOMUXC_SAI3_TXD_SAI3_TX_DATA0
+#define PIN1_33_GPT1_COMPARE3                               MX8MM_IOMUXC_SAI3_TXD_GPT1_COMPARE3
+#define PIN1_33_SAI5_RX_DATA3                               MX8MM_IOMUXC_SAI3_TXD_SAI5_RX_DATA3
+#define PIN1_33_GPIO5_IO1                                   MX8MM_IOMUXC_SAI3_TXD_GPIO5_IO1
+#define PIN1_33_GPIO                                        MX8MM_IOMUXC_SAI3_TXD_GPIO5_IO1
+#define pin1_33_gpio                                        &gpio5 1
+#define PIN1_33_TPSMP_HDATA3                                MX8MM_IOMUXC_SAI3_TXD_TPSMP_HDATA3
+#define PIN1_75_SAI3_MCLK                                   0x1E4 0x44C 0x000 0x0 0x0
+#define PIN1_75_PWM4_OUT                                    0x1E4 0x44C 0x000 0x1 0x0
+#define PIN1_75_SAI5_MCLK                                   0x1E4 0x44C 0x52C 0x2 0x3
+#define PIN1_75_GPIO5_IO2                                   0x1E4 0x44C 0x000 0x5 0x0
+#define PIN1_75_GPIO                                        0x1E4 0x44C 0x000 0x5 0x0
+#define PIN1_75_TPSMP_HDATA4                                0x1E4 0x44C 0x000 0x7 0x0
 #define PIN1_61_SPDIF1_OUT                                  0x1E8 0x450 0x000 0x0 0x0
 #define PIN1_61_PWM3_OUT                                    0x1E8 0x450 0x000 0x1 0x0
 #define PIN1_61_GPIO5_IO3                                   0x1E8 0x450 0x000 0x5 0x0
@@ -493,12 +494,12 @@
 #define PIN1_57_GPIO5_IO5                                   0x1F0 0x458 0x000 0x5 0x0
 #define PIN1_57_GPIO                                        0x1F0 0x458 0x000 0x5 0x0
 #define PIN1_57_TPSMP_HDATA7                                0x1F0 0x458 0x000 0x7 0x0
-#define PIN0_58_ECSPI1_SCLK                                  0x1F4 0x45C 0x000 0x0 0x0
-#define PIN0_58_UART3_DCE_RX                                 0x1F4 0x45C 0x504 0x1 0x0
-#define PIN0_58_UART3_DTE_TX                                 0x1F4 0x45C 0x000 0x1 0x0
-#define PIN0_58_GPIO5_IO6                                    0x1F4 0x45C 0x000 0x5 0x0
-#define PIN0_58_GPIO                                         0x1F4 0x45C 0x000 0x5 0x0
-#define PIN0_58_TPSMP_HDATA8                                 0x1F4 0x45C 0x000 0x7 0x0
+#define PIN0_58_ECSPI1_SCLK                                 0x1F4 0x45C 0x000 0x0 0x0
+#define PIN0_58_UART3_DCE_RX                                0x1F4 0x45C 0x504 0x1 0x0
+#define PIN0_58_UART3_DTE_TX                                0x1F4 0x45C 0x000 0x1 0x0
+#define PIN0_58_GPIO5_IO6                                   0x1F4 0x45C 0x000 0x5 0x0
+#define PIN0_58_GPIO                                        0x1F4 0x45C 0x000 0x5 0x0
+#define PIN0_58_TPSMP_HDATA8                                0x1F4 0x45C 0x000 0x7 0x0
 #define PIN0_54_ECSPI1_MOSI                                  0x1F8 0x460 0x000 0x0 0x0
 #define PIN0_54_UART3_DCE_TX                                 0x1F8 0x460 0x000 0x1 0x0
 #define PIN0_54_UART3_DTE_RX                                 0x1F8 0x460 0x504 0x1 0x1
