@@ -154,8 +154,8 @@ Switches:
 		};
 
 		simple-audio-card,codec {
-			sound-dai = <&wm8983>;
-			clocks = <&clk IMX8MM_CLK_SAI2_ROOT>;
+//			sound-dai = <&wm8983>;
+			clocks = <&clk IMX8MP_CLK_SAI2_ROOT>;
 		};
 	};
 
@@ -228,27 +228,28 @@ Switches:
 
 		ethphy0: ethernet-phy@1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <4;
+			reg = <4>;
 			at803x,eee-disabled;
 			at803x,vddio-1p8v;
 #if defined(ETHERNET_ONLY_100MBIT) && (ETHERNET_ONLY_100MBIT==1)
 			at803x,100MBit;
-#endif            		};
+#endif            		
+		};
 	};
 };
 
 &flexcan1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_flexcan1>;
-	xceiver-supply = <&reg_can1_stby>;
+//	pinctrl-0 = <&pinctrl_flexcan1>;
+//	xceiver-supply = <&reg_can1_stby>;
 	status = "okay";
 };
 
 &flexcan2 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_flexcan2>;
-	xceiver-supply = <&reg_can2_stby>;
-	pinctrl-assert-gpios = <&pca6416 3 GPIO_ACTIVE_HIGH>;
+//	pinctrl-0 = <&pinctrl_flexcan2>;
+//	xceiver-supply = <&reg_can2_stby>;
+//	pinctrl-assert-gpios = <&pca6416 3 GPIO_ACTIVE_HIGH>;
 	status = "disabled";/* can2 pin conflict with pdm: gpio low select pdm, gpio high select can2 */
 };
 
