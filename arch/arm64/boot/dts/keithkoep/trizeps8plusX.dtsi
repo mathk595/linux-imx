@@ -14,180 +14,10 @@ Switches:
 #include "trizeps8plus-pinfunc.h"
 
 / {
-	firmware {
-		android {
-			compatible = "android,firmware";
-			/* default emmc node used for GSI */
-			boot_devices = "soc@0/30800000.bus/30b40000.mmc";
-			/* sd card node which used if androidboot.boot_device_root=mmcblk1 */
-			boot_devices_mmcblk1 = "soc@0/30800000.bus/30b50000.mmc";
-			/* emmc node which used if androidboot.boot_device_root=mmcblk0 */
-			boot_devices_mmcblk0 = "soc@0/30800000.bus/30b40000.mmc";
-			fstab {
-				compatible = "android,fstab";
-				system {
-					compatible = "android,system";
-					dev = "system";
-					type = "ext4";
-					mnt_flags = "noatime,errors=panic,ro,barrier=1,inode_readahead_blks=8";
-					fsmgr_flags = "wait,slotselect,avb,avb_keys=/avb,logical,first_stage_mount";
-				};
-				system_ext {
-					compatible = "android,system_ext";
-					dev = "system_ext";
-					type = "ext4";
-					mnt_flags = "noatime,ro,errors=panic";
-					fsmgr_flags = "wait,slotselect,avb,logical,first_stage_mount";
-				};
-				vendor {
-					compatible = "android,vendor";
-					dev = "vendor";
-					type = "ext4";
-					mnt_flags = "noatime,errors=panic,ro,barrier=1,inode_readahead_blks=8";
-					fsmgr_flags = "wait,slotselect,avb,logical,first_stage_mount";
-				};
-				product {
-					compatible = "android,product";
-					dev = "product";
-					type = "ext4";
-					mnt_flags = "noatime,errors=panic,ro,barrier=1,inode_readahead_blks=8";
-					fsmgr_flags = "wait,slotselect,avb,logical,first_stage_mount";
-				};
-				metadata {
-					compatible = "android,metadata";
-					dev = "/dev/block/by-name/metadata";
-					type = "ext4";
-					mnt_flags = "noatime,nosuid,nodev,discard,sync";
-					fsmgr_flags = "wait,formattable,first_stage_mount,check";
-				};
-			};
-			vbmeta {
-				/*we need use FirstStageMountVBootV2 if we enable avb*/
-				compatible = "android,vbmeta";
-				/*parts means the partition witch can be mount in first stage*/
-				parts = "vbmeta,dtbo,boot,system,vendor,product";
-			};
-		};
-	};
-};
-
-/ {
-	trusty {
-		compatible = "android,trusty-smc-v1";
-		ranges;
-		#address-cells = <2>;
-		#size-cells = <2>;
-		trusty-irq {
-			compatible = "android,trusty-irq-v1";
-			interrupt-ranges = < 0 15 0>;
-			ipi-range = <8 15 8>;
-		};
-		trusty-virtio {
-			compatible = "android,trusty-virtio-v1";
-		};
-		trusty-log {
-			compatible = "android,trusty-log-v1";
-		};
-	};
-};
-
-
-/ {
 	memory@40000000 {
 		device_type = "memory";
 		reg = <0x0 0x40000000 0 0x80000000>;
 	};
-
-	reg_usdhc2_vmmc: regulator-usdhc2 {
-		compatible = "regulator-fixed";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_reg_usdhc2_vmmc>;
-		regulator-name = "VSD_3V3";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
-		enable-active-high;
-	};
-
-	sound-hdmi {
-		compatible = "fsl,imx-audio-cdnhdmi";
-		model = "audio-hdmi";
-		audio-cpu = <&aud2htx>;
-		hdmi-out;
-		constraint-rate = <44100>,
-				<88200>,
-				<176400>,
-				<32000>,
-				<48000>,
-				<96000>,
-				<192000>;
-		status = "okay";
-	};
-
-	sound-wm8983 {
-		compatible = "simple-audio-card";
-		simple-audio-card,name = "wm8983-audio";
-		simple-audio-card,format = "i2s";
-		simple-audio-card,frame-master = <&cpudai>;
-		simple-audio-card,bitclock-master = <&cpudai>;
-		simple-audio-card,widgets =
-			"Headphone", "Headphone Jack",
-			"Speaker", "Speaker", 
-			"Line","LineIn Jack",
-			"Microphone", "Microphone";
-		simple-audio-card,routing =
-			"Headphone Jack", "HPL",
-			"Headphone Jack", "HPR",
-			"Headphone Jack", "OUT4",
-			"Speaker", "SPKL",
-			"Speaker", "SPKR",
-			"LineIn Jack", "L2",
-			"LineIn Jack", "R2",
-			"Microphone", "LIP",
-			"Microphone", "LIN",
-			"Microphone", "MICBIAS";
-
-		cpudai: simple-audio-card,cpu {
-			sound-dai = <&sai2>;
-			dai-tdm-slot-num = <2>;
-			dai-tdm-slot-width = <32>;
-		};
-
-		simple-audio-card,codec {
-			sound-dai = <&wm8983>;
-			clocks = <&clk IMX8MM_CLK_SAI2_ROOT>;
-		};
-	};
-
-	sound-micfil {
-		compatible = "fsl,imx-audio-micfil";
-		model = "imx-audio-micfil";
-		cpu-dai = <&micfil>;
-	};
-
-	sound-xcvr {
-		compatible = "fsl,imx-audio-xcvr";
-		model = "imx-audio-xcvr";
-		cpu-dai = <&xcvr>;
-	};
-
-	backlight: backlight {
-		compatible = "pwm-legacy-backlight";
-		pwms = <&pwm1 0 100000 0>;
-		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
-				     10 11 12 13 14 15 16 17 18 19
-				     20 21 22 23 24 25 26 27 28 29
-				     30 31 32 33 34 35 36 37 38 39
-				     40 41 42 43 44 45 46 47 48 49
-				     50 51 52 53 54 55 56 57 58 59
-				     60 61 62 63 64 65 66 67 68 69
-				     70 71 72 73 74 75 76 77 78 79
-				     80 81 82 83 84 85 86 87 88 89
-				     90 91 92 93 94 95 96 97 98 99
-				    100>;
-		default-brightness-level = <80>;
-		status = "disabled";
- 	};
 
 };
 
@@ -209,47 +39,6 @@ Switches:
 
 &dsp {
 	status = "okay";
-};
-
-&aud2htx {
-	status = "okay";
-};
-
-&eqos {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_eqos>;
-	phy-mode = "rgmii-id";
-	phy-handle = <&ethphy0>;
-	status = "okay";
-
-	mdio {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		ethphy0: ethernet-phy@1 {
-			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <4;
-			at803x,eee-disabled;
-			at803x,vddio-1p8v;
-#if defined(ETHERNET_ONLY_100MBIT) && (ETHERNET_ONLY_100MBIT==1)
-			at803x,100MBit;
-#endif            		};
-	};
-};
-
-&flexcan1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_flexcan1>;
-	xceiver-supply = <&reg_can1_stby>;
-	status = "okay";
-};
-
-&flexcan2 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_flexcan2>;
-	xceiver-supply = <&reg_can2_stby>;
-	pinctrl-assert-gpios = <&pca6416 3 GPIO_ACTIVE_HIGH>;
-	status = "disabled";/* can2 pin conflict with pdm: gpio low select pdm, gpio high select can2 */
 };
 
 
@@ -416,34 +205,9 @@ Switches:
 &iomuxc {
 	pinctrl-names = "default";
 
-	pinctrl_eqos: eqosgrp {
-		fsl,pins = <
-			MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC		0x3
-			MX8MP_IOMUXC_ENET_MDIO__ENET_QOS_MDIO		0x3
-			MX8MP_IOMUXC_ENET_RD0__ENET_QOS_RGMII_RD0	0x91
-			MX8MP_IOMUXC_ENET_RD1__ENET_QOS_RGMII_RD1	0x91
-			MX8MP_IOMUXC_ENET_RD2__ENET_QOS_RGMII_RD2	0x91
-			MX8MP_IOMUXC_ENET_RD3__ENET_QOS_RGMII_RD3	0x91
-			MX8MP_IOMUXC_ENET_RXC__CCM_ENET_QOS_CLOCK_GENERATE_RX_CLK	0x91
-			MX8MP_IOMUXC_ENET_RX_CTL__ENET_QOS_RGMII_RX_CTL	0x91
-			MX8MP_IOMUXC_ENET_TD0__ENET_QOS_RGMII_TD0	0x1f
-			MX8MP_IOMUXC_ENET_TD1__ENET_QOS_RGMII_TD1	0x1f
-			MX8MP_IOMUXC_ENET_TD2__ENET_QOS_RGMII_TD2	0x1f
-			MX8MP_IOMUXC_ENET_TD3__ENET_QOS_RGMII_TD3	0x1f
-			MX8MP_IOMUXC_ENET_TX_CTL__ENET_QOS_RGMII_TX_CTL	0x1f
-			MX8MP_IOMUXC_ENET_TXC__CCM_ENET_QOS_CLOCK_GENERATE_TX_CLK	0x1f
-		>;
-	};
-
 	pinctrl_pmic: pmicirq {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO03__GPIO1_IO03	0x41
-		>;
-	};
-
-	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmcgrp {
-		fsl,pins = <
-			MX8MP_IOMUXC_SD2_RESET_B__GPIO2_IO19	0x41
 		>;
 	};
 
