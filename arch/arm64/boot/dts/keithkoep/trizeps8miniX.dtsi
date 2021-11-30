@@ -30,6 +30,14 @@ Switches:
 		device_type = "memory";
 		reg = <0x0 0x40000000 0 0x80000000>;
 	};
+
+	reg_usdhc1_vmmc: usdhc1_vmmc {
+		compatible = "regulator-fixed";
+		regulator-name = "VMMC_USDHC1";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		enable-active-high;
+	};
 };
 
 &A53_0 {
