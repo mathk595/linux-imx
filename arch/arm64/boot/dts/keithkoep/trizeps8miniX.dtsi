@@ -77,7 +77,7 @@ Switches:
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>, <&pinctrl_usdhc1_gpio>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>, <&pinctrl_usdhc1_gpio>;
 	bus-width = <8>;
-	vmmc-supply = <&reg_usdhc1_vmmc>;
+//	vmmc-supply = <&reg_usdhc1_vmmc>;
 	non-removable;
 #if defined(TRIZEPS8MINI_USDHC1_VQMMC_MCU) && (TRIZEPS8MINI_USDHC1_VQMMC_MCU==1)
     vqmmc-supply = <&mcutouch>;
