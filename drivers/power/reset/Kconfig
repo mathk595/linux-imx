@@ -85,6 +85,15 @@ config POWER_RESET_GPIO
 	  If your board needs a GPIO high/low to power down, say Y and
 	  create a binding in your devicetree.
 
+config POWER_RESET_GPIO_SB
+	bool "GPIO power-off driver (SB)"
+	depends on OF_GPIO
+	help
+	  This driver supports turning off your board via a GPIO line.
+	  And takes into care the possible existing function pm_power_off
+	  If your board needs a GPIO high/low to power down, say Y and
+	  create a binding in your devicetree.
+
 config POWER_RESET_GPIO_RESTART
 	bool "GPIO restart driver"
 	depends on OF_GPIO
