@@ -106,6 +106,12 @@ Switches:
 		#reset-cells = <0>;
 	};
 
+	pcie_refclk: pcie-refclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+	};
+
 	reg_vin_fused: vin_fused {
 		compatible = "regulator-fixed";
 		regulator-name = "VIN_FUSED";
@@ -115,6 +121,16 @@ Switches:
 		regulator-max-microvolt = <12000000>;
 		regulator-always-on;
 	};
+
+	reg_3v3: 3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "+3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
 	reg_board_5v: 5v {
 		compatible = "regulator-fixed";
 		regulator-name = "+5V";
@@ -123,6 +139,7 @@ Switches:
 		regulator-always-on;
 		vin-supply = <&reg_vin_fused>;
 	};
+
 	reg_usbhost_pwr: usbhost-pwr {
 		compatible = "regulator-fixed";
 		regulator-name = "USBHOST PWR";
@@ -145,6 +162,7 @@ Switches:
 		//gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 	};
+/*
 	reg_can1_stby: regulator-can1-stby {
 		compatible = "regulator-fixed";
 		regulator-name = "can1-stby";
@@ -155,6 +173,17 @@ Switches:
 		gpio = <&gpio5 5 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 	};
+*/
+
+	reg_display_pwr: display-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "DISPLAY PWCTRL";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
 /*
 	sound-hdmi {
 		compatible = "fsl,imx-audio-cdnhdmi";
@@ -171,7 +200,7 @@ Switches:
 		status = "okay";
 	};
 */
-#if 1
+
 	sound-wm8983 {
 		compatible = "simple-audio-card";
 		simple-audio-card,name = "wm8983-audio";
@@ -207,28 +236,7 @@ Switches:
 		};
 
 	};
-#else
-	sound-wm8983 {
-		compatible = "fsl,imx-audio-wm8983";
-		model = "wm8983-audio";
-		//audio-cpu = <&sai3>;
-		audio-cpu = <&sai2>;
-		//audio-codec = <&codec>;
-		audio-codec = <&wm8983>;
-		//audio-asrc = <&easrc>;
-		//hp-det-gpio = <&gpio4 28 0>;
-		audio-routing =
-			"Headphone Jack", "HP_L",
-			"Headphone Jack", "HP_R",
-			"Ext Spk", "SPK_LP",
-			"Ext Spk", "SPK_LN",
-			"Ext Spk", "SPK_RP",
-			"Ext Spk", "SPK_RN",
-			"LINPUT1", "Mic Jack",
-			"LINPUT3", "Mic Jack",
-			"Mic Jack", "MICB";
-	};
-#endif
+
 /*
 	sound-micfil {
 		compatible = "fsl,imx-audio-micfil";
@@ -245,6 +253,8 @@ Switches:
 	backlight: backlight {
 		compatible = "pwm-legacy-backlight";
 		pwms = <&pwm1 0 100000 0>;
+		pinctrl-0 = <&pinctrl_backlight_enable>;
+		enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;
 		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
 				     10 11 12 13 14 15 16 17 18 19
 				     20 21 22 23 24 25 26 27 28 29
@@ -259,7 +269,6 @@ Switches:
 		default-brightness-level = <80>;
 		status = "disabled";
  	};
-
 };
 
 &A53_0 {
@@ -445,7 +454,7 @@ Switches:
 			};
 		};
 	};
-#if 1
+
 	wm8983: wm8983@1a {	/* Audio-Codec */
         #sound-dai-cells = <0>;
 		compatible = "kuk,wm8983";
@@ -453,33 +462,10 @@ Switches:
 		clocks = <&clk IMX8MP_CLK_SAI2_ROOT>;
 		clock-names = "mclk";
 	};
-#else
-#endif
+
 };
 
 
-&lcdif1 {
-	status = "okay";
-};
-
-&lcdif2 {
-	status = "okay";
-};
-
-&lcdif3 {
-	status = "okay";
-
-	thres-low  = <1 2>;             /* (FIFO * 1 / 2) */
-	thres-high = <3 4>;             /* (FIFO * 3 / 4) */
-};
-
-&ldb_phy {
-	status = "okay";
-};
-
-&mipi_dsi {
-	status = "okay";
-};
 
 &snvs_pwrkey {
 	status = "disabled";
@@ -574,29 +560,70 @@ Switches:
 &sai2 {
 	#sound-dai-cells = <0>;
 	/**/
-	//compatible = "fsl,imx8mm-sai-kuk"
+	//compatible = "fsl,imx8mm-sai-kuk";
 	fsl,dataline = <0 0x1 0x1>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_sai2>;
 	assigned-clocks = <&clk IMX8MP_CLK_SAI2>;
 	assigned-clock-parents = <&clk IMX8MP_AUDIO_PLL1_OUT>;
-	//assigned-clock-rates = <24576000>;
-	assigned-clock-rates = <12288000>;
+	assigned-clock-rates = <24576000>; // from trizeps8mini
+	//assigned-clock-rates = <12288000>;   // from evk
 	/**/
+	clocks = <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI3_IPG>, <&clk IMX8MP_CLK_DUMMY>,
+		 <&audio_blk_ctrl IMX8MP_CLK_AUDIO_BLK_CTRL_SAI3_MCLK1>, <&clk IMX8MP_CLK_DUMMY>,
+		 <&clk IMX8MP_CLK_DUMMY>;
+	clock-names = "bus", "mclk0", "mclk1", "mclk2", "mclk3";
+	fsl,sai-mclk-direction-output;
 	status = "okay";
 };
 
-&hdmi {
+
+/*
+&pcie_phy{
+	//ext_osc = <1>;
+	ext_osc = <0>;
 	status = "okay";
 };
 
-&hdmiphy {
+
+&pcie{
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie>;
+	//disable-gpio = <&gpio2 6 GPIO_ACTIVE_LOW>;
+	//reset-gpio = <&gpio2 7 GPIO_ACTIVE_LOW>;
+	//ext_osc = <1>;
+	disable-gpio    = <&gpio3 17 GPIO_ACTIVE_LOW>;
+	reset-gpio      = <&gpio2 19 GPIO_ACTIVE_LOW>;
+	ext_osc = <0>;
+	bus-range = <0x00 0xff>;
+	clocks = <&clk IMX8MP_CLK_HSIO_ROOT>,
+		 <&clk IMX8MP_CLK_PCIE_AUX>,
+		 <&clk IMX8MP_CLK_HSIO_AXI>,
+		//<&clk IMX8MP_CLK_PCIE_ROOT>;
+		<&pcie_refclk>;
+	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+
+	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>,
+			  <&clk IMX8MP_CLK_PCIE_AUX>;
+	assigned-clock-rates = <500000000>, <10000000>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>,
+				 <&clk IMX8MP_SYS_PLL2_50M>;
+
 	status = "okay";
+};
+*/
+
+
+&pwm1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_backlight_pwm1>;
+	status = "disabled";
 };
 
 
 &iomuxc {
 	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
 
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
@@ -767,9 +794,31 @@ Switches:
 		>;
 	};
 
+	pinctrl_pcie: pciegrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_I2C4_SCL__PCIE_CLKREQ_B		0x61 /* open drain, pull up */
+			//MX8MP_IOMUXC_SD1_DATA4__GPIO2_IO06		0x41
+			//MX8MP_IOMUXC_SD1_DATA5__GPIO2_IO07		0x41
+			//MX8MP_IOMUXC_NAND_WE_B__GPIO3_IO17			0x41
+			//MX8MP_IOMUXC_SD2_RESET_B__GPIO2_IO19		0x41
+			MX8MP_IOMUXC_NAND_CE1_B__GPIO3_IO02			0x41 // PCIE_WAKE
+			MX8MP_IOMUXC_NAND_DQS__GPIO3_IO14			0x41 //
+		>;
+	};
+
+	pinctrl_backlight_enable: backlight-enable {
+		fsl,pins = < SPIN73_GPIO		PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
+	};
+
+	pinctrl_backlight_pwm1: pwm-backlight {
+		fsl,pins = < SPIN77_PWM1_OUT		PAD_GPIO >;	/* BACKLIGHT_PWM */
+	};
+
+
 
 };
 
+/*
 &vpu_g1 {
 	status = "okay";
 };
@@ -801,4 +850,4 @@ Switches:
 &mix_gpu_ml {
 	status = "okay";
 };
-
+*/
