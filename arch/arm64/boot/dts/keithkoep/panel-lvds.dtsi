@@ -9,7 +9,11 @@ Remarks:
 Defines:
 */
 
+#ifndef PANEL_LVDS_DTSI
+#define PANEL_LVDS_DTSI
+
 / {
+/*
 	reg_display_pwr: display-pwr {
 		compatible = "regulator-fixed";
 		regulator-name = "DISPLAY PWCTRL";
@@ -18,7 +22,7 @@ Defines:
 		regulator-always-on;
 		vin-supply = <&reg_vin_fused>;
 	};
-
+*/
 };
 
 / {
@@ -52,8 +56,8 @@ Defines:
 
 };
 
+#if 1
 &iomuxc {
-
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
 			SPIN100_GPIO1_IO05	PAD_GPIO	/* LCD1_VCC_ON */
@@ -61,7 +65,7 @@ Defines:
 		>;
 	};
 };
-
+#endif
 
 &lcdif1 {
 	status = "okay";
@@ -85,8 +89,21 @@ Defines:
 		};
 	};
 };
-
+/*
 &ldb_phy {
 	status = "okay";
 };
 
+&panel_lvds1 {
+	status = "okay";
+};
+
+&backlight {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
+*/
+#endif
