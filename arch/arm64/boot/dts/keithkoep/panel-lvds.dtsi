@@ -13,7 +13,7 @@ Defines:
 #define PANEL_LVDS_DTSI
 
 / {
-/*
+
 	reg_display_pwr: display-pwr {
 		compatible = "regulator-fixed";
 		regulator-name = "DISPLAY PWCTRL";
@@ -22,18 +22,7 @@ Defines:
 		regulator-always-on;
 		vin-supply = <&reg_vin_fused>;
 	};
-*/
-/*
-	reserved@board {
-		compatible      = "kk,trizeps7-reserved";
-		kk,gpio-names   = "LVDS-EN","BL-EN","PWM-EN";
-		kk,os-gpios     = < 
-			spin100_gpio   (KK_RSRVD_OUT_HI)
-			spin114_gpio   (KK_RSRVD_OUT_HI)
-			spin77_gpio    (KK_RSRVD_OUT_HI)
-		>;
-	};
-*/
+
 };
 
 / {
@@ -67,17 +56,15 @@ Defines:
 
 };
 
-#if 1
+
 &iomuxc {
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
 			SPIN100_GPIO1_IO05	PAD_GPIO	/* LCD1_VCC_ON */
-			//SPIN77_GPIO1_IO01	PAD_GPIO
-			//SPIN114_GPIO4_IO14	PAD_GPIO
 		>;
 	};
 };
-#endif
+
 
 &lcdif1 {
 	status = "okay";
@@ -101,21 +88,5 @@ Defines:
 		};
 	};
 };
-/*
-&ldb_phy {
-	status = "okay";
-};
 
-&panel_lvds1 {
-	status = "okay";
-};
-
-&backlight {
-	status = "okay";
-};
-
-&pwm1 {
-	status = "okay";
-};
-*/
 #endif

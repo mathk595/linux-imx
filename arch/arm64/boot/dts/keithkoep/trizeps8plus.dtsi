@@ -174,16 +174,6 @@ Switches:
 		enable-active-high;
 	};
 */
-
-	reg_display_pwr: display-pwr {
-		compatible = "regulator-fixed";
-		regulator-name = "DISPLAY PWCTRL";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-always-on;
-		vin-supply = <&reg_vin_fused>;
-	};
-
 /*
 	sound-hdmi {
 		compatible = "fsl,imx-audio-cdnhdmi";
@@ -254,7 +244,6 @@ Switches:
 		compatible = "pwm-legacy-backlight";
 		pwms = <&pwm1 0 100000 0>;
 		pinctrl-0 = <&pinctrl_backlight_enable>;
-		//enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;
 		enable-gpios = <spin114_gpio GPIO_ACTIVE_HIGH>;
 		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
 				     10 11 12 13 14 15 16 17 18 19
@@ -809,7 +798,6 @@ Switches:
 	};
 
 	pinctrl_backlight_enable: backlight-enable {
-		//fsl,pins = < SPIN73_GPIO		PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
 		fsl,pins = < SPIN114_GPIO		PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 114 */
 	};
 
