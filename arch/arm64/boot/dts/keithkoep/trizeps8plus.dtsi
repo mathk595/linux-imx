@@ -254,7 +254,8 @@ Switches:
 		compatible = "pwm-legacy-backlight";
 		pwms = <&pwm1 0 100000 0>;
 		pinctrl-0 = <&pinctrl_backlight_enable>;
-		enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;
+		//enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;
+		enable-gpios = <spin114_gpio GPIO_ACTIVE_HIGH>;
 		brightness-levels = < 0  1  2  3  4  5  6  7  8  9
 				     10 11 12 13 14 15 16 17 18 19
 				     20 21 22 23 24 25 26 27 28 29
@@ -808,7 +809,8 @@ Switches:
 	};
 
 	pinctrl_backlight_enable: backlight-enable {
-		fsl,pins = < SPIN73_GPIO		PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
+		//fsl,pins = < SPIN73_GPIO		PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
+		fsl,pins = < SPIN114_GPIO		PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 114 */
 	};
 
 	pinctrl_backlight_pwm1: pwm-backlight {

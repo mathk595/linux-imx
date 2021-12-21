@@ -23,6 +23,17 @@ Defines:
 		vin-supply = <&reg_vin_fused>;
 	};
 */
+/*
+	reserved@board {
+		compatible      = "kk,trizeps7-reserved";
+		kk,gpio-names   = "LVDS-EN","BL-EN","PWM-EN";
+		kk,os-gpios     = < 
+			spin100_gpio   (KK_RSRVD_OUT_HI)
+			spin114_gpio   (KK_RSRVD_OUT_HI)
+			spin77_gpio    (KK_RSRVD_OUT_HI)
+		>;
+	};
+*/
 };
 
 / {
@@ -61,7 +72,8 @@ Defines:
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
 			SPIN100_GPIO1_IO05	PAD_GPIO	/* LCD1_VCC_ON */
-			SPIN67_GPIO4_IO08	PAD_GPIO	/* LCD2_VCC_ON */
+			//SPIN77_GPIO1_IO01	PAD_GPIO
+			//SPIN114_GPIO4_IO14	PAD_GPIO
 		>;
 	};
 };
