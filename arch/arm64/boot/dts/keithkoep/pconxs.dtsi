@@ -39,7 +39,8 @@ Defines:
 	};
 		
 	pinctrl_backlight_enable: backlight-enable {
-		fsl,pins = < SPIN73_GPIO	    PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
+		//fsl,pins = < SPIN73_GPIO	    PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
+		fsl,pins = < SPIN114_GPIO	    PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
 	};
 
 #if !defined (PCONXS_NOT_USE_PCIE_PWR) || (PCONXS_NOT_USE_PCIE_PWR==0)
@@ -170,7 +171,8 @@ Defines:
 &backlight {
 	status = "okay";
 	pinctrl-0 = <&pinctrl_backlight_enable>;
-	enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;    
+	//enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;    
+	enable-gpios = <&gpio4 14 GPIO_ACTIVE_HIGH>;    
 	brightness-levels = < 100 
 				99 98 97 96 95 94 93 92 91 90
 				89 88 87 86 85 84 83 82 81 80
