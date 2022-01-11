@@ -1,11 +1,10 @@
 /*
- * Copyright 2021 Garz & Fricke GmbH
+ * Copyright 2021 Keith & Koep GmbH
  *
  */
 
 /*
 Remarks:
-    - Use ETHERNET_ONLY_100MBIT for dual espresso board
 Defines:
 */
 
@@ -57,11 +56,21 @@ Defines:
 };
 
 
+#define TOUCH_INT	SPIN45_GPIO
+#define touch_int_parent  &gpio3
+#define touch_int_pin     4
+
 &iomuxc {
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
 			SPIN100_GPIO1_IO05	PAD_GPIO	/* LCD1_VCC_ON */
 		>;
+	};
+
+	pinctrl_captouch: captouchgrp {
+		fsl,pins = <
+					 TOUCH_INT  		PAD_GPIO /* IRQ */
+			>;
 	};
 };
 
@@ -86,6 +95,29 @@ Defines:
 				remote-endpoint = <&panel_lvds1_in>;
 			};
 		};
+	};
+};
+
+
+
+&i2c2 {
+	touch: edt-ft5x06@38 {
+		compatible = "edt,edt-ft5x06", "edt,edt-ft5406";
+		reg = <0x38>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_captouch>;
+		enable_wakeup = "true";
+		interrupt-parent = <touch_int_parent>;
+		interrupts = <touch_int_pin IRQ_TYPE_LEVEL_LOW>;
+		touch-threshold     = <30>;
+		touch-gain          = <3>;
+		touch-offset        = <0>;
+		touch-report-rate   = <8>;
+		yreverse            = "true";
+		xreverse            = "true";
+ 		xres                = <1024>;
+ 		yres	            = <600>;
+		linux,wakeup;
 	};
 };
 
