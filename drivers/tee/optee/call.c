@@ -140,7 +140,7 @@ u32 optee_do_call_with_arg(struct tee_context *ctx, phys_addr_t parg)
 	/* Initialize waiter */
 	optee_cq_wait_init(&optee->call_queue, &w);
 
-#if defined(CONFIG_HAVE_IMX_BUSFREQ)
+#if defined(CONFIG_HAVE_IMX_BUSFREQ) && defined(CONFIG_PM)
 	/*
 	 * Request Busfreq to HIGH to prevent DDR self-refresh while
 	 * executing Secure stuff
@@ -177,7 +177,7 @@ u32 optee_do_call_with_arg(struct tee_context *ctx, phys_addr_t parg)
 
 	optee_rpc_finalize_call(&call_ctx);
 
-#if defined(CONFIG_HAVE_IMX_BUSFREQ)
+#if defined(CONFIG_HAVE_IMX_BUSFREQ) && defined(CONFIG_PM)
 	/*
 	 * Release Busfreq from HIGH
 	 */

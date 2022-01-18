@@ -141,10 +141,12 @@ struct xf_message *xf_msg_received(struct xf_proxy *proxy,
  */
 u32 icm_intr_send(struct xf_proxy *proxy, u32 msg)
 {
+#ifdef CONFIG_PM
 	struct fsl_dsp *dsp_priv = container_of(proxy,
 					struct fsl_dsp, proxy);
 
 	MU_SendMessageTimeout(dsp_priv->mu_base_virtaddr, 0, msg, 5000);
+#endif
 	return 0;
 }
 
@@ -152,6 +154,7 @@ int icm_intr_extended_send(struct xf_proxy *proxy,
 				u32 msg,
 				struct dsp_ext_msg *ext_msg)
 {
+#ifdef CONFIG_PM
 	struct fsl_dsp *dsp_priv = container_of(proxy,
 					struct fsl_dsp, proxy);
 	struct device *dev = dsp_priv->dev;
@@ -164,6 +167,7 @@ int icm_intr_extended_send(struct xf_proxy *proxy,
 	MU_SendMessageTimeout(dsp_priv->mu_base_virtaddr, 1, ext_msg->phys, 5000);
 	MU_SendMessageTimeout(dsp_priv->mu_base_virtaddr, 2, ext_msg->size, 5000);
 	MU_SendMessageTimeout(dsp_priv->mu_base_virtaddr, 0, msg, 5000);
+#endif
 
 	return 0;
 }
@@ -224,6 +228,7 @@ long icm_ack_wait(struct xf_proxy *proxy, u32 msg)
 
 irqreturn_t fsl_dsp_mu_isr(int irq, void *dev_id)
 {
+#ifdef CONFIG_PM
 	struct xf_proxy *proxy = dev_id;
 	struct fsl_dsp *dsp_priv = container_of(proxy,
 					struct fsl_dsp, proxy);
@@ -265,6 +270,7 @@ irqreturn_t fsl_dsp_mu_isr(int irq, void *dev_id)
 		dev_dbg(dev, "Received false ICM intr 0x%08x\n",
 							msghdr.allbits);
 	}
+#endif
 
 	return IRQ_HANDLED;
 }
