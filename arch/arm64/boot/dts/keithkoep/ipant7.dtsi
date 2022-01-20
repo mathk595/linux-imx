@@ -14,6 +14,7 @@
         pinctrl_hog: hoggrp {
 		fsl,pins = < 
 	                TRIZEPS_HOGGRP_COMMON
+			        SPIN100_GPIO  		PAD_GPIO_PD   /* Display Enable             */			
 				SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                  */
 			    	SPIN123_GPIO		PAD_GPIO_PU   /* Camera Pwdn SODIMM Pin 123 */
      				SPIN125_GPIO		PAD_GPIO_PU   /* Camera nRST SODIMM Pin 125 */
@@ -86,7 +87,7 @@
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_display_enable>;
+/*		pinctrl-0 = <&pinctrl_display_enable>; */
 		gpio = <spin100_gpio 0>;
 		enable-active-high;
 		regulator-always-on;
@@ -121,12 +122,13 @@
 
   	reserved@board {
         compatible      = "kk,trizeps7-reserved";
-        kk,gpio-names   = "Cam-nRST","EN-Audio","Cam-PWDN","PWM-BL";
+        kk,gpio-names   = "Cam-nRST","EN-Audio","Cam-PWDN","PWM-BL", "DISPLAY_ENABLE";
         kk,os-gpios     = < 
                             spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST  gpio1 6  */	
 			    spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En  gpio1 8  */
                             spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3  */
-                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* PWM Backl gpio3 22 */			    
+                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* PWM Backl gpio3 22 */
+			    spin100_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 5  */
                         >;
     	};
 	
