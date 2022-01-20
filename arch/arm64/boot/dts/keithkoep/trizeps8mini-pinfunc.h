@@ -38,7 +38,7 @@
 #define SPIN98_SJC_FAIL                                    0x028 0x290 0x000 0x7 0x0
 #define SPIN77_GPIO1_IO1                                   0x02C 0x294 0x000 0x0 0x0
 #define SPIN77_GPIO                                        0x02C 0x294 0x000 0x0 0x0
-#define spin77_gpio     &gpio1 1
+#define spin77_gpio                                        &gpio1 1
 #define SPIN77_PWM1_OUT                                    0x02C 0x294 0x000 0x1 0x0
 #define SPIN77_ANAMIX_REF_CLK_24M                          0x02C 0x294 0x4BC 0x5 0x0
 #define SPIN77_CCMSRCGPCMIX_EXT_CLK2                       0x02C 0x294 0x000 0x6 0x0
@@ -53,18 +53,18 @@
 #define spin123_gpio    &gpio1 3
 #define CAMERA_PWDN                                        0x034 0x29C 0x000 0x0 0x0
 #define camera_pwdn    &gpio1 3
-#define SPIN123_USDHC1_VSELECT                              0x034 0x29C 0x000 0x1 0x0
-#define SPIN123_SDMA1_EXT_EVENT0                            0x034 0x29C 0x000 0x5 0x0
-#define SPIN123_ANAMIX_XTAL_OK                              0x034 0x29C 0x000 0x6 0x0
-#define SPIN123_SJC_DONE                                    0x034 0x29C 0x000 0x7 0x0
-#define LVDS_EN_GPIO1_IO4                                   0x038 0x2A0 0x000 0x0 0x0
-#define LVDS_EN_GPIO                                       0x038 0x2A0 0x000 0x0 0x0
-#define lvds_en_gpio    &gpio1 4
-#define LVDS_EN_USDHC2_VSELECT                              0x038 0x2A0 0x000 0x1 0x0
-#define LVDS_EN_SDMA1_EXT_EVENT1                            0x038 0x2A0 0x000 0x5 0x0
-#define LVDS_EN_ANAMIX_XTAL_OK_LV                           0x038 0x2A0 0x000 0x6 0x0
-#define LVDS_EN_USDHC1_TEST_TRIG                            0x038 0x2A0 0x000 0x7 0x0
-#define SPIN100_GPIO1_IO5                                   0x03C 0x2A4 0x000 0x0 0x0
+#define SPIN123_USDHC1_VSELECT                             0x034 0x29C 0x000 0x1 0x0
+#define SPIN123_SDMA1_EXT_EVENT0                           0x034 0x29C 0x000 0x5 0x0
+#define SPIN123_ANAMIX_XTAL_OK                             0x034 0x29C 0x000 0x6 0x0
+#define SPIN123_SJC_DONE                                   0x034 0x29C 0x000 0x7 0x0
+#define LVDS_EN_GPIO1_IO4                                  MX8MM_IOMUXC_GPIO1_IO04_GPIO1_IO4      /* 0x038 0x2A0 0x000 0x0 0x0 */
+#define LVDS_EN_GPIO                                       MX8MM_IOMUXC_GPIO1_IO04_GPIO1_IO4      /* 0x038 0x2A0 0x000 0x0 0x0 */
+#define lvds_en_gpio                                       &gpio1 4
+#define LVDS_EN_USDHC2_VSELECT                             MX8MM_IOMUXC_GPIO1_IO04_USDHC2_VSELECT /* 0x038 0x2A0 0x000 0x1 0x0 */
+#define LVDS_EN_SDMA1_EXT_EVENT1                           0x038 0x2A0 0x000 0x5 0x0
+#define LVDS_EN_ANAMIX_XTAL_OK_LV                          0x038 0x2A0 0x000 0x6 0x0
+#define LVDS_EN_USDHC1_TEST_TRIG                           0x038 0x2A0 0x000 0x7 0x0
+#define SPIN100_GPIO1_IO5                                  0x03C 0x2A4 0x000 0x0 0x0
 #define SPIN100_GPIO                                       0x03C 0x2A4 0x000 0x0 0x0
 #define spin100_gpio    &gpio1 5
 #define DISPLAY_ENABLE                                       0x03C 0x2A4 0x000 0x0 0x0
