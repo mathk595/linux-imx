@@ -616,9 +616,9 @@ Switches:
 		pagesize = <32>;
 	};
 
-	rtc@32 {
+	rtc@52 {
 		compatible = "microcrystal,rv3028";
-		reg = <0x32>;
+		reg = <0x52>;
 		trickle-diode-disable;
 	};
 
