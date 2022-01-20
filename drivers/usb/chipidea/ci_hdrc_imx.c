@@ -175,7 +175,8 @@ static struct imx_usbmisc_data *usbmisc_get_init_data(struct device *dev)
 			&data->emp_curr_control);
 	of_property_read_u32(np, "samsung,picophy-dc-vol-level-adjust",
 			&data->dc_vol_level_adjust);
-
+	of_property_read_u32(np, "disable-vbus-comparator",
+			&data->disable_vbus_comparator);
 	return data;
 }
 

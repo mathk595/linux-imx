@@ -118,6 +118,8 @@
 #define MX7D_USB_OTG_PHY_CFG2_CHRG_VDATSRCENB0	BIT(2)
 #define MX7D_USB_OTG_PHY_CFG2_CHRG_DCDENB	BIT(3)
 #define MX7D_USB_OTG_PHY_CFG2_DRVVBUS0		BIT(16)
+#define MX7D_USB_OTG_PHY_CFG2_VBUSVLDEXT	BIT(15)
+#define MX7D_USB_OTG_PHY_CFG2_VBUSVLDEXTSEL0    BIT(14)
 
 #define MX7D_USB_OTG_PHY_CFG2		0x34
 
@@ -621,7 +623,7 @@ static int usbmisc_imx7d_init(struct imx_usbmisc_data *data)
 {
 	struct imx_usbmisc *usbmisc = dev_get_drvdata(data->dev);
 	unsigned long flags;
-	u32 reg;
+	u32 reg, reg1;
 
 	if (data->index >= 1)
 		return -EINVAL;
@@ -670,8 +672,20 @@ static int usbmisc_imx7d_init(struct imx_usbmisc_data *data)
 			reg &= ~TXVREFTUNE0_MASK;
 			reg |= (data->dc_vol_level_adjust << TXVREFTUNE0_BIT);
 		}
-
 		writel(reg, usbmisc->base + MX7D_USB_OTG_PHY_CFG1);
+		reg1 = readl(usbmisc->base + MX7D_USB_OTG_PHY_CFG2);
+		if( data->disable_vbus_comparator )
+		{
+		  printk("usbmisc_imx.c Disable VBUS Comparator\n");		  
+		  reg1 &=  0xfffeffff; /* ~MX7D_USB_OTG_PHY_CFG2_DRVVBUS0; */
+		  reg1 |=  MX7D_USB_OTG_PHY_CFG2_VBUSVLDEXT;
+		  reg1 |=  MX7D_USB_OTG_PHY_CFG2_VBUSVLDEXTSEL0;
+		  writel(reg1, usbmisc->base + MX7D_USB_OTG_PHY_CFG2);
+		  reg1 = readl(usbmisc->base + MX7D_USB_OTG_PHY_CFG2);		  
+		  printk("usbmisc_imx.c Disable VBUS Comparator PHY_CFG1:0x%08x PHY_CFG2:0x%08x\n", reg, reg1);		  		  
+		  
+		}		
+
 	}
 
 	spin_unlock_irqrestore(&usbmisc->lock, flags);
@@ -687,6 +701,18 @@ static int imx7d_charger_secondary_detection(struct imx_usbmisc_data *data)
 	struct usb_phy *usb_phy = data->usb_phy;
 	int val;
 	unsigned long flags;
+#define UPDATE 1
+#if UPDATE
+	/* Clear VDATSRCENB0 to disable VDP_SRC and IDM_SNK required by BC 1.2 spec */
+	spin_lock_irqsave(&usbmisc->lock, flags);
+	val = readl(usbmisc->base + MX7D_USB_OTG_PHY_CFG2);
+	val &= ~MX7D_USB_OTG_PHY_CFG2_CHRG_VDATSRCENB0;
+	writel(val, usbmisc->base + MX7D_USB_OTG_PHY_CFG2);
+	spin_unlock_irqrestore(&usbmisc->lock, flags);
+
+	/* TVDMSRC_DIS */
+	msleep(20);
+#endif
 
 	/* VDM_SRC is connected to D- and IDP_SINK is connected to D+ */
 	spin_lock_irqsave(&usbmisc->lock, flags);
@@ -696,9 +722,12 @@ static int imx7d_charger_secondary_detection(struct imx_usbmisc_data *data)
 			MX7D_USB_OTG_PHY_CFG2_CHRG_CHRGSEL,
 				usbmisc->base + MX7D_USB_OTG_PHY_CFG2);
 	spin_unlock_irqrestore(&usbmisc->lock, flags);
-
+#if UPDATE
+	/* TVDMSRC_ON */
+	msleep(40);
+#else
 	usleep_range(1000, 2000);
-
+#endif
 	/*
 	 * Per BC 1.2, check voltage of D+:
 	 * DCP: if greater than VDAT_REF;
@@ -800,8 +829,12 @@ static int imx7d_charger_primary_detection(struct imx_usbmisc_data *data)
 				usbmisc->base + MX7D_USB_OTG_PHY_CFG2);
 	spin_unlock_irqrestore(&usbmisc->lock, flags);
 
+#if UPDATE
+	/* TVDPSRC_ON */
+	msleep(40);
+#else
 	usleep_range(1000, 2000);
-
+#endif
 	/* Check if D- is less than VDAT_REF to determine an SDP per BC 1.2 */
 	val = readl(usbmisc->base + MX7D_USB_OTG_PHY_STATUS);
 	if (!(val & MX7D_USB_OTG_PHY_STATUS_CHRGDET)) {
@@ -881,7 +914,7 @@ static void usbmisc_imx7d_vbus_comparator_on(struct imx_usbmisc_data *data,
 	 * still powered, even in Suspend or Sleep mode.
 	 */
 	val = readl(usbmisc->base + MX7D_USB_OTG_PHY_CFG2);
-	if (on)
+	if (on && (data->disable_vbus_comparator==0) )
 		val |= MX7D_USB_OTG_PHY_CFG2_DRVVBUS0;
 	else
 		val &= ~MX7D_USB_OTG_PHY_CFG2_DRVVBUS0;
