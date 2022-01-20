@@ -12,7 +12,11 @@ Defines:
 #include "imx8mm.dtsi"
 #include "myon2-pinfunc.h"
 
-#define MYON2_HOGGRP_COMMON     PIN0_32_GPIO   PAD_GPIO_PD      /* nReset_Out   */
+
+#define MYON2_HOGGRP_COMMON     PIN0_32_GPIO   PAD_GPIO_PD  \
+                                MX8MM_IOMUXC_GPIO1_IO10_USB1_OTG_ID  MX8MM_PAD_GPIO_PU
+  /* nReset_Out   */
+  /* OTG1_ID      */
 
 / {
 	firmware {
@@ -334,7 +338,7 @@ Defines:
 	pinctrl-0 = <&pinctrl_uart2>;
 	assigned-clocks = <&clk IMX8MM_CLK_UART2>;
 	assigned-clock-parents = <&clk IMX8MM_SYS_PLL1_80M>;
-    fsl,uart-has-rtscts;
+        fsl,uart-has-rtscts;
 	status = "disabled";
 };
 
@@ -357,27 +361,36 @@ Defines:
 };
 
 
+/* usbmisc_imx.c Disable VBUS Comparator
+   PHY_CFG1:0x357371c5
+   PHY_CFG2:0x901cc020
+*/
+
 &usbotg1 {
 	dr_mode = "otg";
-/*	hnp-disable;
- *	srp-disable;
- *	adp-disable;
- *	usb-role-switch;
- */
+/*	
+	dr_mode = "peripheral";
+	usb-role-switch;
+	hnp-disable;
+	srp-disable;
+	adp-disable;
+*/
         extcon = <0>;
 	samsung,picophy-pre-emp-curr-control = <3>;
-	samsung,picophy-dc-vol-level-adjust = <7>;
+	samsung,picophy-dc-vol-level-adjust  = <7>;
+/*	disable-vbus-comparator              = <1>; */
 	status = "okay";
 };
 
 &usbotg2 {
-	dr_mode = "host";
+	dr_mode = "host"; 
+/*	dr_mode = "otg"; */
 	hnp-disable;
 	srp-disable;
-	adp-disable;
-	usb-role-switch;
-	picophy,pre-emp-curr-control = <3>;
-	picophy,dc-vol-level-adjust = <7>;
+	adp-disable; 
+	usb-role-switch; 
+	samsung,picophy-pre-emp-curr-control = <3>;
+	samsung,picophy-dc-vol-level-adjust  = <7>;
 	status = "okay";
 };
 
@@ -557,17 +570,17 @@ Defines:
 		clocks = <&clk IMX8MM_CLK_SAI2_ROOT>;
 		clock-names = "mclk";		
 	};
-#if 0
-	sn65dsi84@2c {
-		status = "ok";
-		compatible = "ti,sn65dsi84";
+
+	sn65dsi84-legacy@2c {
+		status = "disabled";
+		compatible = "ti,sn65dsi84-legacy";
 		reg = <0x2c>;
 		enable-gpios =<pin0_72_gpio GPIO_ACTIVE_HIGH>;
 					
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3_sn65dsi84_en>;
 	};
-#endif    
+
 };
 
 

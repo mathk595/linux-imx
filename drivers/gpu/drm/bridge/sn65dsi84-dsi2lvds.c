@@ -187,7 +187,7 @@ static const struct i2c_device_id sn65dsi84_id[] = {
 MODULE_DEVICE_TABLE(i2c, sn65dsi84_id);
 
 static struct of_device_id sn65dsi84_match_table[] = {
-	{ .compatible = "ti,sn65dsi84",},
+	{ .compatible = "ti,sn65dsi84-legacy",},
 	{ },
 };
 
@@ -195,7 +195,7 @@ static struct i2c_driver sn65dsi84_i2c_driver = {
 	.probe = sn65dsi84_probe,
 	.remove = sn65dsi84_remove,
 	.driver = {
-		.name = "sn65dsi84",
+		.name = "sn65dsi84-legacy",
 		.owner = THIS_MODULE,
 		.of_match_table = sn65dsi84_match_table,
 	},

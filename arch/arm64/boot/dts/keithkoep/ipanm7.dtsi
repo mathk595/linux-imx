@@ -10,8 +10,12 @@
 
     pinctrl_hog: hoggrp {
 		fsl,pins = < 
-					MYON2_HOGGRP_COMMON			            
+			    MYON2_HOGGRP_COMMON
+#if USB1_OTG_FUNC == OTG_HOST			    			    
 		            PIN1_20_GPIO   PAD_GPIO_PU      /* USB SW SEL   */
+#else
+		            PIN1_20_GPIO   PAD_GPIO_PD      /* USB SW SEL   */
+#endif
 		       >;
 	};
 
@@ -91,7 +95,11 @@
         kk,gpio-names   = "nRESET_OUT", "USB_SWSEL-HOST";
         kk,os-gpios     = < 
                             pin0_32_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* nRESET_OUT  */
+#if USB1_OTG_FUNC == OTG_HOST			    
                             pin1_20_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* USB SW SEL  */
+#else
+                            pin1_20_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* USB SW SEL  */
+#endif
                         >;
     };
 
@@ -145,16 +153,21 @@
 	disable-over-current;
 #if USB1_OTG_FUNC == OTG_HOST	
 	dr_mode = "host";
-#endif
+#else
 #if USB1_OTG_FUNC == OTG_OTG
 	dr_mode = "otg";
+#else
+        dr_mode = "peripheral";
 #endif
+#endif
+
 };
 
 #if !defined (__DTS_IMX8MN_PINFUNC_H)
 &usbotg2 {
 	vbus-supply = <&reg_usbhost_pwr>; 
-	disable-over-current; 
+	disable-over-current;
+	status = "disabled";
 };
 #endif
 
@@ -203,7 +216,8 @@
 };
 
 &i2c3 {
-	sn65dsi84@2c {
+	sn65dsi84-legacy@2c {
+	        status = "okay";
 		sn65dsi84,addresses = <	0x09 0x0A 0x0B 0x0D 0x10 0x11 0x12  
 					0x18 	            0x20 0x21  
 					0x24 0x25  	    0x28 0x29
