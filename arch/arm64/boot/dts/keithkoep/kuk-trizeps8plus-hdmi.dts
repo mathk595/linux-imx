@@ -43,3 +43,11 @@
 	status = "okay";
 };
 
+// HDMI Audio
+&aud2htx {
+	status = "okay";
+};
+
+&sound_hdmi {
+	status = "okay";
+};

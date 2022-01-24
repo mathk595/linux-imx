@@ -182,8 +182,8 @@ Switches:
 		enable-active-high;
 	};
 */
-/*
-	sound-hdmi {
+
+  sound_hdmi: sound-hdmi {
 		compatible = "fsl,imx-audio-cdnhdmi";
 		model = "audio-hdmi";
 		audio-cpu = <&aud2htx>;
@@ -195,9 +195,8 @@ Switches:
 				<48000>,
 				<96000>,
 				<192000>;
-		status = "okay";
+		status = "disabled";
 	};
-*/
 
 
 	sound-wm8983 {
@@ -290,11 +289,12 @@ Switches:
 &dsp {
 	status = "okay";
 };
+*/
 
 &aud2htx {
-	status = "okay";
+	#sound-dai-cells = <0>;
 };
-*/
+
 &eqos {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_eqos>;
@@ -795,7 +795,8 @@ Switches:
 
 };
 
-
+// VPU
+/*
 &vpu_g1 {
 	status = "okay";
 };
@@ -808,13 +809,14 @@ Switches:
 	status = "okay";
 };
 
-/*
+
 &vpu_v4l2 {
 	status = "okay";
 };
 */
 
 // GPU
+/*
 &gpu_2d {
 	status = "okay";
 };
@@ -830,3 +832,4 @@ Switches:
 &mix_gpu_ml {
 	status = "okay";
 };
+*/
