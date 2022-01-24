@@ -8,7 +8,9 @@ dtb-y +=	kuk-trizeps8mini-ipant7_v2.dtb \
 			kuk-sbcsom-hdmi.dtb \
             kuk-trizeps8mini.dtb \
 			kuk-trizeps8plus-lvds.dtb \
+			kuk-trizeps8plus-lvds-gpu.dtb \
 			kuk-trizeps8plus-hdmi.dtb \
+			kuk-trizeps8plus-hdmi-gpu.dtb \
 
 #			kuk-trizeps8-ipant10.dtb \
 #			kuk-trizeps8mini-ipant10.dtb \
