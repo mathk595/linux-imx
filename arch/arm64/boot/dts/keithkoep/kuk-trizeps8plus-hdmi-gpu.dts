@@ -44,7 +44,6 @@
 };
 
 // HDMI Audio
-/*
 &aud2htx {
 	status = "okay";
 };
@@ -52,7 +51,6 @@
 &sound_hdmi {
 	status = "okay";
 };
-*/
 
 // GPU
 &gpu_2d {
