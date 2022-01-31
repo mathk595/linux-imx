@@ -796,7 +796,6 @@ Switches:
 };
 
 // VPU
-/*
 &vpu_g1 {
 	status = "okay";
 };
@@ -809,7 +808,7 @@ Switches:
 	status = "okay";
 };
 
-
+/*
 &vpu_v4l2 {
 	status = "okay";
 };
