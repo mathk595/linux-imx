@@ -105,11 +105,17 @@
 
 &usbotg1 {
 	disable-over-current;
-#if USB1_OTG_FUNC == OTG_HOST	
+#if USB1_OTG_FUNC == OTG_HOST
+#warning "Set USB1 to HOST"
 	dr_mode = "host";
-#endif
+#else
 #if USB1_OTG_FUNC == OTG_OTG
+#warning "Set USB1 to OTG"
 	dr_mode = "otg";
+#else
+#warning "Set USB1 to peripheral"
+        dr_mode = "peripheral";
+#endif
 #endif
 };
 
