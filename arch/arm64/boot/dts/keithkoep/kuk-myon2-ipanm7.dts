@@ -12,8 +12,8 @@
 #define  OTG_OTG                 2
 
 #define  USB1_OTG_FUNC           OTG_SLAVE  /* iPANM7 should tie ID to GND if USB Slave is not connected
-                                             *  Until this patch is applied USB can be HOST Only
-					     */
+                                             *  Until this patch is applied USB can be HOST Only */
+#define  USB1_OTG_ID_PIN_PD	            /* if set pull down OTG_ID Pin, else pullup this pin */
 
 #include "myon2.dtsi"
 #include "ipanm7.dtsi"

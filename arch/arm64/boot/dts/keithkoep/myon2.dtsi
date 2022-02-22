@@ -12,9 +12,16 @@ Defines:
 #include "imx8mm.dtsi"
 #include "myon2-pinfunc.h"
 
+#ifdef  USB1_OTG_ID_PIN_PD
+
+#define MYON2_HOGGRP_COMMON     PIN0_32_GPIO   PAD_GPIO_PD  \
+                                MX8MM_IOMUXC_GPIO1_IO10_USB1_OTG_ID  MX8MM_PAD_GPIO_PD
+#else
 
 #define MYON2_HOGGRP_COMMON     PIN0_32_GPIO   PAD_GPIO_PD  \
                                 MX8MM_IOMUXC_GPIO1_IO10_USB1_OTG_ID  MX8MM_PAD_GPIO_PU
+#endif
+
   /* nReset_Out   */
   /* OTG1_ID      */
 
