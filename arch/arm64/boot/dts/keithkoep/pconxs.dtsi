@@ -11,7 +11,8 @@ Remarks:
 
 Defines:
     PCONXS_NOT_USE_PCIE_PWR         SPIN113 is used on pConXS V2 to switch power. Since this pin is not connected on V1 no need to actually set this.
-
+	PCONXS_V1 on pConXS V1 pcie-power can not be switched separately but
+	          3V3_AUX can be switched by SPIN43 aka. GPIO1_OI7
 */
 
 &iomuxc {
@@ -42,9 +43,13 @@ Defines:
 		fsl,pins = < SPIN73_GPIO	    PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
 	};
 
-#if !defined (PCONXS_NOT_USE_PCIE_PWR) || (PCONXS_NOT_USE_PCIE_PWR==0)
+#if 1 //!defined (PCONXS_NOT_USE_PCIE_PWR) || (PCONXS_NOT_USE_PCIE_PWR==0)
 	pinctrl_pcie_enable: pcie-enable 	{
+#ifdef PCONXS_V1
+		fsl,pins = < SPIN43_GPIO1_IO7   PAD_GPIO_PU >;
+#else
 		fsl,pins = < SPIN113_GPIO       PAD_GPIO_PU >; /* USBH_PWR SODIMM Pin 113 */
+#endif
 	};
 #endif
 
@@ -100,7 +105,7 @@ Defines:
 		vin-supply = <&reg_vin_fused>;
 	};
 
-#if !defined (PCONXS_NOT_USE_PCIE_PWR) || (PCONXS_NOT_USE_PCIE_PWR==0)
+#if 1 //!defined (PCONXS_NOT_USE_PCIE_PWR) || (PCONXS_NOT_USE_PCIE_PWR==0)
 	reg_pcie_pwr: pcie-pwr {
 		compatible = "regulator-fixed";
 		regulator-name = "PCIE PWR";
@@ -108,7 +113,11 @@ Defines:
 		regulator-max-microvolt = <3300000>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pcie_enable>;
+#ifdef PCONXS_V1
+		gpio = <spin43_gpio 0>;
+#else
 		gpio = <spin113_gpio 0>;
+#endif    
 		enable-active-high;
 		regulator-always-on;
 		vin-supply = <&reg_board_5v>;
