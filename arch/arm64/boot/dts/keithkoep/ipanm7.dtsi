@@ -11,6 +11,8 @@
     pinctrl_hog: hoggrp {
 		fsl,pins = < 
 			    MYON2_HOGGRP_COMMON
+			    PIN1_73_GPIO   PAD_GPIO_PU      /* CAM Pwdn     */
+			    PIN1_71_GPIO   PAD_GPIO_PU      /* CAM nRST     */
 #if USB1_OTG_FUNC == OTG_HOST			    			    
 		            PIN1_20_GPIO   PAD_GPIO_PU      /* USB SW SEL   */
 #else
@@ -19,7 +21,7 @@
 		       >;
 	};
 
-    pinctrl_gpio_keys: gpio_keys {
+        pinctrl_gpio_keys: gpio_keys {
 		fsl,pins = < PIN1_6_GPIO       PAD_GPIO_PU >;  /* PowerButton SODIMM Pin 122 */
 	};
 
@@ -39,7 +41,7 @@
 	};
 
 	pinctrl_backlight_pwm1: pwm-backlight {
-		fsl,pins = < PIN0_74_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM */
+		fsl,pins = < PIN0_74_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM  (GPIO1_01)*/
 	};		
 };
 
@@ -92,8 +94,10 @@
 
   	reserved@board {
         compatible      = "kk,trizeps7-reserved";
-        kk,gpio-names   = "nRESET_OUT", "USB_SWSEL-HOST";
-        kk,os-gpios     = < 
+        kk,gpio-names   = "Cam-nRST","Cam-PWDN","nRESET_OUT", "USB_SWSEL-HOST";
+        kk,os-gpios     = <
+                            pin1_71_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST  gpio1 6  */
+                            pin1_73_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3  */
                             pin0_32_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* nRESET_OUT  */
 #if USB1_OTG_FUNC == OTG_HOST			    
                             pin1_20_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* USB SW SEL  */
