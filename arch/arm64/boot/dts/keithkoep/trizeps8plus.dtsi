@@ -160,6 +160,19 @@ Switches:
 		regulator-always-on;
 		vin-supply = <&reg_board_5v>;
 	};
+
+	reg_usbotg_pwr: usbotg-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBOTG PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbotg_enable>;
+		gpio = <spin127_gpio 0>;
+		enable-active-high;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
 	reg_usdhc2_vmmc: regulator-usdhc2 {
 		compatible = "regulator-fixed";
 		//pinctrl-names = "default";
@@ -505,11 +518,24 @@ Switches:
 };
 
 &usb_dwc3_0 {
-	dr_mode = "host";
+	dr_mode = "otg";
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb0_vbus>;
+	usb-role-switch;
+
+	pinctrl_usb0_vbus: usb0grp {
+		fsl,pins = <
+			//MX8MP_IOMUXC_GPIO1_IO14__USB2_PWR		0x19
+			//SPIN127_USB1_PWR		0x19
+			MX8MP_IOMUXC_GPIO1_IO12__USB1_PWR	0x19
+		>;
+	};
 };
 
 &usb3_phy0 {
+	vbus-power-source = <&reg_usbotg_pwr>;
+	//vbus-supply = <&reg_usbotg_pwr>;
 	disable-over-current;
 	status = "okay";
 };
@@ -533,7 +559,8 @@ Switches:
 };
 
 &usb3_phy1 {
-	vbus-supply = <&reg_usbhost_pwr>;
+	vbus-power-source = <&reg_usbhost_pwr>;
+	//vbus-supply = <&reg_usbhost_pwr>;
 	disable-over-current;
 	status = "okay";
 };
@@ -751,6 +778,10 @@ Switches:
 
 	pinctrl_usbhost_enable: usbhost-enable 	{
 		fsl,pins = < SPIN129_GPIO		PAD_GPIO >; /* USBH_PWR */
+	};
+
+	pinctrl_usbotg_enable: usbotg-enable 	{
+		fsl,pins = < SPIN127_GPIO		PAD_GPIO >; /* USBH_PWR */
 	};
 
 	pinctrl_sai2: sai2grp {
