@@ -343,7 +343,6 @@ int ddr3l=UNDEFINED;
 extern unsigned int system_rev;
 extern unsigned int system_serial_low, system_serial_high;
 
-#if 0
 
 TRIZEPS_INFO TrizepsBoardVersion = 
 {
@@ -358,6 +357,7 @@ TRIZEPS_INFO TrizepsBoardVersion =
   .trizeps_unique_id[1]=0,
 };
 
+#if 0
 
 PTRIZEPS_INFO get_trizeps_board_version(void)
 {
@@ -466,7 +466,7 @@ void PrintTrizepsInfo(void)
 #include <linux/proc_fs.h>
 #include <asm/uaccess.h>
 
-#define BUFSIZE  512											
+#define BUFSIZE  512
 static struct proc_dir_entry *xEntry;							
 
 static ssize_t iKKProcRead(struct file *file, char __user *ubuf,size_t count, loff_t *ppos) 
@@ -536,4 +536,200 @@ static int __init kk_t7_set_info(void)
 	printk( KERN_ERR "***************************************************************************\n");
 	return 0;
 }
+
+// Output Modul e.g: 59A21.x2Hxx.Hxx
+
+static char kuk_article_str[128];
+static int __init kuk_article(char *s)
+{
+	strlcpy(kuk_article_str, s, sizeof(kuk_article_str));
+	if(kuk_article_str[0]=='5' &&  kuk_article_str[1]=='9' ) TrizepsBoardVersion.trizeps_module=8;
+
+	TrizepsBoardVersion.trizeps_temprange='C';
+	TrizepsBoardVersion.trizeps_litevers=0;
+	TrizepsBoardVersion.trizeps_sodimm=200;
+	
+	switch( kuk_article_str[2] )
+	{
+		case '0':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1800000000;
+		  TrizepsBoardVersion.trizeps_litevers=1;
+		  TrizepsBoardVersion.trizeps_numcores=1;		  
+		  break;
+		case '1':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1600000000;
+		  TrizepsBoardVersion.trizeps_litevers=1;
+		  TrizepsBoardVersion.trizeps_numcores=1;
+		  TrizepsBoardVersion.trizeps_temprange='I';		  
+		  break;
+		case '2':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1800000000;		
+		  TrizepsBoardVersion.trizeps_numcores=1;
+		  break;
+		case '3':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1600000000;		
+		  TrizepsBoardVersion.trizeps_numcores=1;
+		  TrizepsBoardVersion.trizeps_temprange='I';
+		  break;
+		case '4':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1800000000;		
+		  TrizepsBoardVersion.trizeps_numcores=2;
+		  TrizepsBoardVersion.trizeps_litevers=1;		  
+		  break;
+		case '5':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1600000000;		
+		  TrizepsBoardVersion.trizeps_numcores=2;
+		  TrizepsBoardVersion.trizeps_litevers=1;
+		  TrizepsBoardVersion.trizeps_temprange='I';		  
+		  break;
+		case '6':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1800000000;		
+		  TrizepsBoardVersion.trizeps_numcores=2;
+		  break;
+		case '7':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1600000000;		
+		  TrizepsBoardVersion.trizeps_numcores=2;
+		  TrizepsBoardVersion.trizeps_temprange='I';		  
+		  break;
+		case '8':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1800000000;		
+		  TrizepsBoardVersion.trizeps_numcores=4;
+		  TrizepsBoardVersion.trizeps_litevers=1;		  
+		  break;
+		case '9':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1600000000;		
+		  TrizepsBoardVersion.trizeps_numcores=4;
+		  TrizepsBoardVersion.trizeps_litevers=1;
+		  TrizepsBoardVersion.trizeps_temprange='I';		  
+		  break;
+		case 'A':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1800000000;		
+		  TrizepsBoardVersion.trizeps_numcores=4;
+		  break;
+		case 'B':
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1600000000;		
+		  TrizepsBoardVersion.trizeps_numcores=4;
+		  TrizepsBoardVersion.trizeps_temprange='I';		  
+		  break;
+		default:
+		  TrizepsBoardVersion.trizeps_cpumaxfreq=1000000;		
+		  TrizepsBoardVersion.trizeps_numcores=1;
+		  TrizepsBoardVersion.trizeps_temprange='C';		  	  
+	}
+	TrizepsBoardVersion.trizeps_ramsize=1L*1024L*1024L*1024L;	
+	switch( kuk_article_str[3] )
+	{
+		case '0':
+		  TrizepsBoardVersion.trizeps_ramsize>>=1;
+		  break;
+		case '1':
+		  // stay with 1GB
+		  break;
+		case '2':
+		  TrizepsBoardVersion.trizeps_ramsize <<=1; // 2GB
+		  break;
+		case '4':
+		  TrizepsBoardVersion.trizeps_ramsize <<=2; // 4GB
+		  break;
+		case '8':
+		  TrizepsBoardVersion.trizeps_ramsize <<=3; // 8GB
+		  break;
+		default:
+		  TrizepsBoardVersion.trizeps_ramsize >>=1; // 512MB
+		  break;
+	}
+	switch( kuk_article_str[3] )
+	{
+		case '0':
+		  TrizepsBoardVersion.trizeps_hw_board_version=0;
+		  TrizepsBoardVersion.trizeps_board_version_str="TRIZEPS8MINI_V1R1";
+		  break;
+		case '1':
+		  TrizepsBoardVersion.trizeps_hw_board_version=1;
+		  TrizepsBoardVersion.trizeps_board_version_str="TRIZEPS8MINI_V1R2";
+		  break;
+		case '2':
+		  TrizepsBoardVersion.trizeps_hw_board_version=2;
+		  TrizepsBoardVersion.trizeps_board_version_str="TRIZEPS8MINI_V1R3";		
+		  break;
+		case '3':
+		  TrizepsBoardVersion.trizeps_hw_board_version=3;
+		  TrizepsBoardVersion.trizeps_board_version_str="TRIZEPS8MINI_V1R4";		
+		  break;
+	}
+	return 1;
+}
+
+__setup("kuk_article=", kuk_article);
+
+#include <linux/kernel.h>   
+#include <linux/proc_fs.h>
+#include <asm/uaccess.h>
+
+#define BUFSIZE  512
+static struct proc_dir_entry *xEntry;							
+
+static ssize_t iKKProcRead(struct file *file, char __user *ubuf,size_t count, loff_t *ppos) 
+{
+	char buf[BUFSIZE];
+	int len=0;
+	PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
+
+	if(*ppos > 0 || count < BUFSIZE)
+		return 0;
+	
+	len += sprintf(buf,		"Trizeps_module   Version = %lu %d Cores %s\n",
+			 pTr->trizeps_module,
+			 pTr->trizeps_numcores,
+		       ((pTr->trizeps_litevers) ? "Lite" : "") );
+
+	len += sprintf(buf + len,	"Trizeps Sodimm   Pins    = %lu\n",         pTr->trizeps_sodimm);
+	len += sprintf(buf + len,	"Trizeps Version  String  = %s\n",          pTr->trizeps_board_version_str);
+	len += sprintf(buf + len,	"Trizeps HW Board Version = 0x%lx\n",       pTr->trizeps_hw_board_version);
+	len += sprintf(buf + len,	"Trizeps SW Board Version = 0x%lx\n",       pTr->trizeps_sw_board_version);
+	
+	if(copy_to_user(ubuf,buf,len))
+		return -EFAULT;
+	*ppos = len;
+	return len;
+}
+
+void PrintTrizepsInfo(void)
+{
+     PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
+     printk( KERN_ERR "********************* Trizeps7_Info ***************************************\n");
+     printk( KERN_ERR "Trizeps_module   Version = %lu %d Cores %s\n",
+			 pTr->trizeps_module,
+			 pTr->trizeps_numcores,
+		       ((pTr->trizeps_litevers) ? "Lite" : "") );     
+
+     printk("Trizeps Sodimm   Pins:    %lu\n",         pTr->trizeps_sodimm);
+     printk("Trizeps Version  String:  %s\n",          pTr->trizeps_board_version_str);
+     printk("Trizeps HW Board Version: 0x%lx\n",       pTr->trizeps_hw_board_version);
+     printk("Trizeps SW Board Version: 0x%lx\n",       pTr->trizeps_sw_board_version);
+     printk( KERN_ERR "***************************************************************************\n");
+}
+
+static struct file_operations tKKOps =	
+{						
+	.owner 	= THIS_MODULE,										
+	.read 	= iKKProcRead,										
+	.write 	= NULL,												
+};																
+// + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +  @+01.08.2018 S&B HL
+
+
+static int __init get_print_trizeps_version(void)
+{
+  //  get_trizeps_board_version();
+  PrintTrizepsInfo();
+  
+  xEntry = proc_create("kk-trizeps8mini",0660,NULL,&tKKOps); 	// Create /proc/kk-trizeps8 entry	@+01.08.2018 S&B HL 
+  return(0);  
+}
+
+// postcore_initcall(get_print_trizeps_version);
+arch_initcall(get_print_trizeps_version);
+
+
 arch_initcall(kk_t7_set_info);
