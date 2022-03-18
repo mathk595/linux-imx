@@ -1489,6 +1489,26 @@ static void esdhc_sdhci_dumpregs(struct mmc_host *mmc)
 	sdhci_dumpregs(mmc_priv(mmc));
 }
 
+
+static char android_storagetype[128];
+
+static int __init emmc_storagetype(char *s)
+{
+	strlcpy(android_storagetype, s, sizeof(android_storagetype));
+	return 1;
+}
+
+__setup("androidboot.storage_type=", emmc_storagetype);
+
+
+static int is_emmc(void)
+{
+  if (!strncmp("emmc", android_storagetype, sizeof(android_storagetype)-1))
+    return(1);
+  else
+    return(0);    
+}
+
 static const struct cqhci_host_ops esdhc_cqhci_ops = {
 	.enable		= esdhc_cqe_enable,
 	.disable	= sdhci_cqe_disable,
@@ -1522,9 +1542,15 @@ sdhci_esdhc_imx_probe_dt(struct platform_device *pdev,
 
 	of_property_read_u32(np, "fsl,strobe-dll-delay-target",
 				&boarddata->strobe_dll_delay_target);
+
+	of_property_read_u32(np, "bus-width", &boarddata->max_bus_width);
+
 	if (of_find_property(np, "no-1-8-v", NULL))
 		host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
 
+	printk(KERN_ERR"sdhci: EMMC:%d (no-1-8-v)=%d\n",
+	       is_emmc(),((host->quirks2&SDHCI_QUIRK2_NO_1_8_V)?1:0));		
+	
 	if (of_property_read_u32(np, "fsl,delay-line", &boarddata->delay_line))
 		boarddata->delay_line = 0;
 
@@ -1633,6 +1659,8 @@ static int sdhci_esdhc_imx_probe(struct platform_device *pdev)
 	struct cqhci_host *cq_host;
 	int err;
 	struct pltfm_imx_data *imx_data;
+	struct esdhc_platform_data *boarddata;
+
 	const struct device_node *np = pdev->dev.of_node;
 
 	if (!of_property_read_bool(np, "imx8mp-disable-emmc-request-high"))
@@ -1754,6 +1782,17 @@ static int sdhci_esdhc_imx_probe(struct platform_device *pdev)
 	if (err)
 		goto disable_ahb_clk;
 
+	boarddata = &imx_data->boarddata;
+	printk(KERN_ERR"sdhci(0x%lx): EMMC:%d bus_width=%d\n",(unsigned long)host->ioaddr, is_emmc(), boarddata->max_bus_width);	
+	if( is_emmc() && ((boarddata->max_bus_width==8)||((unsigned long)host->ioaddr==0x30b40000L)))
+	{
+	  if( host->quirks2 & SDHCI_QUIRK2_NO_1_8_V )
+	  {	      
+	    printk(KERN_ERR"sdhci: emmc: remove NO_1_8_V Flag!\n");	  
+		host->quirks2 &= ~SDHCI_QUIRK2_NO_1_8_V;
+	  }	  
+	}
+	
 	sdhci_esdhc_imx_hwinit(host);
 
 	if ((host->mmc->pm_caps & MMC_PM_KEEP_POWER) &&
