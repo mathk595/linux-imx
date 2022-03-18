@@ -55,7 +55,18 @@ typedef struct _trizeps_hw_info
   unsigned long  trizeps_sw_board_version;
   unsigned char *trizeps_board_version_str;
   unsigned long  trizeps_unique_id[2];
-
+  unsigned long  trizeps_numcores;
+  unsigned long  trizeps_litevers;    
+  unsigned long  trizeps_cpumaxfreq;
+  unsigned long  trizeps_temprange;
+  u64            trizeps_ramsize;  
+  unsigned long  trizeps_fpga;
+  unsigned long  trizeps_lvds;
+  unsigned long  trizeps_audio;
+  unsigned long  trizeps_mcu;
+  unsigned long  trizeps_eth;
+  unsigned long  hs;
+  unsigned long  sw;    
 } TRIZEPS_INFO, *PTRIZEPS_INFO;
 
 extern TRIZEPS_INFO TrizepsBoardVersion;
