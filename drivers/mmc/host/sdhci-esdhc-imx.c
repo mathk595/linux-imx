@@ -1509,6 +1509,14 @@ static int is_emmc(void)
     return(0);    
 }
 
+extern int TrizepsMMC0Has1V8Switch(void);
+
+static int has_1v8switch(void)
+{
+  return( TrizepsMMC0Has1V8Switch());  
+}
+
+
 static const struct cqhci_host_ops esdhc_cqhci_ops = {
 	.enable		= esdhc_cqe_enable,
 	.disable	= sdhci_cqe_disable,
@@ -1545,11 +1553,15 @@ sdhci_esdhc_imx_probe_dt(struct platform_device *pdev,
 
 	of_property_read_u32(np, "bus-width", &boarddata->max_bus_width);
 
+	printk(KERN_ERR"sdhci: 1V8Switch:%d (no-1-8-v)=%d\n",
+	       has_1v8switch(),((host->quirks2&SDHCI_QUIRK2_NO_1_8_V)?1:0));		
+
 	if (of_find_property(np, "no-1-8-v", NULL))
 		host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
 
 	printk(KERN_ERR"sdhci: EMMC:%d (no-1-8-v)=%d\n",
 	       is_emmc(),((host->quirks2&SDHCI_QUIRK2_NO_1_8_V)?1:0));		
+	
 	
 	if (of_property_read_u32(np, "fsl,delay-line", &boarddata->delay_line))
 		boarddata->delay_line = 0;
@@ -1783,12 +1795,14 @@ static int sdhci_esdhc_imx_probe(struct platform_device *pdev)
 		goto disable_ahb_clk;
 
 	boarddata = &imx_data->boarddata;
-	printk(KERN_ERR"sdhci(0x%lx): EMMC:%d bus_width=%d\n",(unsigned long)host->ioaddr, is_emmc(), boarddata->max_bus_width);	
-	if( is_emmc() && ((boarddata->max_bus_width==8)||((unsigned long)host->ioaddr==0x30b40000L)))
+	printk(KERN_ERR"sdhci(0x%lx): EMMC:%d bus_width=%d 1v8Switch:%d\n",
+	       (unsigned long)host->ioaddr, is_emmc(),has_1v8switch(),boarddata->max_bus_width);
+	
+	if( (is_emmc()||has_1v8switch())&&((boarddata->max_bus_width==8)||((unsigned long)host->ioaddr==0x30b40000L)))
 	{
 	  if( host->quirks2 & SDHCI_QUIRK2_NO_1_8_V )
 	  {	      
-	    printk(KERN_ERR"sdhci: emmc: remove NO_1_8_V Flag!\n");	  
+	    printk(KERN_ERR"sdhci: removing NO_1_8_V Flag!\n");	  
 		host->quirks2 &= ~SDHCI_QUIRK2_NO_1_8_V;
 	  }	  
 	}
