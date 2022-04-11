@@ -12,19 +12,6 @@ Defines:
 #define ATM0700l61CT_TR8P_DTSI
 
 / {
-
-	reg_display_pwr: display-pwr {
-		compatible = "regulator-fixed";
-		regulator-name = "DISPLAY PWCTRL";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-always-on;
-		vin-supply = <&reg_vin_fused>;
-	};
-
-};
-
-/ {
 	panel_lvds1: panel1 {
 		status          = "disabled";
 		compatible      = "panel-lvds";
