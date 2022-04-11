@@ -1,0 +1,53 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+#define DISPLAY_ENABLE SPIN100_GPIO1_IO05
+
+#include "trizeps8plus.dtsi"
+#include "atm0700-tr8p.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH iPANT7 i.MX8MP Trizeps8-Plus";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	reg_display_pwr: display-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "DISPLAY PWCTRL";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_display_enable>;
+		gpio = <spin100_gpio 0>;
+		enable-active-high;
+		regulator-always-on;
+		vin-supply = <&reg_3v3>;
+	};
+
+};
+
+
+&iomuxc {
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			//SPIN100_GPIO1_IO05	PAD_GPIO	/* LCD1_VCC_ON */
+		>;
+	};
+
+	pinctrl_display_enable: display-enable 	{
+		fsl,pins = < DISPLAY_ENABLE		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
+	};
+};
+
+
+&fpga {
+	status = "okay";
+};
