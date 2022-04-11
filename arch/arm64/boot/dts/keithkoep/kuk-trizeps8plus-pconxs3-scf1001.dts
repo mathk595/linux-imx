@@ -1,0 +1,49 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+
+#include "trizeps8plus.dtsi"
+//#include "panel-lvds.dtsi"
+#include "scf1001-tr8p.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH pConXS V3 SCF1001 i.MX8MP Trizeps8-Plus";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+&ldb {
+	status = "okay";
+};
+
+&ldb_phy {
+	status = "okay";
+};
+
+&panel_lvds1 {
+	status = "okay";
+};
+/*
+&lcdif1 {
+	status = "okay";
+};
+*/
+&lcdif2 {
+	status = "okay";
+};
+
+&backlight {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
