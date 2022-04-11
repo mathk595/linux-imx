@@ -8,10 +8,8 @@ Remarks:
 Defines:
 */
 
-#ifndef PANEL_LCD_DTSI
-#define PANEL_LCD_DTSI
-
-#define display_enable &gpio1 5
+#ifndef ATM0700_TR8P_DTSI
+#define ATM0700_TR8P_DTSI
 
 &mipi_dsi {
 
@@ -39,6 +37,43 @@ Defines:
 		mipi_dsi_out: endpoint {
 			remote-endpoint = <&panel1_in>;
 		};
+	};
+};
+
+
+#define TOUCH_INT	SPIN45_GPIO
+#define touch_int_parent  &gpio3
+#define touch_int_pin     4
+
+&i2c2 {
+	touch: edt-ft5x06@38 {
+		compatible = "edt,edt-ft5x06", "edt,edt-ft5406";
+		reg = <0x38>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_captouch>;
+		enable_wakeup = "true";
+		interrupt-parent = <touch_int_parent>;
+		interrupts = <touch_int_pin IRQ_TYPE_LEVEL_LOW>;
+		touch-threshold     = <30>;
+		touch-gain          = <3>;
+		touch-offset        = <0>;
+		touch-report-rate   = <8>;
+
+		//yreverse            = "true";
+		//xreverse            = "true";
+		xres                = <800>;
+		yres	            = <480>;
+
+		linux,wakeup;
+	};
+};
+
+
+&iomuxc {
+	pinctrl_captouch: captouchgrp {
+		fsl,pins = <
+					 TOUCH_INT  		PAD_GPIO /* IRQ */
+			>;
 	};
 };
 
