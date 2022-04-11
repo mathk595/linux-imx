@@ -32,7 +32,7 @@
 
 #ifndef NOBACKLIGHT
         pinctrl_backlight_pwm1: pwm-backlight {
-		fsl,pins = < SPIN77_PWM1_OUT                0x16 >; /* BACKLIGHT_PWM */
+		fsl,pins = < SPIN77_PWM1_OUT                0x16 >; /* BACKLIGHT_PWM (GPIO1_01)*/
 	};
 #endif
 
