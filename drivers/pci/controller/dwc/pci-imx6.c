@@ -2475,18 +2475,29 @@ static int imx6_pcie_probe(struct platform_device *pdev)
 	} else if (imx6_pcie->clkreq_gpio == -EPROBE_DEFER) {
 		return imx6_pcie->clkreq_gpio;
 	}
-
-	imx6_pcie->dis_gpio = of_get_named_gpio(node, "disable-gpio", 0);
-	if (gpio_is_valid(imx6_pcie->dis_gpio)) {
+	{
+	  int TrizepsHasPCIeDisablePin(void);	  
+	  imx6_pcie->dis_gpio=ARCH_NR_GPIOS+1;	
+	  if( TrizepsHasPCIeDisablePin() )
+	  {
+	    imx6_pcie->dis_gpio = of_get_named_gpio(node, "disable-gpio", 0);
+	    dev_info(&pdev->dev,"Devtree disable-gpio: 0x%d",imx6_pcie->dis_gpio );	    
+	    if (gpio_is_valid(imx6_pcie->dis_gpio)) {
 		ret = devm_gpio_request_one(&pdev->dev, imx6_pcie->dis_gpio,
 					    GPIOF_OUT_INIT_LOW, "PCIe DIS");
 		if (ret) {
 			dev_err(&pdev->dev, "unable to get disable gpio\n");
 			return ret;
 		}
-	} else if (imx6_pcie->dis_gpio == -EPROBE_DEFER) {
+	    } else if (imx6_pcie->dis_gpio == -EPROBE_DEFER) {
 		return imx6_pcie->dis_gpio;
+	    }
+	  }else
+	    dev_info(&pdev->dev,"Trizeps without disable-gpio:", imx6_pcie->dis_gpio );
 	}
+	
+	  
+	
 	imx6_pcie->epdev_on = devm_regulator_get(&pdev->dev, "epdev_on");
 	if (IS_ERR(imx6_pcie->epdev_on))
 		return -EPROBE_DEFER;
