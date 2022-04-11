@@ -638,7 +638,7 @@ static int __init kuk_article(char *s)
 		  TrizepsBoardVersion.trizeps_ramsize >>=1; // 512MB
 		  break;
 	}
-	switch( kuk_article_str[3] )
+	switch( kuk_article_str[4] )
 	{
 		case '0':
 		  TrizepsBoardVersion.trizeps_hw_board_version=0;
@@ -655,6 +655,30 @@ static int __init kuk_article(char *s)
 		case '3':
 		  TrizepsBoardVersion.trizeps_hw_board_version=3;
 		  TrizepsBoardVersion.trizeps_board_version_str="TRIZEPS8MINI_V1R4";		
+		  break;
+	}
+
+	TrizepsBoardVersion.trizeps_bootstoreemmc=0;
+	switch( kuk_article_str[10] )
+	{
+		case '0':
+		  TrizepsBoardVersion.trizeps_bootstore=KUK_BOOTSTORAGE_SDCARD;
+		  break;
+		case '1':
+		  TrizepsBoardVersion.trizeps_bootstoreemmc=1;
+		  TrizepsBoardVersion.trizeps_bootstore=KUK_BOOTSTORAGE_EMMC4GB;		  
+		  break;
+		case '2':
+		  TrizepsBoardVersion.trizeps_bootstoreemmc=1;		  
+		  TrizepsBoardVersion.trizeps_bootstore=KUK_BOOTSTORAGE_EMMC8GB;		  
+		  break;
+		case '3':
+		  TrizepsBoardVersion.trizeps_bootstoreemmc=1;		  
+		  TrizepsBoardVersion.trizeps_bootstore=KUK_BOOTSTORAGE_EMMC16GB;		  
+		  break;
+		case '4':
+		  TrizepsBoardVersion.trizeps_bootstoreemmc=1;		  
+		  TrizepsBoardVersion.trizeps_bootstore=KUK_BOOTSTORAGE_EMMC32GB;		  
 		  break;
 	}
 	return 1;
@@ -710,6 +734,27 @@ void PrintTrizepsInfo(void)
      printk( KERN_ERR "***************************************************************************\n");
 }
 
+int TrizepsHasPCIeDisablePin(void)
+{
+  PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
+  if( (pTr->trizeps_module == 8) && ( pTr->trizeps_hw_board_version < 2) )    return(1);      
+  return(0);  
+}
+
+int TrizepsMMC0Has1V8Switch(void)
+{
+  PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
+  if( (pTr->trizeps_module == 8) && ( pTr->trizeps_hw_board_version >= 2) )   return(1);      
+  return(0);  
+}
+
+int TrizepsBootedFromeMMC(void)
+{
+  PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
+  if( (pTr->trizeps_module == 8) && pTr->trizeps_bootstoreemmc )     return(1);      
+  return(0);  
+}
+  
 static struct file_operations tKKOps =	
 {						
 	.owner 	= THIS_MODULE,										

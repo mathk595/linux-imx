@@ -65,6 +65,8 @@ typedef struct _trizeps_hw_info
   unsigned long  trizeps_audio;
   unsigned long  trizeps_mcu;
   unsigned long  trizeps_eth;
+  unsigned long  trizeps_bootstoreemmc;    
+  unsigned long  trizeps_bootstore;  
   unsigned long  hs;
   unsigned long  sw;    
 } TRIZEPS_INFO, *PTRIZEPS_INFO;
@@ -74,6 +76,17 @@ extern TRIZEPS_INFO TrizepsBoardVersion;
 #define Trizeps_GetnResetoutGpio()  (TrizepsBoardVersion.trizeps_resetout_gpio)
 
 
+int TrizepsHasPCIeDisablePin(void);
+int TrizepsBootedFromeMMC(void);
 
+enum KUK_BOOTSTORAGE {
+    KUK_BOOTSTORAGE_UNKNOWN = 0,    
+    KUK_BOOTSTORAGE_SDCARD,
+    KUK_BOOTSTORAGE_EMMCxGB,
+    KUK_BOOTSTORAGE_EMMC4GB,
+    KUK_BOOTSTORAGE_EMMC8GB,
+    KUK_BOOTSTORAGE_EMMC16GB,
+    KUK_BOOTSTORAGE_EMMC32GB
+};
 
   
