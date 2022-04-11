@@ -7,6 +7,7 @@
 
 // Add defines here, which control behaviour of .dtsi:
 #define DISPLAY_ENABLE SPIN100_GPIO1_IO05
+#define display_enable &gpio1 5
 
 #include "trizeps8plus.dtsi"
 #include "atm0700-tr8p.dtsi"
@@ -49,5 +50,39 @@
 
 
 &fpga {
+	// AZ Display
+	// 0x00		I2C_REG_ID:	0x61
+	// 0x01		I2C_REG_TEMP:	simple memory register
+	// 0x10		I2C_REG_DISPLAY:
+	//	0x8.	invert PCLK polarity
+	//	0x4.	invert HSync polarity
+	// 	0x2.	invert VSync polarity
+	//	0x1.	invert Data-Enable polarity
+	//	0x.C	24 bpp
+	//	0x.8	18 bpp
+	//	0x.4	16 bpp
+	//	0x.1	Enable MIPI-DSI to RGB conversion
+	// 0x20
+	//      0x01    Enable Wireless Module 2 UART4
+	//      
+	tr8fpga,addresses = < 0x10 0x20 >;
+	tr8fpga,values    = < 0x8D 0x00 >;
+	status = "okay";
+};
+
+// display
+&mipi_dsi {
+	status = "okay";
+};
+
+&lcdif1 {
+	status = "okay";
+};
+
+&backlight {
+	status = "okay";
+};
+
+&pwm1 {
 	status = "okay";
 };
