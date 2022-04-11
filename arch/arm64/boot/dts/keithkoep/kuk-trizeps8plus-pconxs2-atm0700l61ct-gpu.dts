@@ -1,0 +1,61 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+
+#include "trizeps8plus.dtsi"
+#include "atm0700l61ct-tr8p.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH pConXS V2 ATM0700L61CT i.MX8MP Trizeps8-Plus";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+&ldb {
+	status = "okay";
+};
+
+&ldb_phy {
+	status = "okay";
+};
+
+&lcdif1 {
+	status = "okay";
+};
+
+&panel_lvds1 {
+	status = "okay";
+};
+
+&backlight {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
+
+// GPU
+&gpu_2d {
+	status = "okay";
+};
+
+&gpu_3d {
+	status = "okay";
+};
+
+&ml_vipsi {
+	status = "okay";
+};
+
+&mix_gpu_ml {
+	status = "okay";
+};
