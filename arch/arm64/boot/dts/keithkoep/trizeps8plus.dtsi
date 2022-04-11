@@ -13,6 +13,7 @@ Switches:
 #include "imx8mp.dtsi"
 #include "trizeps8plus-pinfunc.h"
 
+
 / {
 	firmware {
 		android {
@@ -322,9 +323,9 @@ Switches:
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		ethphy0: ethernet-phy@0 {
+		ethphy0: ethernet-phy@-1 {
 			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <0>;
+			//reg = <0>;
 			//at803x,eee-disabled;
 			//at803x,vddio-1p8v;
 #if defined(ETHERNET_ONLY_100MBIT) && (ETHERNET_ONLY_100MBIT==1)
@@ -428,7 +429,7 @@ Switches:
 				regulator-always-on;
 			};
 
-			ldo1: LDO1 {
+		ldo1: LDO1 { // NVCC_SNVS_1V8
 				regulator-name = "LDO1";
 				regulator-min-microvolt = <1600000>;
 				regulator-max-microvolt = <3300000>;
@@ -436,7 +437,7 @@ Switches:
 				regulator-always-on;
 			};
 
-			ldo2: LDO2 {
+		ldo2: LDO2 { // ??
 				regulator-name = "LDO2";
 				regulator-min-microvolt = <800000>;
 				regulator-max-microvolt = <1150000>;
@@ -444,7 +445,7 @@ Switches:
 				regulator-always-on;
 			};
 
-			ldo3: LDO3 {
+		ldo3: LDO3 { // VDDA_1V8
 				regulator-name = "LDO3";
 				regulator-min-microvolt = <800000>;
 				regulator-max-microvolt = <3300000>;
@@ -452,7 +453,7 @@ Switches:
 				regulator-always-on;
 			};
 
-			ldo4: LDO4 {
+			ldo4: LDO4 { // VDD_FPGA_MIPI
 				regulator-name = "LDO4";
 				regulator-min-microvolt = <800000>;
 				regulator-max-microvolt = <3300000>;
@@ -460,7 +461,7 @@ Switches:
 				regulator-always-on;
 			};
 
-			ldo5: LDO5 {
+		ldo5: LDO5 { // NVCC_SD2
 				regulator-name = "LDO5";
 				regulator-min-microvolt = <1800000>;
 				regulator-max-microvolt = <3300000>;
@@ -477,6 +478,29 @@ Switches:
 		reg = <0x1a>;
 		clocks = <&clk IMX8MP_CLK_SAI2_ROOT>;
 		clock-names = "mclk";
+	};
+
+	fpga: tr8fpga@41 {
+		compatible = "kuk,tr8fpga";
+		reg = <0x41>;
+		// AZ Display
+		// 0x00		I2C_REG_ID:	0x61
+		// 0x01		I2C_REG_TEMP:	simple memory register
+		// 0x10		I2C_REG_DISPLAY:
+		//	0x8.	invert PCLK polarity
+		//	0x4.	invert HSync polarity
+		// 	0x2.	invert VSync polarity
+		//	0x1.	invert Data-Enable polarity
+		//	0x.C	24 bpp
+		//	0x.8	18 bpp
+		//	0x.4	16 bpp
+		//	0x.1	Enable MIPI-DSI to RGB conversion
+		// 0x20
+		//      0x01    Enable Wireless Module 2 UART4
+		//
+		//tr8fpga,addresses = <	0x10 0x20 >;
+		//tr8fpga,values =    <	0x8D 0x00 >;
+		//status = "ok";
 	};
 
 };
@@ -520,10 +544,10 @@ Switches:
 &usb_dwc3_0 {
 	dr_mode = "otg";
 	status = "okay";
-	//pinctrl-names = "default";
-	//pinctrl-0 = <&pinctrl_usb0_vbus>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb0_vbus>;
 	usb-role-switch;
-/*
+
 	pinctrl_usb0_vbus: usb0grp {
 		fsl,pins = <
 			//MX8MP_IOMUXC_GPIO1_IO14__USB2_PWR		0x19
@@ -531,7 +555,7 @@ Switches:
 			MX8MP_IOMUXC_GPIO1_IO12__USB1_PWR	0x19
 		>;
 	};
-*/
+
 };
 
 &usb3_phy0 {
@@ -549,15 +573,15 @@ Switches:
 &usb_dwc3_1 {
 	dr_mode = "host";
 	status = "okay";
-	//pinctrl-names = "default";
-	//pinctrl-0 = <&pinctrl_usb1_vbus>;
-/*
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb1_vbus>;
+
 	pinctrl_usb1_vbus: usb1grp {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO14__USB2_PWR		0x19
 		>;
 	};
-*/
+
 };
 
 &usb3_phy1 {
