@@ -174,6 +174,7 @@ Switches:
 		regulator-always-on;
 		vin-supply = <&reg_board_5v>;
 	};
+/*
 	reg_usdhc2_vmmc: regulator-usdhc2 {
 		compatible = "regulator-fixed";
 		//pinctrl-names = "default";
@@ -184,6 +185,7 @@ Switches:
 		//gpio = <&gpio2 19 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 	};
+*/
 /*
 	reg_can1_stby: regulator-can1-stby {
 		compatible = "regulator-fixed";
@@ -197,7 +199,31 @@ Switches:
 	};
 */
 
-  sound_hdmi: sound-hdmi {
+	reg_usdhc1_vmmc: regulator-usdhc1-vmmc {
+		compatible = "regulator-fixed";
+		regulator-name = "VMMC_USDHC1";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_usdhc1_vqmmc: regulator-usdhc1-vqmmc {
+		compatible = "regulator-gpio";
+		regulator-name = "VQMMC_USDHC1";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <3300000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_sd_vsel>;
+		gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+		gpio-states = <1>;
+		states = <1800000 1>, <3300000 0>;
+		//regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+
+	sound_hdmi: sound-hdmi {
 		compatible = "fsl,imx-audio-cdnhdmi";
 		model = "audio-hdmi";
 		audio-cpu = <&aud2htx>;
@@ -601,6 +627,8 @@ Switches:
 	pinctrl-1 = <&pinctrl_usdhc1_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc1_200mhz>;
 	bus-width = <8>;
+	vmmc-supply = <&reg_usdhc1_vmmc>;
+	vqmmc-supply = <&reg_usdhc1_vqmmc>;
 	non-removable;
 	status = "okay";
 };
@@ -794,6 +822,10 @@ Switches:
 			MX8MP_IOMUXC_SD1_STROBE__USDHC1_STROBE 		0x196
 			MX8MP_IOMUXC_SD1_RESET_B__USDHC1_RESET_B		0xc1
 		>;
+	};
+
+	pinctrl_sd_vsel: sdvselgrp {
+		fsl,pins = < SD1_VSEL_GPIO1_IO03				PAD_GPIO >;
 	};
 
 	pinctrl_wdog: wdoggrp {
