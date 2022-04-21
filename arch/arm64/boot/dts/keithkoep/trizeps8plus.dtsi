@@ -689,6 +689,23 @@ Switches:
 	status = "disabled";
 };
 
+&mipi_csi_0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	//status = "okay";
+
+	port@0 {
+		reg = <0>;
+		mipi_csi0_ep: endpoint {
+			//remote-endpoint = <&ov5640_mipi_0_ep>;
+			//remote-endpoint = <&camera_mipi_0_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
 
 
 &iomuxc {
@@ -889,6 +906,12 @@ Switches:
 		fsl,pins = < SPIN77_PWM1_OUT		PAD_GPIO >;	/* BACKLIGHT_PWM */
 	};
 
+	pinctrl_camera0: camera0grp {
+		fsl,pins = <
+			CAMERA_PWDN GPIO_ACTIVE_LOW
+			CAMERA_RESET GPIO_ACTIVE_HIGH
+			>;
+	};
 
 
 };

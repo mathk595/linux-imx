@@ -64,6 +64,8 @@
 #define SPIN125_GPIO1_IO06                          0x02C 0x28C 0x000 0x0 0x0
 #define SPIN125_GPIO                                0x02C 0x28C 0x000 0x0 0x0
 #define spin125_gpio   &gpio1 6
+#define CAMERA_RESET   SPIN125_GPIO
+#define camera_reset   spin125_gpio
 #define SPIN125_ENET_QOS_MDC                        0x02C 0x28C 0x000 0x1 0x0
 #define SPIN125_ISP_SHUTTER_TRIG_1                  0x02C 0x28C 0x5E0 0x3 0x0
 #define SPIN125_USDHC1_CD_B                         0x02C 0x28C 0x000 0x5 0x0
@@ -238,6 +240,8 @@
 #define SPIN123_GPIO                                  0x0F4 0x354 0x000 0x5 0x0
 #define spin123_gpio   &gpio3 5
 #define SPIN123_CORESIGHT_TRACE03                     0x0F4 0x354 0x000 0x6 0x0
+#define CAMERA_PWDN SPIN123_GPIO
+#define camera_pwdn spin123_gpio
 #define SPIN111_NAND_DATA00                        0x0F8 0x358 0x000 0x0 0x0
 #define SPIN111_FLEXSPI_A_DATA00                   0x0F8 0x358 0x000 0x1 0x0
 #define SPIN111_AUDIOMIX_SAI3_RX_DATA00            0x0F8 0x358 0x4E4 0x2 0x0
