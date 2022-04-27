@@ -1,0 +1,37 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+
+#define  OTG_HOST                0
+#define  OTG_SLAVE               1
+#define  OTG_OTG                 2
+
+#define  USB1_OTG_FUNC           OTG_SLAVE  /* iPANM7 should tie ID to GND if USB Slave is not connected
+                                             *  Until this patch is applied USB can be HOST Only */
+#define  USB1_OTG_ID_PIN_PD	            /* if set pull down OTG_ID Pin, else pullup this pin */
+
+#include "myon2.dtsi"
+#include "ipanm7.dtsi"
+#include "ov5645.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH iPANM7 OV5645 i.MX8MM Myon2";
+	compatible = "kk,myon2","kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mm-evk", "fsl,imx8mm";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+
+
+
+
+
+
+
