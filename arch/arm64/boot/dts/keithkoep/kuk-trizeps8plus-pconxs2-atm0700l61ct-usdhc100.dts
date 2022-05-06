@@ -7,6 +7,7 @@
 
 // Add defines here, which control behaviour of .dtsi:
 
+#define USDHC_MHZ 100
 #include "trizeps8plus.dtsi"
 #include "atm0700l61ct-tr8p.dtsi"
 
