@@ -131,6 +131,8 @@ Defines:
 	};
 };
 */
+#define GUF
+#ifndef GUF
 &i2c2 {
 	touch: sis9255@5c {
 		compatible       = "sis,9200-ts";
@@ -139,7 +141,35 @@ Defines:
 		pinctrl-0        = <&pinctrl_captouch>;
 		interrupt-parent = <touch_int_parent>;
 		interrupts       = <touch_int_pin IRQ_TYPE_LEVEL_LOW>;
+		irq-gpio         = <&gpio3 4 IRQ_TYPE_LEVEL_LOW>;
+		/*
+		//compatible       = "sis,sisi2c";
+		//interrupt-parent = <&gpio3>;
+		//interrupts       = <4 IRQ_TYPE_LEVEL_LOW>;
+		//irq-gpio         = <&gpio3 4 IRQ_TYPE_LEVEL_LOW>;
+		//irq-gpio       = <touch_int_pin IRQ_TYPE_LEVEL_LOW>;
+		//irq-low-active   = <1>;
+		*/
 	};
 };
+#else
+&i2c2 {
+	touch: sis9255@5c {
+		compatible       = "sis,sisi2c"; // GuF version
+		reg              = <0x5c>;
+		pinctrl-names    = "default";
+		pinctrl-0        = <&pinctrl_captouch>;
+		interrupt-parent = <touch_int_parent>;
+		//interrupts       = <touch_int_pin IRQ_TYPE_LEVEL_LOW>;
+		interrupts       = <touch_int_pin IRQ_TYPE_LEVEL_HIGH>;
+		//reset-gpio       = <>;
+		//wake-gpio        = <>;
+		//irq-gpio         = <&gpio3 4 IRQ_TYPE_LEVEL_LOW>;
+		irq-gpio         = <&gpio3 4 IRQ_TYPE_LEVEL_HIGH>;
+		//irq-low-active;//   = <0>;
+	};
+};
+
+#endif
 
 #endif
