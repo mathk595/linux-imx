@@ -20,6 +20,26 @@
 	};
 };
 
+/ {
+	gpio-keys {
+        compatible = "gpio-keys1";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_gpio_keys>;
+        power { /* Reconfig to power key in Android*/
+            label = "Power Button";
+            gpios = <spin122_gpio GPIO_ACTIVE_LOW>;
+            linux,code = <116>; /* KEY_POWER */
+            gpio-key,wakeup;
+        };
+    };
+};
+
+&iomuxc {
+    pinctrl_gpio_keys: gpio_keys {
+		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
+	};
+};
+
 &ldb {
 	status = "okay";
 };
