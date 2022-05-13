@@ -414,9 +414,11 @@ Switches:
 		compatible = "nxp,pca9450c";
 
 		/* PMIC PCA9450 PMIC_nINT GPIO1_IO3 */
-		pinctrl-0 = <&pinctrl_pmic>;
-		interrupt-parent = <&gpio1>;
-		interrupts = <3 GPIO_ACTIVE_LOW>;
+		//pinctrl-0 = <&pinctrl_pmic>;
+		//interrupt-parent = <&gpio1>;
+		//interrupts = <3 GPIO_ACTIVE_LOW>;
+		//status = "disabled";
+		status = "okay";
 
 
 		regulators {
@@ -779,13 +781,13 @@ Switches:
 			MX8MP_IOMUXC_GPIO1_IO09__GPIO1_IO09		0x19
 		>;
 	};
-
+/*
 	pinctrl_pmic: pmicirq {
 		fsl,pins = <
 			MX8MP_IOMUXC_GPIO1_IO03__GPIO1_IO03	0x41
 		>;
 	};
-
+*/
 	pinctrl_reg_usdhc2_vmmc: regusdhc2vmmcgrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_SD2_RESET_B__GPIO2_IO19	0x41
