@@ -420,7 +420,6 @@ Switches:
 		//status = "disabled";
 		status = "okay";
 
-
 		regulators {
 			buck1: BUCK1 {
 				regulator-name = "BUCK1";
@@ -1074,3 +1073,7 @@ Switches:
 	status = "okay";
 };
 */
+
+&hdmi_blk_ctrl {
+	status = "disabled";
+};
