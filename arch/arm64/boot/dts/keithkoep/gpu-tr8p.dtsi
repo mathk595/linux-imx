@@ -1,0 +1,27 @@
+/*
+ * Copyright 2022 Keith & Koep GmbH
+ *
+ */
+
+ /************************************************************************/
+#ifndef GPU_TR8P_DTAS
+#define GPU_TR8P_DTAS
+
+&gpu_2d {
+	status = "okay";
+};
+
+&gpu_3d {
+	status = "okay";
+};
+
+&ml_vipsi {
+	status = "okay";
+};
+
+&mix_gpu_ml {
+	status = "okay";
+};
+
+#endif
+

@@ -13,7 +13,7 @@ Defines:
 
 / {
 	panel_lvds1: panel1 {
-		status          = "disabled";
+		status          = "okay";
 		compatible      = "panel-lvds";
 		data-mapping = "vesa-24";
 		width-mm = <154>;
@@ -48,12 +48,13 @@ Defines:
 #define touch_int_pin     4
 
 &iomuxc {
+#if 0
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
 			SPIN100_GPIO1_IO05	PAD_GPIO	/* LCD1_VCC_ON */
 		>;
 	};
-
+#endif
 	pinctrl_captouch: captouchgrp {
 		fsl,pins = <
 					 TOUCH_INT  		PAD_GPIO /* IRQ */
@@ -72,7 +73,7 @@ Defines:
 */
 
 &ldb {
-	status = "disabled";
+	status = "okay";
 	lvds-channel@0 {
 		status = "okay";
 		fsl,data-mapping = "spwg";
@@ -86,6 +87,9 @@ Defines:
 	};
 };
 
+&ldb_phy {
+	status = "okay";
+};
 
 
 &i2c2 {

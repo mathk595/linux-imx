@@ -8,17 +8,19 @@
 // Add defines here, which control behaviour of .dtsi:
 
 #include "trizeps8plus.dtsi"
+#include "pconxs-tr8p.dtsi"
 #include "hdmi-tr8p.dtsi"
 
 / {
 	model      = "Keith & Koep GmbH pConXS V2 HDMI i.MX8MP Trizeps8-Plus";
 	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
-
+/*
 	chosen {
 		stdout-path = &uart1;
 	};
+*/
 };
-
+/*
 &irqsteer_hdmi {
 	status = "okay";
 };
@@ -51,7 +53,7 @@
 &sound_hdmi {
 	status = "okay";
 };
-
+*/
 // GPU
 &gpu_2d {
 	status = "okay";

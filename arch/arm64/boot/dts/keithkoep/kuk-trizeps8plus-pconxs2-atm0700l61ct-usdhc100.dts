@@ -9,12 +9,13 @@
 
 #define USDHC_MHZ 100
 #include "trizeps8plus.dtsi"
+#include "pconxs-tr8p.dtsi"
 #include "atm0700l61ct-tr8p.dtsi"
 
 / {
 	model      = "Keith & Koep GmbH pConXS V2 ATM0700L61CT i.MX8MP Trizeps8-Plus";
 	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
-
+/*
 	chosen {
 		stdout-path = &uart1;
 	};
@@ -27,9 +28,9 @@
 		regulator-always-on;
 		vin-supply = <&reg_vin_fused>;
 	};
-
+*/
 };
-
+/*
 &ldb {
 	status = "okay";
 };
@@ -37,11 +38,12 @@
 &ldb_phy {
 	status = "okay";
 };
-
+*/
+/*
 &panel_lvds1 {
 	status = "okay";
 };
-/*
+
 &lcdif1 {
 	status = "okay";
 };
@@ -49,7 +51,7 @@
 &lcdif2 {
 	status = "okay";
 };
-
+/*
 &backlight {
 	status = "okay";
 };
@@ -61,3 +63,4 @@
 &usdhc2 {
 	status = "okay";
 };
+*/

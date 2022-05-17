@@ -1,21 +1,14 @@
 /*
- * Copyright 2020 Keith & Koep GmbH
+ * Copyright 2022 Keith & Koep GmbH
  *
  */
 
-/dts-v1/;
+ /************************************************************************/
 
-// Add defines here, which control behaviour of .dtsi:
-
-#include "trizeps8plus.dtsi"
-#include "pconxs-tr8p.dtsi"
-//#include "hdmi-tr8p.dtsi"
-#include "atm0700l61ct-tr8p.dtsi"
+#ifndef PCONXS_TR8P_DTSI
+#define PCONXS_TR8P_DTSI
 
 / {
-	model      = "Keith & Koep GmbH pConXS V2 ATM0700L61CT i.MX8MP Trizeps8-Plus";
-	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
-#if 0
 	chosen {
 		stdout-path = &uart1;
 	};
@@ -40,16 +33,25 @@
             gpio-key,wakeup;
         };
     };
-#endif
 };
 
-#if 0
 &iomuxc {
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			// HDMI
+			MX8MP_IOMUXC_HDMI_DDC_SCL__HDMIMIX_HDMI_SCL	0x400001c3
+			MX8MP_IOMUXC_HDMI_DDC_SDA__HDMIMIX_HDMI_SDA	0x400001c3
+			MX8MP_IOMUXC_HDMI_HPD__HDMIMIX_HDMI_HPD		0x40000019
+			MX8MP_IOMUXC_HDMI_CEC__HDMIMIX_HDMI_CEC		0x40000019
+			// LCD1_VCC_ON
+			SPIN100_GPIO1_IO05	PAD_GPIO
+		>;
+	};
+
     pinctrl_gpio_keys: gpio_keys {
 		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
 	};
 };
-#endif
 /*
 &ldb {
 	status = "okay";
@@ -59,20 +61,6 @@
 	status = "okay";
 };
 */
-/*
-&panel_lvds1 {
-	status = "okay";
-};
-*/
-/*
-&lcdif1 {
-	status = "okay";
-};
-*/
-&lcdif2 {
-	status = "okay";
-};
-/*
 &backlight {
 	status = "okay";
 };
@@ -84,4 +72,5 @@
 &usdhc2 {
 	status = "okay";
 };
-*/
+
+#endif

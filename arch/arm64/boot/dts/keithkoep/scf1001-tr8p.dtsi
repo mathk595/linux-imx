@@ -11,8 +11,8 @@ Defines:
 #ifndef PANEL_SCF1001_DTSI
 #define PANEL_SCF1001_DTSI
 
+/*
 / {
-
 	reg_display_pwr: display-pwr {
 		compatible = "regulator-fixed";
 		regulator-name = "DISPLAY PWCTRL";
@@ -21,12 +21,12 @@ Defines:
 		regulator-always-on;
 		vin-supply = <&reg_vin_fused>;
 	};
-
 };
+*/
 
 / {
 	panel_lvds1: panel1 {
-		status       = "disabled";
+		status          = "okay";
 		compatible   = "panel-lvds";
 		data-mapping = "vesa-24";
 /*
@@ -78,11 +78,13 @@ Defines:
 #define touch_int_pin     4
 
 &iomuxc {
+	/*
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
 			SPIN100_GPIO1_IO05	PAD_GPIO	// LCD1_VCC_ON
 		>;
 	};
+	*/
 /**/
 	pinctrl_captouch: captouchgrp {
 		fsl,pins = <
@@ -94,7 +96,7 @@ Defines:
 
 
 &ldb {
-	status = "disabled";
+	status = "okay";
 	lvds-channel@0 {
 		status = "okay";
 		fsl,data-mapping = "spwg";
@@ -106,6 +108,10 @@ Defines:
 			};
 		};
 	};
+};
+
+&ldb_phy {
+	status = "okay";
 };
 
 

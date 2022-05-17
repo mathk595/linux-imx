@@ -6,16 +6,18 @@
 /dts-v1/;
 
 // Add defines here, which control behaviour of .dtsi:
-#define DISPLAY_ENABLE SPIN100_GPIO1_IO05
+//#define DISPLAY_ENABLE SPIN100_GPIO1_IO05
 #define display_enable &gpio1 5
+#define USDHC_MHZ 100
 
 #include "trizeps8plus.dtsi"
+#include "ipant7-tr8p.dtsi"
 #include "atm0700-tr8p.dtsi"
 
 / {
 	model      = "Keith & Koep GmbH iPANT7 i.MX8MP Trizeps8-Plus";
 	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
-
+/*
 	chosen {
 		stdout-path = &uart1;
 	};
@@ -32,10 +34,10 @@
 		regulator-always-on;
 		vin-supply = <&reg_3v3>;
 	};
-
+*/
 };
 
-
+#if 0
 &iomuxc {
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
@@ -47,8 +49,8 @@
 		fsl,pins = < DISPLAY_ENABLE		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
 	};
 };
-
-
+#endif
+/*
 &fpga {
 	// AZ Display
 	// 0x00		I2C_REG_ID:	0x61
@@ -69,16 +71,17 @@
 	tr8fpga,values    = < 0x8D 0x00 >;
 	status = "okay";
 };
-
+*/
 // display
+/*
 &mipi_dsi {
 	status = "okay";
 };
-
+*/
 &lcdif1 {
 	status = "okay";
 };
-
+/*
 &backlight {
 	status = "okay";
 };
@@ -86,3 +89,4 @@
 &pwm1 {
 	status = "okay";
 };
+*/
