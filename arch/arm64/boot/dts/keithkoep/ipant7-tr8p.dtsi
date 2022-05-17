@@ -18,10 +18,6 @@
 		regulator-name = "DISPLAY PWCTRL";
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		//pinctrl-names = "default";
-		//pinctrl-0 = <&pinctrl_display_enable>;
-		//gpio = <spin100_gpio 0>;
-		//enable-active-high;
 		regulator-always-on;
 		vin-supply = <&reg_3v3>;
 	};
@@ -31,7 +27,6 @@
 &iomuxc {
 	pinctrl_hog: hoggrp {
 		fsl,pins = <
-			//SPIN100_GPIO1_IO05	PAD_GPIO	/* LCD1_VCC_ON */
 		>;
 	};
 

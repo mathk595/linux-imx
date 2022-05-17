@@ -14,43 +14,5 @@
 / {
 	model      = "Keith & Koep GmbH pConXS V2 HDMI i.MX8MP Trizeps8-Plus";
 	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
-/*
-	chosen {
-		stdout-path = &uart1;
-	};
-*/
-};
-/*
-&irqsteer_hdmi {
-	status = "okay";
-};
 
-&hdmi_blk_ctrl {
-	status = "okay";
 };
-
-&hdmi_pavi {
-	status = "okay";
-};
-
-&hdmi {
-	status = "okay";
-};
-
-&hdmiphy {
-	status = "okay";
-};
-
-&lcdif3 {
-	//status = "okay";
-};
-
-// HDMI Audio
-&aud2htx {
-	status = "okay";
-};
-
-&sound_hdmi {
-	status = "okay";
-};
-*/

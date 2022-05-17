@@ -16,66 +16,9 @@
 / {
 	model      = "Keith & Koep GmbH iPANT7 V2 i.MX8MP Trizeps8-Plus";
 	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
-/*
-	chosen {
-		stdout-path = &uart1;
-	};
 
-	reg_display_pwr: display-pwr {
-		compatible = "regulator-fixed";
-		regulator-name = "DISPLAY PWCTRL";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		//pinctrl-names = "default";
-		//pinctrl-0 = <&pinctrl_display_enable>;
-		//gpio = <spin100_gpio 0>;
-		//enable-active-high;
-		regulator-always-on;
-		vin-supply = <&reg_3v3>;
-	};
-*/
 };
 
-#if 0
-&iomuxc {
-	pinctrl_hog: hoggrp {
-		fsl,pins = <
-			//SPIN100_GPIO1_IO05	PAD_GPIO	/* LCD1_VCC_ON */
-		>;
-	};
-
-	pinctrl_display_enable: display-enable 	{
-		fsl,pins = < DISPLAY_ENABLE		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
-	};
-};
-#endif
-/*
-&ldb {
-	status = "okay";
-};
-
-&ldb_phy {
-	status = "okay";
-};
-
-&panel_lvds1 {
-	status = "okay";
-};
-*/
-/*
-&lcdif1 {
-	status = "okay";
-};
-*/
 &lcdif2 {
 	status = "okay";
 };
-/*
-&backlight {
-	status = "okay";
-};
-
-&pwm1 {
-	status = "okay";
-};
-*/

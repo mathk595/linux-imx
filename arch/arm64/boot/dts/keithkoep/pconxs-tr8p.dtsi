@@ -52,15 +52,7 @@
 		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
 	};
 };
-/*
-&ldb {
-	status = "okay";
-};
 
-&ldb_phy {
-	status = "okay";
-};
-*/
 &backlight {
 	status = "okay";
 };

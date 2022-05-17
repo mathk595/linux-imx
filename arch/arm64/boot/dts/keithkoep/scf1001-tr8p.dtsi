@@ -11,18 +11,6 @@ Defines:
 #ifndef PANEL_SCF1001_DTSI
 #define PANEL_SCF1001_DTSI
 
-/*
-/ {
-	reg_display_pwr: display-pwr {
-		compatible = "regulator-fixed";
-		regulator-name = "DISPLAY PWCTRL";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-always-on;
-		vin-supply = <&reg_vin_fused>;
-	};
-};
-*/
 
 / {
 	panel_lvds1: panel1 {
@@ -78,20 +66,11 @@ Defines:
 #define touch_int_pin     4
 
 &iomuxc {
-	/*
-	pinctrl_hog: hoggrp {
-		fsl,pins = <
-			SPIN100_GPIO1_IO05	PAD_GPIO	// LCD1_VCC_ON
-		>;
-	};
-	*/
-/**/
 	pinctrl_captouch: captouchgrp {
 		fsl,pins = <
 			TOUCH_INT  		PAD_GPIO // IRQ
 		>;
 	};
-/**/
 };
 
 
@@ -115,28 +94,6 @@ Defines:
 };
 
 
-/*
-&i2c2 {
-	touch: edt-ft5x06@38 {
-		compatible = "edt,edt-ft5x06", "edt,edt-ft5406";
-		reg = <0x38>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_captouch>;
-		enable_wakeup = "true";
-		interrupt-parent = <touch_int_parent>;
-		interrupts = <touch_int_pin IRQ_TYPE_LEVEL_LOW>;
-		touch-threshold     = <30>;
-		touch-gain          = <3>;
-		touch-offset        = <0>;
-		touch-report-rate   = <8>;
-		yreverse            = "true";
-		xreverse            = "true";
- 		xres                = <1024>;
- 		yres	            = <600>;
-		linux,wakeup;
-	};
-};
-*/
 #define GUF
 #ifndef GUF
 &i2c2 {

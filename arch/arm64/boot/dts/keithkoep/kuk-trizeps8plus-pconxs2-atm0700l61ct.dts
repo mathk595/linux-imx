@@ -15,73 +15,9 @@
 / {
 	model      = "Keith & Koep GmbH pConXS V2 ATM0700L61CT i.MX8MP Trizeps8-Plus";
 	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
-#if 0
-	chosen {
-		stdout-path = &uart1;
-	};
 
-	reg_display_pwr: display-pwr {
-		compatible = "regulator-fixed";
-		regulator-name = "DISPLAY PWCTRL";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-always-on;
-		vin-supply = <&reg_vin_fused>;
-	};
-
-	gpio-keys {
-        compatible = "gpio-keys1";
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_gpio_keys>;
-        power { /* Reconfig to power key in Android*/
-            label = "Power Button";
-            gpios = <spin122_gpio GPIO_ACTIVE_LOW>;
-            linux,code = <116>; /* KEY_POWER */
-            gpio-key,wakeup;
-        };
-    };
-#endif
 };
 
-#if 0
-&iomuxc {
-    pinctrl_gpio_keys: gpio_keys {
-		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
-	};
-};
-#endif
-/*
-&ldb {
-	status = "okay";
-};
-
-&ldb_phy {
-	status = "okay";
-};
-*/
-/*
-&panel_lvds1 {
-	status = "okay";
-};
-*/
-/*
-&lcdif1 {
-	status = "okay";
-};
-*/
 &lcdif2 {
 	status = "okay";
 };
-/*
-&backlight {
-	status = "okay";
-};
-
-&pwm1 {
-	status = "okay";
-};
-
-&usdhc2 {
-	status = "okay";
-};
-*/

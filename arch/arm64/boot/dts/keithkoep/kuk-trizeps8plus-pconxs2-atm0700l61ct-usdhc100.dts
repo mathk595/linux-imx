@@ -15,52 +15,9 @@
 / {
 	model      = "Keith & Koep GmbH pConXS V2 ATM0700L61CT i.MX8MP Trizeps8-Plus";
 	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
-/*
-	chosen {
-		stdout-path = &uart1;
-	};
 
-	reg_display_pwr: display-pwr {
-		compatible = "regulator-fixed";
-		regulator-name = "DISPLAY PWCTRL";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-always-on;
-		vin-supply = <&reg_vin_fused>;
-	};
-*/
-};
-/*
-&ldb {
-	status = "okay";
 };
 
-&ldb_phy {
-	status = "okay";
-};
-*/
-/*
-&panel_lvds1 {
-	status = "okay";
-};
-
-&lcdif1 {
-	status = "okay";
-};
-*/
 &lcdif2 {
 	status = "okay";
 };
-/*
-&backlight {
-	status = "okay";
-};
-
-&pwm1 {
-	status = "okay";
-};
-
-&usdhc2 {
-	status = "okay";
-};
-*/
