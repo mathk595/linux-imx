@@ -11,6 +11,7 @@ dtb-y +=	kuk-trizeps8mini-ipant7_v2.dtb \
 			kuk-trizeps8plus-pconxs2-atm0700l61ct-usdhc100.dtb \
 			kuk-trizeps8plus-pconxs2-atm0700l61ct-gpu.dtb \
 			kuk-trizeps8plus-pconxs2-atm0700l61ct-ov5640.dtb \
+			kuk-trizeps8plus-pconxs2-atm0700l61ct-gpu-ov5640.dtb \
 			kuk-trizeps8plus-pconxs2-hdmi.dtb \
 			kuk-trizeps8plus-pconxs2-hdmi-gpu.dtb \
 			kuk-trizeps8plus-ipant7.dtb \
