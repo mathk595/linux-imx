@@ -1,0 +1,90 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+#define USDHC_MHZ 100
+#define PCONXS_VERSION 3
+
+#include "trizeps8plus.dtsi"
+#include "pconxs-tr8p.dtsi"
+//#include "panel-lvds.dtsi"
+#include "scf1001-tr8p.dtsi"
+#include "gpu-tr8p.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH pConXS V3 SCF1001 i.MX8MP Trizeps8-Plus";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
+/*
+	chosen {
+		stdout-path = &uart1;
+	};
+*/
+};
+#if 0
+/ {
+	reg_display_pwr: display-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "DISPLAY PWCTRL";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+	gpio-keys {
+        compatible = "gpio-keys1";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_gpio_keys>;
+        power { /* Reconfig to power key in Android*/
+            label = "Power Button";
+            gpios = <spin122_gpio GPIO_ACTIVE_LOW>;
+            linux,code = <116>; /* KEY_POWER */
+            gpio-key,wakeup;
+        };
+    };
+};
+
+&iomuxc {
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			SPIN100_GPIO1_IO05	PAD_GPIO	// LCD1_VCC_ON
+		>;
+	};
+    pinctrl_gpio_keys: gpio_keys {
+		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
+	};
+};
+#endif
+/*
+&ldb {
+	status = "okay";
+};
+
+&ldb_phy {
+	status = "okay";
+};
+
+&panel_lvds1 {
+	status = "okay";
+};
+*/
+/*
+&lcdif1 {
+	status = "okay";
+};
+*/
+&lcdif2 {
+	status = "okay";
+};
+/*
+&backlight {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
+*/
