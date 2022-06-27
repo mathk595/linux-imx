@@ -66,8 +66,8 @@
 #define LVDS_EN_USDHC1_TEST_TRIG                           0x038 0x2A0 0x000 0x7 0x0
 #define SPIN100_GPIO1_IO5                                  0x03C 0x2A4 0x000 0x0 0x0
 #define SPIN100_GPIO                                       0x03C 0x2A4 0x000 0x0 0x0
-#define spin100_gpio    &gpio1 5
-#define DISPLAY_ENABLE                                       0x03C 0x2A4 0x000 0x0 0x0
+#define spin100_gpio      &gpio1 5
+#define DISPLAY_ENABLE                                      0x03C 0x2A4 0x000 0x0 0x0
 #define display_enable    &gpio1 5
 #define SPIN100_M4_NMI                                      0x03C 0x2A4 0x000 0x1 0x0
 #define SPIN100_CCMSRCGPCMIX_PMIC_READY                     0x03C 0x2A4 0x000 0x5 0x0
@@ -470,6 +470,7 @@
 #define SPIN114_CORESIGHT_TRACE10                            0x194 0x3FC 0x000 0x4 0x0
 #define SPIN114_GPIO4_IO14                                   0x194 0x3FC 0x000 0x5 0x0
 #define SPIN114_GPIO                                         0x194 0x3FC 0x000 0x5 0x0
+#define spin114_gpio      &gpio4 14
 #define SPIN114_CCMSRCGPCMIX_BOOT_CFG10                      0x194 0x3FC 0x000 0x6 0x0
 #define SPIN114_SIM_M_HADDR29                                0x194 0x3FC 0x000 0x7 0x0
 #define SPIN116_SAI1_TX_DATA3                                0x198 0x400 0x000 0x0 0x0
