@@ -343,12 +343,28 @@ Switches:
 &pcie0{
 	pinctrl-names   = "default";
 	pinctrl-0       = <&pinctrl_pcie0>;
-	disable-gpio    = <&gpio3 17 GPIO_ACTIVE_LOW>;
+
+	/*
+	 *  gpios for Trizeps Onboard Gpios
+	 */
+	disable-gpio    = <&gpio3 17 GPIO_ACTIVE_LOW>; /* Not on Modules >= V1R3 */
 	reset-gpio      = <&gpio2 19 GPIO_ACTIVE_LOW>;
+	wake-gpio       = <&gpio3  2 GPIO_ACTIVE_LOW>;	/* Only set by Bootloader */
+
+#if 0
+	/* EXT-GPIOS to be used with external cards, when no onboard wifi available
+	 *           until now not handled by BSP, only by bootloader with env
+	 */
+	disable-gpio-ext= <&gpio4 15 GPIO_ACTIVE_LOW>;   
+	reset-gpio-ext  = <&gpio4 17 GPIO_ACTIVE_LOW>;
+	wake-gpio-ext   = <&gpio3 13 GPIO_ACTIVE_LOW>;	/* Only set by Bootloader */
+#endif
+
 	clocks          = <&clk IMX8MM_CLK_PCIE1_ROOT>,
-		                <&clk IMX8MM_CLK_PCIE1_AUX>,
-		                <&clk IMX8MM_CLK_PCIE1_PHY>,
-		                <&pcie0_refclk>;
+		          <&clk IMX8MM_CLK_PCIE1_AUX>,
+		          <&clk IMX8MM_CLK_PCIE1_PHY>,
+		          <&pcie0_refclk>;
+			  
 	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
 	hard-wired      = <1>;
     ext_osc         = <0>;
@@ -462,12 +478,15 @@ Switches:
 
 &usbotg2 {
 	dr_mode = "host";
+/*	
 	hnp-disable;
 	srp-disable;
 	adp-disable;
 	usb-role-switch;
-	picophy,pre-emp-curr-control = <3>;
-	picophy,dc-vol-level-adjust = <7>;
+*/
+	extcon = <0>;
+	samsung,picophy,pre-emp-curr-control = <3>;
+	samsung,picophy,dc-vol-level-adjust = <7>;
 	status = "okay";
 };
 
