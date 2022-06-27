@@ -1208,6 +1208,20 @@ config TOUCHSCREEN_SIS_I2C
 	  To compile this driver as a module, choose M here: the
 	  module will be called sis_i2c.
 
+config TOUCHSCREEN_SIS_I2C_GUF
+	tristate "SiS 9200 based I2C touchscreen by GuF"
+	depends on I2C
+	select CRC_ITU_T
+	depends on GPIOLIB || COMPILE_TEST
+	help
+	  This enables support for SiS 9200 over I2C based touchscreens
+	  by Garz und Fricke.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called sis_i2c.
+
 config TOUCHSCREEN_ST1232
 	tristate "Sitronix ST1232 or ST1633 touchscreen controllers"
 	depends on I2C
