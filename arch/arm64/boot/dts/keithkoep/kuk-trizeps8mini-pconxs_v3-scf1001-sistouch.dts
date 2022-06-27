@@ -1,0 +1,39 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+#define ETHERNET_ONLY_100MBIT       0
+#define DISPLAY_ONLY_18BPP          1
+#define PCONXS_III_OTG_ACTIVE_HIGH  1
+#define PRIMARY_DISPLAY_LVDS        1
+#define OTG_HOST                    0
+#define OTG_SLAVE                   1
+#define OTG_OTG                     2
+#define USB1_OTG_FUNC               OTG_OTG
+
+#include "trizeps8mini.dtsi"
+#include "pconxs.dtsi"
+#include "scf1001-sis.dtsi"
+
+// #include "ov5640.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH pConXS III SCF1001 SisTouch i.MX8MM Trizeps8-Mini";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mm-evk", "fsl,imx8mm";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+&usbotg1 {
+	dr_mode = "otg";
+};
+
+&usbotg2 {
+	dr_mode = "host";
+};
