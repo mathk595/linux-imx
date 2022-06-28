@@ -9,6 +9,7 @@ dtb-y +=		kuk-trizeps8mini-ipant7_v2.dtb \
 			kuk-trizeps8mini-pconxs-edt7cap.dtb \
 			kuk-trizeps8mini-ipant10.dtb \
 			kuk-trizeps8mini-pconxs_v3-am19201080d1tzqw.dtb \
+			kuk-trizeps8mini-pconxs_v3-scf1001-sistouch.dtb \
 			kuk-trizeps8mini-pconxs_v2-edt7cap.dtb \
 			kuk-sbcsom-hdmi.dtb \
 			kuk-sbcsom-atm0700l61ct.dtb \
