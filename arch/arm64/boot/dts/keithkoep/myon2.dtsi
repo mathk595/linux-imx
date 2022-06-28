@@ -12,7 +12,7 @@ Defines:
 #include "imx8mm.dtsi"
 #include "myon2-pinfunc.h"
 
-#ifdef  USB1_OTG_ID_PIN_PD
+#ifdef USB1_OTG_ID_PIN_PD 
 
 #define MYON2_HOGGRP_COMMON     PIN0_32_GPIO   PAD_GPIO_PD  \
                                 MX8MM_IOMUXC_GPIO1_IO10_USB1_OTG_ID  MX8MM_PAD_GPIO_PD
@@ -374,7 +374,16 @@ Defines:
 */
 
 &usbotg1 {
-	dr_mode = "otg";
+#if defined(USB1_OTG_FUNC) && (USB1_OTG_FUNC == OTG_HOST   )
+	dr_mode = "host";
+#else
+ #if defined(USB1_OTG_FUNC) && (USB1_OTG_FUNC == OTG_SLAVE )
+ 	dr_mode = "peripheral";
+ #else
+	dr_mode = "otg"; 
+ #endif
+#endif
+
 /*	
 	dr_mode = "peripheral";
 	usb-role-switch;
