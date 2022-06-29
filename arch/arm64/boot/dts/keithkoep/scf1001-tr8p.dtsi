@@ -58,6 +58,35 @@ Defines:
 		};
 	};
 
+	reserved@board {
+		compatible    = "kk,trizeps7-reserved";
+		kk,gpio-names = "DISPLAY_PWR";
+		kk,os-gpios   = <
+			&gpio3 7 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0))
+			>;
+	};
+
+	reserved@mcu {
+		compatible     = "kk,trizeps8mcu-reserved";
+/********************************************************************************************************************
+* MCU Pin         6        5        4        3    20    21    23     9  24                  26          11         10
+* GPIO          1.0      1.1       1.2     1.3   1.4   1.5   1.6   1.7                     1.8         1.9       1.10
+* -------------------------------------------------------------------------------------------------------------------
+* TR8MINI   VIN_AD3  VIN_AD2  VIN_AD1  VIN_AD0  TSPX  TSMX  TSPY  TSMY  RTCLK         nRESET_O     CAN1_RX    CAN1_TX
+*                                                                                    +NAND-DQS
+* SODIMM_MINI     2        4       6         8    14   16     18    20   -                  87          75        99
+*
+* TR8PLUS   VIN_AD3  VIN_AD2  VIN_AD1  VIN_AD0  TSPX  TSMX  TSPY  TSMY  nRESET_O  /WLANPWRDOWN      CIF_D9 /RF_DISABLE
+*                                                                      +NAND-DQS
+* SODIMM_PLUS     2        4       6         8    14   16     18    20       87             -           75          -
+* -------------------------------------------------------------------------------------------------------------------
+* *******************************************************************************************************************
+*/
+        kk,gpio-names  = "WAKE";
+        kk,os-gpios = <
+			&gpio1 9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0))
+			>;
+	};
 };
 
 
