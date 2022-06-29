@@ -13,6 +13,9 @@ Switches:
 #include "imx8mp.dtsi"
 #include "trizeps8plus-pinfunc.h"
 
+#ifndef MCUTOUCH
+#define MCUTOUCH 0
+#endif
 
 / {
 	firmware {
@@ -539,8 +542,42 @@ Switches:
 		//status = "ok";
 	};
 
+#if 1 //MCUTOUCH
+	/*
+	  Usualy there will be no mcu-touch, but since the mcu-touch driver
+	  also contains the driver for the mcu-gpios. 
+	  If we need them we have to configure but disable it.
+	  (Ugly, quick and dirty. Should find a better way.)
+	*/
+	mcutouch: kuk_tr8mcu_touch@10 { /* Kinetis MCU and touch-controller */
+		compatible = "kuk,kuk-tr8mcu-touch";
+		reg = <0x10>;
+		/*
+        regulator-name = "sd_pwr";
+        regulator-min-microvolt = <1800000>;
+        regulator-max-microvolt = <3300000>;
+		pinctrl-names = "default";
+		//pinctrl-0 = <&pinctrl_restouch>;
+		//interrupts-extended = <&gpio2 20 IRQ_TYPE_LEVEL_LOW>;	        	
+		xscale              = <800>;
+		yscale              = <480>;
+		xmin                = <306>;
+		xmax                = <3781>;
+        ymin                = <692>;
+        ymax                = <3459>;
+        settle              = <10>;
+		average             = <25>;
+		yreverse            = "true" ;
+		*/
+        enable_touch        = "false";
+		//linux,wakeup;
+	};
+#endif
 };
 
+&gpio5 {
+	kukmiscinit = <1>;
+};
 
 
 &snvs_pwrkey {
