@@ -97,8 +97,8 @@ enum t_ {
 #define KUK_YNEG	0x4
 #define KUK_NAME_LEN	23
 
-/*                    0  1  2  3   4   5   6   7   8   9  10  11, 12, 13, 14, 15 */
-int gpio_to_pin[] = { 2, 4, 6, 8, 14, 16, 18, 20, 87, 97, 99, -1, -1, -1, -1, -1 };
+/*                        0  1  2  3   4   5   6   7   8   9  10  11, 12, 13, 14, 15 */
+int32_t gpio_to_pin[] = { 2, 4, 6, 8, 14, 16, 18, 20, 87, 97, 99, -1, -1, -1, -1, -1 };
   
 
 int tr8_read_aux_adc(struct i2c_client *client, int adcsel);
@@ -805,8 +805,8 @@ static int probe_mcu_gpio(struct i2c_client          *client,
     goto fail;
 
   printk(KERN_ERR "probe_mcu_gpio success !***\n");
-  handle_reserved_mcu();  
-  return(0);
+  return handle_reserved_mcu();  
+  //return(0);
  
 
 fail:
@@ -999,7 +999,8 @@ static int kuk_tr8mcu_ts_probe(struct i2c_client *client,
 	struct kuk_tr8mcu_ts_data *tsdata;
 	struct input_dev *input;
 	int error;
-	
+	int count __maybe_unused;
+
 	dev_dbg(&client->dev, "probing for KUK TR8MCU Touch I2C\n");
 
 	tsdata = devm_kzalloc(&client->dev, sizeof(*tsdata), GFP_KERNEL);
@@ -1036,7 +1037,19 @@ static int kuk_tr8mcu_ts_probe(struct i2c_client *client,
 		return error;
 	}
 
-		
+#ifdef CONFIG_OF
+	count = of_property_count_u32_elems(client->dev.of_node, "mcu,gpios");
+	if(count > 0)
+	{
+		dev_info(&client->dev, "%d mcu,gpios configured\n", count);
+		if(of_property_read_u32_array(client->dev.of_node, "mcu,gpios",
+									  (int32_t *)gpio_to_pin, count))
+			dev_warn(&client->dev, "failed to read mcu,gpios, using defaults\n");
+	}
+	else
+		dev_info(&client->dev, "mcu,gpios not configured\n");
+#endif
+
 	if (gpio_is_valid(tsdata->irq_pin)) {
 		error = devm_gpio_request_one(&client->dev, tsdata->irq_pin,
 					GPIOF_IN, "kuk-tr8mcu irq");

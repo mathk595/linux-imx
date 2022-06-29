@@ -570,6 +570,7 @@ Switches:
 		yreverse            = "true" ;
 		*/
         enable_touch        = "false";
+		mcu,gpios = < 2 4 6 8 14 16 18 20 87 75 99 >;
 		//linux,wakeup;
 	};
 #endif
