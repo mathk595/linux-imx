@@ -15,7 +15,8 @@ dtb-y +=		kuk-trizeps8mini-ipant7_v2.dtb \
 			kuk-sbcsom-atm0700l61ct.dtb \
 			kuk-myon2-ipanm7.dtb \
 			kuk-myon2-ipanm7-ov5645.dtb \
-			kuk-trizeps8mini-pconxs_v3-atm0700.dtb 
+			kuk-trizeps8mini-pconxs_v3-atm0700.dtb \
+			kuk-trizeps8mini-sharpfin.dtb
 
 #			kuk-myon2-de4.dtb \
 #			kuk-trizeps8-ipant10.dtb \
