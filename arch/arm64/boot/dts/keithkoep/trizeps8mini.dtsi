@@ -223,7 +223,8 @@ Switches:
 		};
 
 		simple-audio-card,codec {
-			sound-dai = <&wm8983>;
+			//sound-dai = <&wm8983>;
+			sound-dai = <&audiocodec>;
 			clocks = <&clk IMX8MM_CLK_SAI2_ROOT>;
 		};
 	};
@@ -667,7 +668,8 @@ Switches:
 		};
 	};
 
-	wm8983: wm8983@1a {	/* Audio-Codec */
+	//wm8983: wm8983@1a {	/* Audio-Codec */
+	audiocodec: wm8983@1a {	/* Audio-Codec */
         #sound-dai-cells = <0>;
 		compatible = "kuk,wm8983";
 		reg = <0x1a>;
