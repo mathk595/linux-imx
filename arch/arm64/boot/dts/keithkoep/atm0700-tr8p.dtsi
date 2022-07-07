@@ -1,0 +1,100 @@
+/*
+ * Copyright 2021 Keith & Koep GmbH
+ *
+ */
+
+/*
+Remarks:
+Defines:
+*/
+
+#ifndef ATM0700_TR8P_DTSI
+#define ATM0700_TR8P_DTSI
+
+&mipi_dsi {
+
+	status              = "okay";
+	panel@0 {
+		compatible      = "az,atm0700";   /* call driver Panel-simple.c */
+		reg             = <0>;
+		pinctrl-0       = <&pinctrl_display_enable>;
+		enable-gpio     = <display_enable GPIO_ACTIVE_HIGH>;
+		dsi-lanes       = <2>;
+		panel-width-mm  = <154>;
+		panel-height-mm = <86>;
+		power           = <&reg_display_pwr>;
+		status          = "okay";
+
+		port@1 {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
+
+	};
+	
+	port@1 {
+		mipi_dsi_out: endpoint {
+			remote-endpoint = <&panel1_in>;
+		};
+	};
+};
+
+&fpga {
+	// AZ Display
+	// 0x00		I2C_REG_ID:	0x61
+	// 0x01		I2C_REG_TEMP:	simple memory register
+	// 0x10		I2C_REG_DISPLAY:
+	//	0x8.	invert PCLK polarity
+	//	0x4.	invert HSync polarity
+	// 	0x2.	invert VSync polarity
+	//	0x1.	invert Data-Enable polarity
+	//	0x.C	24 bpp
+	//	0x.8	18 bpp
+	//	0x.4	16 bpp
+	//	0x.1	Enable MIPI-DSI to RGB conversion
+	// 0x20
+	//      0x01    Enable Wireless Module 2 UART4
+	//      
+	tr8fpga,addresses = < 0x10 0x20 >;
+	tr8fpga,values    = < 0x8D 0x00 >;
+	status = "okay";
+};
+
+#define TOUCH_INT	SPIN45_GPIO
+#define touch_int_parent  &gpio3
+#define touch_int_pin     4
+
+&i2c2 {
+	touch: edt-ft5x06@38 {
+		compatible = "edt,edt-ft5x06", "edt,edt-ft5406";
+		reg = <0x38>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_captouch>;
+		enable_wakeup = "true";
+		interrupt-parent = <touch_int_parent>;
+		interrupts = <touch_int_pin IRQ_TYPE_LEVEL_LOW>;
+		touch-threshold     = <30>;
+		touch-gain          = <3>;
+		touch-offset        = <0>;
+		touch-report-rate   = <8>;
+
+		//yreverse            = "true";
+		//xreverse            = "true";
+		xres                = <800>;
+		yres	            = <480>;
+
+		linux,wakeup;
+	};
+};
+
+
+&iomuxc {
+	pinctrl_captouch: captouchgrp {
+		fsl,pins = <
+					 TOUCH_INT  		PAD_GPIO /* IRQ */
+			>;
+	};
+};
+
+#endif

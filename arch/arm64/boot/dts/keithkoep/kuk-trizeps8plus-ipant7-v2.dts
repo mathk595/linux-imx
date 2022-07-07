@@ -1,0 +1,24 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+//#define DISPLAY_ENABLE SPIN100_GPIO1_IO05
+//#define display_enable &gpio1 5
+
+#include "trizeps8plus.dtsi"
+#include "ipant7-tr8p.dtsi"
+#include "atm0700l61ct-tr8p.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH iPANT7 V2 i.MX8MP Trizeps8-Plus";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
+
+};
+
+&lcdif2 {
+	status = "okay";
+};

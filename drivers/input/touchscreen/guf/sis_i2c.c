@@ -77,7 +77,7 @@
 #define BYTE_CRC_I2C					2
 #define BYTE_SCANTIME					2
 
-#define MAX_SLOTS					10
+#define MAX_SLOTS						10
 
 struct sis_slot {
 	int check_id;
@@ -439,8 +439,8 @@ type_b_report:
 		
 		pre_check_id[i] = check_id[i];
 	}
-#endif
 	input_mt_report_pointer_emulation(ts->input_dev, true);
+#endif
 	input_sync(ts->input_dev);
 
 out:

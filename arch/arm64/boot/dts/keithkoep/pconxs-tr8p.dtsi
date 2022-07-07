@@ -1,0 +1,68 @@
+/*
+ * Copyright 2022 Keith & Koep GmbH
+ *
+ */
+
+ /************************************************************************/
+
+#ifndef PCONXS_TR8P_DTSI
+#define PCONXS_TR8P_DTSI
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	reg_display_pwr: display-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "DISPLAY PWCTRL";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	gpio-keys {
+        compatible = "gpio-keys1";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_gpio_keys>;
+        power { /* Reconfig to power key in Android*/
+            label = "Power Button";
+            gpios = <spin122_gpio GPIO_ACTIVE_LOW>;
+            linux,code = <116>; /* KEY_POWER */
+            gpio-key,wakeup;
+        };
+    };
+};
+
+&iomuxc {
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			// HDMI
+			MX8MP_IOMUXC_HDMI_DDC_SCL__HDMIMIX_HDMI_SCL	0x400001c3
+			MX8MP_IOMUXC_HDMI_DDC_SDA__HDMIMIX_HDMI_SDA	0x400001c3
+			MX8MP_IOMUXC_HDMI_HPD__HDMIMIX_HDMI_HPD		0x40000019
+			MX8MP_IOMUXC_HDMI_CEC__HDMIMIX_HDMI_CEC		0x40000019
+			// LCD1_VCC_ON
+			SPIN100_GPIO1_IO05	PAD_GPIO
+		>;
+	};
+
+    pinctrl_gpio_keys: gpio_keys {
+		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
+	};
+};
+
+&backlight {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
+
+&usdhc2 {
+	status = "okay";
+};
+
+#endif
