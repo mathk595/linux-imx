@@ -9,8 +9,10 @@
 #define  OTG_HOST                0
 #define  OTG_SLAVE               1
 #define  OTG_OTG                 2
+#define  USB1_OTG_ID_PIN_PD      1
 
 #define  USB1_OTG_FUNC           OTG_OTG
+// #define  USB1_OTG_FUNC           OTG_HOST
 
 #include "myon2.dtsi"
 #include "conxm.dtsi"

@@ -41,11 +41,14 @@ extern unsigned char *trizeps_board_version_str;
 #define LESSWIRE_WiBear_DF1      0x102         
 #define LESSWIRE_WiBear_DF2      0x106         
 
+#define TYPE_TRIZEPS 0
+#define TYPE_MYON    1
 
 typedef struct _trizeps_hw_info 
 {
 
   unsigned long  trizeps_module;
+  unsigned long  trizeps_type;  
   unsigned long  trizeps_sodimm;
   unsigned long  trizeps_btwlan;
   unsigned long  trizeps_extcon;

@@ -2,6 +2,13 @@
  * Copyright 2020 Keith & Koep GmbH
  *
  */
+#if USB1_OTG_FUNC != OTG_SLAVE
+#define PADTYPE_USB_SW_SEL     PAD_GPIO_PD
+#define RSRVD_USB_SWSEL        KK_RSRVD_OUT_HI
+#else
+#define PADTYPE_USB_SW_SEL     PAD_GPIO_PU
+#define RSRVD_USB_SWSEL        KK_RSRVD_OUT_LO
+#endif
 
 &iomuxc {
 
@@ -10,7 +17,10 @@
     
 	pinctrl_hog: hoggrp {
     	fsl,pins = < 
-					MYON2_HOGGRP_COMMON			            
+				MYON2_HOGGRP_COMMON
+				PIN1_73_GPIO   PAD_GPIO_PU        /* CAM Pwdn     */
+				PIN1_71_GPIO   PAD_GPIO_PU        /* CAM nRST     */
+		        	PIN1_20_GPIO   PADTYPE_USB_SW_SEL /* USB SW SEL   */
 		       >;
 	};
 
@@ -76,6 +86,35 @@
 		regulator-always-on;
 		vin-supply = <&reg_3v3>;
 	};
+	
+	reg_usbhost_pwr: usbhost-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBHOST PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+
+	reg_usbotg_pwr: usbotg-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBOTG PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+
+  	reserved@board {
+        compatible      = "kk,trizeps7-reserved";
+        kk,gpio-names   = "Cam-nRST","Cam-PWDN","nRESET_OUT", "USB_SWSEL-HOST";
+        kk,os-gpios     = <
+                            pin1_71_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST  gpio1 6  */
+                            pin1_73_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3  */
+                            pin0_32_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* nRESET_OUT  */
+                            pin1_20_gpio   (RSRVD_USB_SWSEL|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* USB SW SEL  */
+                        >;
+    };
 
 	gpio-keys {
         compatible = "gpio-keys1";

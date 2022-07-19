@@ -1,0 +1,180 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/*
+Defines:
+    TOUCH_USE_INT2  Set if alternate touch-interrupt should be used.
+
+    TOUCH_INT      Defined in xxx_pinfunc.h. (SODIMM-pin: 45: pConXS)
+    TOUCH_INT2     Defined in xxx_pinfunc.h. (SODIMM-pin: 55: i-PANT7, i-PAN T10)
+    TOUCH_RESET    Defined in xxx_pinfunc.h. (SODIMM-pin: 75)
+*/
+
+&iomuxc {
+	pinctrl_captouch: captouchgrp {
+		fsl,pins = <                    
+					 TOUCH_RESET		PAD_GPIO /* WAKE SPIN75 */
+#if defined(TOUCH_USE_INT2) && (TOUCH_USE_INT2==1)
+					 TOUCH_INT2 		PAD_GPIO /* IRQ */
+#else
+					 TOUCH_INT  		PAD_GPIO /* IRQ */
+#endif
+			   	>;
+	};
+
+        // DISPLAY ENABLE (PIN100) MOVED TO BOARD....
+};
+
+
+#define SIS_TOUCH_SELECT "sis,sisi2c"
+// #define SIS_TOUCH_SELECT "sis,9200-ts" 
+#if 0
+Example:
+
+        sis9255@5c  {
+                compatible = "sis,9200-ts";
+                reg = <0x5c>;
+                pinctrl-names = "default";
+                pinctrl-0 = <&pinctrl_sis>;
+                interrupt-parent = <&gpio3>;
+                interrupts = <19 IRQ_TYPE_EDGE_FALLING>;
+                irq-gpios = <&gpio3 19 GPIO_ACTIVE_LOW>;
+                reset-gpios = <&gpio2 30 GPIO_ACTIVE_LOW>;
+        };
+#endif
+
+&i2c2 {
+        // Keith & Koep Version
+	touch: sis9255@5c {	
+		compatible       = "sis,sisi2c";
+		reg              = <0x5c>;
+		pinctrl-names    = "default";
+		pinctrl-0        = <&pinctrl_captouch>;
+		interrupt-parent = <touch_int_parent>;
+		interrupts       = <touch_int_pin  IRQ_TYPE_LEVEL_HIGH>;
+		irq-gpio         = <touch_int      IRQ_TYPE_LEVEL_HIGH>;
+#if 1		
+		reset-gpios      = <touch_reset    GPIO_ACTIVE_LOW>;
+		reset-low-active;
+		reset             =<touch_reset    GPIO_ACTIVE_LOW>;
+#endif		
+	};
+};
+
+&i2c3 {
+    dsi_lvds_bridge: sn65dsi84@2c {
+		compatible      = "ti,sn65dsi83";
+		reg             = <0x2c>;
+		ti,dsi-lanes    = <4>;
+		ti,lvds-format  = <2>;
+		ti,lvds-bpp     = <24>;
+		ti,lvds-channels= <1>;
+		ti,width-mm     = <217>;
+		ti,height-mm    = <136>;
+		enable-gpios    = <lvds_en_gpio GPIO_ACTIVE_HIGH>;
+		pinctrl-names   = "default";
+		pinctrl-0       = <&pinctrl_i2c3_sn65dsi84_en>; /* Display Enable claimed by baseboard display-pwr regulator */
+		status          = "okay";
+		backlight       = <&backlight>;
+		display-timings {
+			lvds {
+				clock-frequency = <68000000>;
+				hactive         = <1280>;
+				vactive         = <800>;
+				hback-porch     = <52>;
+				hfront-porch    = <48>;
+				vfront-porch    = <10>;
+				vback-porch     = <10>;
+				hsync-len       = <3>;
+				vsync-len       = <1>;
+				hsync-active    = <0>;
+				vsync-active    = <0>;
+				de-active       = <1>;
+				pixelclk-active = <0>;
+			};
+		};
+		
+		port {
+			dsi_lvds_bridge_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
+    };                            
+};
+
+&mipi_dsi {
+	status  = "okay";
+#if defined (__DTS_IMX8MM_PINFUNC_H) || defined (__DTS_IMX8MN_PINFUNC_H)
+	port@1 {
+		mipi_dsi_out: endpoint {
+			remote-endpoint = <&dsi_lvds_bridge_in>;
+			attach-bridge;
+		};
+	};
+#endif	
+};
+/************************************************************************/
+#if defined (__DTS_TRIZEPS8_PINFUNC_H)
+&hdmi {
+	status = "disabled";
+};
+
+&lcdif {
+	status = "disabled";
+};
+
+&dcss {
+	status = "okay";
+
+	clocks = <&clk IMX8MQ_CLK_DISP_APB_ROOT>,
+		 <&clk IMX8MQ_CLK_DISP_AXI_ROOT>,
+		 <&clk IMX8MQ_CLK_DISP_RTRM_ROOT>,
+		 <&clk IMX8MQ_CLK_DC_PIXEL>,
+		 <&clk IMX8MQ_CLK_DISP_DTRC>;
+	clock-names = "apb", "axi", "rtrm", "pix", "dtrc";
+	assigned-clocks = <&clk IMX8MQ_CLK_DC_PIXEL>,
+					  <&clk IMX8MQ_VIDEO_PLL1_BYPASS>,
+					  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>,
+					  <&clk IMX8MQ_CLK_DISP_AXI>,
+					  <&clk IMX8MQ_CLK_DISP_RTRM>;
+	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
+							 <&clk IMX8MQ_VIDEO_PLL1>,
+							 <&clk IMX8MQ_CLK_27M>,
+							 <&clk IMX8MQ_SYS1_PLL_800M>,
+							 <&clk IMX8MQ_SYS1_PLL_800M>;
+	assigned-clock-rates = <600000000>, <0>, <0>,
+						   <800000000>,
+						   <400000000>;
+
+	port@0 {
+		dcss_out: endpoint {
+			remote-endpoint = <&mipi_dsi_in>;
+		};
+	};
+};
+
+&mipi_dsi {
+    fsl,clock-drop-level = <2>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@0 {
+			reg = <0>;
+			mipi_dsi_in: endpoint {
+				remote-endpoint = <&dcss_out>;
+			};
+		};
+
+		port@1 {
+			reg = <1>;
+			mipi_dsi_out: endpoint {
+				remote-endpoint = <&panel1_in>;
+			};
+		};
+	};
+};
+#endif
+/************************************************************************/

@@ -2181,6 +2181,7 @@ static void imx6_pcie_ltssm_disable(struct device *dev)
 static ssize_t bus_freq_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
+#ifdef CONFIG_PM
 	int ret;
 	u32 bus_freq;
 
@@ -2194,6 +2195,7 @@ static ssize_t bus_freq_store(struct device *dev,
 		dev_info(dev, "pcie release bus freq high.\n");
 		release_bus_freq(BUS_FREQ_HIGH);
 	}
+#endif
 
 	return count;
 }

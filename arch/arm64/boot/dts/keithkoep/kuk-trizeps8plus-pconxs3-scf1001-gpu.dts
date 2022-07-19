@@ -1,0 +1,23 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+#define PCONXS_VERSION 3
+
+#include "trizeps8plus.dtsi"
+#include "pconxs-tr8p.dtsi"
+#include "scf1001-tr8p.dtsi"
+#include "gpu-tr8p.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH pConXS V3 SCF1001 i.MX8MP Trizeps8-Plus";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
+};
+
+&lcdif2 {
+	status = "okay";
+};

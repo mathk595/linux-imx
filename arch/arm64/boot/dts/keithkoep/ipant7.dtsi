@@ -128,7 +128,7 @@
 			    spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En  gpio1 8  */
                             spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3  */
                             spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* PWM Backl gpio3 22 */
-			    spin100_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 5  */
+			    spin100_gpio   (KK_RSRVD_OUT_HI)                                     /* DisplayEN gpio1 5  */
                         >;
     	};
 	
@@ -218,7 +218,8 @@
 };
 
 
-&wm8983 {
+//&wm8983 {
+&audiocodec {
 /*	mute-gpios = <spin102_gpio GPIO_ACTIVE_HIGH>; *//* Works but leads to "plops" */ 
 };
 

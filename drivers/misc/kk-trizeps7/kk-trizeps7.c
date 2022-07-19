@@ -45,6 +45,10 @@ unsigned int system_rev;
 unsigned int system_serial_low;
 unsigned int system_serial_high;
 
+#define TYPE_TRIZEPS 0
+#define TYPE_MYON    1
+
+
 #define KK_RSRVD_IN			 (1 << 0)
 #define KK_RSRVD_OUT			 (0 << 0)
 #define KK_RSRVD_CHANGEABLE              (1 << 6)
@@ -317,6 +321,8 @@ int __init kk_t7_handle_reserved_init(void)
 
 int handle_reserved_gpio(void)
 {
+  printk(KERN_ERR "*******************************************************************************************************\n");    
+  printk(KERN_ERR "Handle Reserved Gpios:\n");  
   read_alternative_data=0;
   return(kk_t7_handle_reserved());  
 }
@@ -343,10 +349,10 @@ int ddr3l=UNDEFINED;
 extern unsigned int system_rev;
 extern unsigned int system_serial_low, system_serial_high;
 
-
 TRIZEPS_INFO TrizepsBoardVersion = 
 {
   .trizeps_module = 7,
+  .trizeps_type   = TYPE_TRIZEPS,
   .trizeps_sodimm = 200,
   .trizeps_extcon  = 1,
   .trizeps_resetout_gpio    = IMX_GPIO_NR(7,  12),
@@ -469,30 +475,23 @@ void PrintTrizepsInfo(void)
 #define BUFSIZE  512
 static struct proc_dir_entry *xEntry;							
 
-static ssize_t iKKProcRead(struct file *file, char __user *ubuf,size_t count, loff_t *ppos) 
+static int iKKProcRead(struct seq_file *file, void *v) 
 {
-	char buf[BUFSIZE];
-	int len=0;
-    PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
+	PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
 
-	if(*ppos > 0 || count < BUFSIZE)
-		return 0;     
 	if( cpu_is_imx6q() )
-	len += sprintf(buf,		"Trizeps_module   Version = %lu Dual/Quad\n",    pTr->trizeps_module);
+	  seq_printf(file,	"Trizeps_module   Version = %lu Dual/Quad\n",    pTr->trizeps_module);
 	else
-	len += sprintf(buf,		"Trizeps_module   Version = %lu Solo/Duallite\n",pTr->trizeps_module);
-	len += sprintf(buf + len,	"Trizeps Sodimm   Pins    = %lu\n",         pTr->trizeps_sodimm);
-	len += sprintf(buf + len,	"Trizeps DDR      Type    = %s\n",          ((pTr->trizeps_ddr3l!=0)?"ddr3l":"ddr3"));
-	len += sprintf(buf + len,	"Trizeps Version  String  = %s\n",          pTr->trizeps_board_version_str);
-	len += sprintf(buf + len,	"Trizeps HW Board Version = 0x%lx\n",       pTr->trizeps_hw_board_version);
-	len += sprintf(buf + len,	"Trizeps SW Board Version = 0x%lx\n",       pTr->trizeps_sw_board_version);
-	len += sprintf(buf + len,	"Trizeps nReset via Gpio  = 0x%lx\n",       pTr->trizeps_resetout_gpio);
-	len += sprintf(buf + len,	"Trizeps UniqueID         = 0x%lx-%lx\n",   pTr->trizeps_unique_id[0], pTr->trizeps_unique_id[1]);
+	  seq_printf(file,	"Trizeps_module   Version = %lu Solo/Duallite\n",pTr->trizeps_module);
 	
-	if(copy_to_user(ubuf,buf,len))
-		return -EFAULT;
-	*ppos = len;
-	return len;
+	seq_printf(file,	"Trizeps Sodimm   Pins    = %lu\n",         pTr->trizeps_sodimm);
+	seq_printf(file,	"Trizeps DDR      Type    = %s\n",          ((pTr->trizeps_ddr3l!=0)?"ddr3l":"ddr3"));
+	seq_printf(file,	"Trizeps Version  String  = %s\n",          pTr->trizeps_board_version_str);
+	seq_printf(file,	"Trizeps HW Board Version = 0x%lx\n",       pTr->trizeps_hw_board_version);
+	seq_printf(file,	"Trizeps SW Board Version = 0x%lx\n",       pTr->trizeps_sw_board_version);
+	seq_printf(file,	"Trizeps nReset via Gpio  = 0x%lx\n",       pTr->trizeps_resetout_gpio);
+	seq_printf(file,	"Trizeps UniqueID         = 0x%lx-%lx\n",   pTr->trizeps_unique_id[0], pTr->trizeps_unique_id[1]);
+	return 0;
 }
 
 static struct file_operations tKKOps =	
@@ -543,7 +542,19 @@ static char kuk_article_str[128];
 static int __init kuk_article(char *s)
 {
 	strlcpy(kuk_article_str, s, sizeof(kuk_article_str));
-	if(kuk_article_str[0]=='5' &&  kuk_article_str[1]=='9' ) TrizepsBoardVersion.trizeps_module=8;
+	
+	if(kuk_article_str[0]=='5' &&  kuk_article_str[1]=='9' )
+	{
+	  TrizepsBoardVersion.trizeps_module=8;
+	  TrizepsBoardVersion.trizeps_module=TYPE_TRIZEPS;	  
+	}
+	
+	if(kuk_article_str[0]=='0' &&  kuk_article_str[1]=='0' )
+	{
+	  TrizepsBoardVersion.trizeps_module=8;
+	  TrizepsBoardVersion.trizeps_module=TYPE_MYON;
+	}
+	
 
 	TrizepsBoardVersion.trizeps_temprange='C';
 	TrizepsBoardVersion.trizeps_litevers=0;
@@ -693,58 +704,51 @@ __setup("kuk_article=", kuk_article);
 #define BUFSIZE  512
 static struct proc_dir_entry *xEntry;							
 
-static ssize_t iKKProcRead(struct file *file, char __user *ubuf,size_t count, loff_t *ppos) 
+static int iKKProcRead(struct seq_file *file, void *v) 
 {
-	char buf[BUFSIZE];
-	int len=0;
 	PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
 
-	if(*ppos > 0 || count < BUFSIZE)
-		return 0;
-	
-	len += sprintf(buf,		"Trizeps_module   Version = %lu %d Cores %s\n",
-			 pTr->trizeps_module,
-			 pTr->trizeps_numcores,
-		       ((pTr->trizeps_litevers) ? "Lite" : "") );
+	seq_printf(file,	"Trizeps_module   Version = %lu %ld Cores %s\n",
+		        pTr->trizeps_module,pTr->trizeps_numcores,((pTr->trizeps_litevers)?"Lite" : ""));
 
-	len += sprintf(buf + len,	"Trizeps Sodimm   Pins    = %lu\n",         pTr->trizeps_sodimm);
-	len += sprintf(buf + len,	"Trizeps Version  String  = %s\n",          pTr->trizeps_board_version_str);
-	len += sprintf(buf + len,	"Trizeps HW Board Version = 0x%lx\n",       pTr->trizeps_hw_board_version);
-	len += sprintf(buf + len,	"Trizeps SW Board Version = 0x%lx\n",       pTr->trizeps_sw_board_version);
+	seq_printf(file,	"Trizeps Sodimm   Pins    = %lu\n",         pTr->trizeps_sodimm);
+	seq_printf(file,	"Trizeps Version  String  = %s\n",          pTr->trizeps_board_version_str);
+	seq_printf(file,	"Trizeps HW Board Version = 0x%lx\n",       pTr->trizeps_hw_board_version);
+	seq_printf(file,	"Trizeps SW Board Version = 0x%lx\n",       pTr->trizeps_sw_board_version);
 	
-	if(copy_to_user(ubuf,buf,len))
-		return -EFAULT;
-	*ppos = len;
-	return len;
+	return 0;
 }
 
 void PrintTrizepsInfo(void)
 {
      PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
-     printk( KERN_ERR "********************* Trizeps7_Info ***************************************\n");
-     printk( KERN_ERR "Trizeps_module   Version = %lu %d Cores %s\n",
+     printk("********************* Trizeps_Info ***************************************\n");
+     printk("Module Type              %s\n",          (pTr->trizeps_type==TYPE_TRIZEPS) ? "Trizeps":"Myon");     
+     printk("Trizeps_module(arch)     %lu %ld Cores %s\n",
 			 pTr->trizeps_module,
 			 pTr->trizeps_numcores,
 		       ((pTr->trizeps_litevers) ? "Lite" : "") );     
 
-     printk("Trizeps Sodimm   Pins:    %lu\n",         pTr->trizeps_sodimm);
+     printk("Trizeps          Pins:    %lu\n",         pTr->trizeps_sodimm);
      printk("Trizeps Version  String:  %s\n",          pTr->trizeps_board_version_str);
      printk("Trizeps HW Board Version: 0x%lx\n",       pTr->trizeps_hw_board_version);
      printk("Trizeps SW Board Version: 0x%lx\n",       pTr->trizeps_sw_board_version);
-     printk( KERN_ERR "***************************************************************************\n");
+     printk("***************************************************************************\n");
 }
 
 int TrizepsHasPCIeDisablePin(void)
 {
   PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
-  if( (pTr->trizeps_module == 8) && ( pTr->trizeps_hw_board_version < 2) )    return(1);      
+  if( (pTr->trizeps_type==TYPE_TRIZEPS) && (pTr->trizeps_module == 8) && ( pTr->trizeps_hw_board_version < 2) )
+    return(1);      
   return(0);  
 }
 
 int TrizepsMMC0Has1V8Switch(void)
 {
   PTRIZEPS_INFO pTr= &TrizepsBoardVersion;
-  if( (pTr->trizeps_module == 8) && ( pTr->trizeps_hw_board_version >= 2) )   return(1);      
+  if( (pTr->trizeps_type==TYPE_TRIZEPS) && (pTr->trizeps_module == 8) && ( pTr->trizeps_hw_board_version >= 2) )
+    return(1);      
   return(0);  
 }
 
@@ -754,12 +758,17 @@ int TrizepsBootedFromeMMC(void)
   if( (pTr->trizeps_module == 8) && pTr->trizeps_bootstoreemmc )     return(1);      
   return(0);  
 }
-  
-static struct file_operations tKKOps =	
+
+static int trizeps_proc_open(struct inode *inode, struct  file *file) {
+  return single_open(file, iKKProcRead, NULL);
+}
+
+static const struct proc_ops tKKOps =	
 {						
-	.owner 	= THIS_MODULE,										
-	.read 	= iKKProcRead,										
-	.write 	= NULL,												
+	.proc_open   = trizeps_proc_open,
+	.proc_read   = seq_read,
+	.proc_lseek  = seq_lseek,
+	.proc_release= single_release,
 };																
 // + + + + + + + + + + + + + + + + + + + + + + + + + + + + + +  @+01.08.2018 S&B HL
 
@@ -769,7 +778,7 @@ static int __init get_print_trizeps_version(void)
   //  get_trizeps_board_version();
   PrintTrizepsInfo();
   
-  xEntry = proc_create("kk-trizeps8mini",0660,NULL,&tKKOps); 	// Create /proc/kk-trizeps8 entry	@+01.08.2018 S&B HL 
+  xEntry = proc_create("kk-trizeps8mini",0660,NULL, &tKKOps); 	// Create /proc/kk-trizeps8 entry	@+01.08.2018 S&B HL 
   return(0);  
 }
 

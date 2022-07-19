@@ -15,6 +15,8 @@ Defines:
 	          3V3_AUX can be switched by SPIN43 aka. GPIO1_OI7
 */
 
+#define NOBACKLIGHT_PWM         1
+
 &iomuxc {
 
 	pinctrl-names = "default";
@@ -23,9 +25,14 @@ Defines:
         pinctrl_hog: hoggrp {
 		fsl,pins = < 
 					 TRIZEPS_HOGGRP_COMMON
-					 SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                  */
-		    		         SPIN123_GPIO		PAD_GPIO_PU   /* Camera Pwdn SODIMM Pin 123 */
-   					 SPIN125_GPIO		PAD_GPIO_PU   /* Camera nRST SODIMM Pin 125 */
+					 SPIN100_GPIO           PAD_GPIO_PU   /* LVDS    EN  SODIMM Pin 110 gpio 1.05=005 */
+					 SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                                */
+		    		         SPIN123_GPIO		PAD_GPIO_PU   /* Camera Pwdn SODIMM Pin 123               */
+   					 SPIN125_GPIO		PAD_GPIO_PU   /* Camera nRST SODIMM Pin 125               */
+   					 SPIN114_GPIO		PAD_GPIO_PU   /* BL EN(LVDS) SODIMM Pin 114 gpio 4.14=110 */
+#ifndef NOBACKLIGHT_PWM					 
+					 SPIN77_GPIO             PAD_GPIO_PU   /* Gpio PWM */
+#endif					 
 		       >;
 	};
 
@@ -35,12 +42,19 @@ Defines:
 	};
 #endif        
 
+#ifndef NOBACKLIGHT
 	pinctrl_backlight_pwm1: pwm-backlight {
 		fsl,pins = < SPIN77_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM */
 	};
-		
+#endif
+
 	pinctrl_backlight_enable: backlight-enable {
-		fsl,pins = < SPIN73_GPIO	    PAD_GPIO >;	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
+		fsl,pins = < SPIN73_GPIO	    PAD_GPIO 	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
+			   >;
+#if 0
+                             SPIN114 for LVDS Backlight init via HOG 
+/* 		             SPIN114_GPIO           PAD_GPIO_PU /* BACKLIGHT_ENABLE SODIMM Pin 114 gpio 4.14=110 */
+#endif			   
 	};
 
 #if 1 //!defined (PCONXS_NOT_USE_PCIE_PWR) || (PCONXS_NOT_USE_PCIE_PWR==0)
@@ -156,12 +170,21 @@ Defines:
 
   	reserved@board {
         compatible      = "kk,trizeps7-reserved";
-        kk,gpio-names   = "EN-Audio","CAM-PWDN";
+#if NOBACKLIGHT_PWM			    	
+        kk,gpio-names   = "Cam-nRst","CAM-PWDN","EN-Audio","LVDS_EN", "PWM-PIN", "BACKLIGHT";
+#else
+        kk,gpio-names   = "Cam-nRst","CAM-PWDN","EN-Audio","LVDS_EN";
+#endif
         kk,os-gpios     = < 
-                            spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST */
-                            spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En */
-                            spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN */
-                        >;
+                            spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST  gpio1 6   */
+                            spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3   */
+                            spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En  gpio1 8   */
+                            spin100_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* LVDS_EN   gpio1 5   */
+#if NOBACKLIGHT_PWM			    
+                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* PWM Backl gpio1 1   */
+			    spin114_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(3)) /* Backlight gpio4 14  */
+#endif			    
+                            >;
     };
 
 #if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
@@ -190,16 +213,22 @@ Defines:
 #endif    
 };
 
+#ifndef NOBACKLIGHT_PWM
 &pwm1 {
 	pinctrl-names = "default";
-    pinctrl-0 = <&pinctrl_backlight_pwm1>;	
+	pinctrl-0 = <&pinctrl_backlight_pwm1>;	
 	status = "okay";
 };
+
 
 &backlight {
 	status = "okay";
 	pinctrl-0 = <&pinctrl_backlight_enable>;
-	enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;    
+#if defined(PRIMARY_DISPLAY_LVDS) && (PRIMARY_DISPLAY_LVDS==1)
+	enable-gpios = <spin114_gpio GPIO_ACTIVE_HIGH>;
+#else
+	enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;
+#endif	
 	brightness-levels = < 100 
 				99 98 97 96 95 94 93 92 91 90
 				89 88 87 86 85 84 83 82 81 80
@@ -212,6 +241,7 @@ Defines:
 				19 18 17 16 15 14 13 12 11 10
 				 9  8  7  6  5  4  3  2  1  0>;    
 };
+#endif
 
 &i2c2 {
 	rtc@51 {
@@ -221,13 +251,24 @@ Defines:
 };
 
 #if !defined (__DTS_IMX8MQ_PINFUNC_H)
+
 &usbotg1 {
 	vbus-supply = <&reg_usbotg_pwr>; 
-	disable-over-current; 
+	disable-over-current;
+ #if  defined(USB1_OTG_FUNC) && (USB1_OTG_FUNC==OTG_HOST)
+	dr_mode = "host";
+ #else
+  #if defined(USB1_OTG_FUNC) && (USB1_OTG_FUNC==OTG_FUNC)
+	dr_mode = "otg";
+  #else
+        dr_mode = "peripheral";
+  #endif
+ #endif
 };
 
 #if !defined (__DTS_IMX8MN_PINFUNC_H)
 &usbotg2 {
+	dr_mode = "host";
 	vbus-supply = <&reg_usbhost_pwr>; 
 	disable-over-current; 
 };

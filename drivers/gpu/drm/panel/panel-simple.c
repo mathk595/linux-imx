@@ -4736,6 +4736,36 @@ static const struct panel_desc_dsi az_atm0700 = {
 	.lanes = 2,
 };
 
+static const struct drm_display_mode auo_g104xvn01_mode = {
+	.clock       = 66000,
+	.hdisplay = 1024,
+	.hsync_start = 1024 + 156,
+	.hsync_end = 1024 + 156 + 8,
+	.htotal = 1024 + 156 + 156 + 8,
+	.vdisplay = 768,
+	.vsync_start = 768  + 7,
+	.vsync_end = 768 + 7 + 10,
+	.vtotal = 768 + 7 + 21 + 10,
+};
+
+static const struct panel_desc_dsi auo_g104xvn01 = {
+	.desc = {
+                .modes = &auo_g104xvn01_mode,
+		.num_modes = 1,
+		.bpc = 8,
+		.size = {
+			.width  = 210,
+			.height = 158,
+		},
+		.bus_format = MEDIA_BUS_FMT_RGB888_1X24,
+		.connector_type = DRM_MODE_CONNECTOR_DSI,
+
+	},
+	.flags  = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE /*| MIPI_DSI_MODE_VIDEO_BURST*/,
+	.format = MIPI_DSI_FMT_RGB888,
+	.lanes = 4,
+};
+
 static const struct drm_display_mode ipan7_edt_wvga_mode = {
 	.clock = 30000,
 	.hdisplay = 800,
@@ -4791,6 +4821,9 @@ static const struct of_device_id dsi_of_match[] = {
 	}, {
 		.compatible = "az,atm0700",
 		.data = &az_atm0700
+	}, {
+		.compatible = "auo,g104xvn01",
+		.data = &auo_g104xvn01
 	}, {
 		.compatible = "ipan7,edt-wvga",
 		.data = &ipan7_edt_wvga

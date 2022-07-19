@@ -2,22 +2,26 @@
  * Copyright 2020 Keith & Koep GmbH
  *
  */
+#if USB1_OTG_FUNC != OTG_SLAVE
+#define PADTYPE_USB_SW_SEL     PAD_GPIO_PU
+#define RSRVD_USB_SWSEL        KK_RSRVD_OUT_HI
+#else
+#define PADTYPE_USB_SW_SEL     PAD_GPIO_PD
+#define RSRVD_USB_SWSEL        KK_RSRVD_OUT_LO
+#endif
+
 
 &iomuxc {
 
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog>;
 
-    pinctrl_hog: hoggrp {
+        pinctrl_hog: hoggrp {
 		fsl,pins = < 
 			    MYON2_HOGGRP_COMMON
-			    PIN1_73_GPIO   PAD_GPIO_PU      /* CAM Pwdn     */
-			    PIN1_71_GPIO   PAD_GPIO_PU      /* CAM nRST     */
-#if USB1_OTG_FUNC == OTG_HOST			    			    
-		            PIN1_20_GPIO   PAD_GPIO_PU      /* USB SW SEL   */
-#else
-		            PIN1_20_GPIO   PAD_GPIO_PD      /* USB SW SEL   */
-#endif
+			    PIN1_73_GPIO   PAD_GPIO_PU        /* CAM Pwdn     */
+			    PIN1_71_GPIO   PAD_GPIO_PU        /* CAM nRST     */
+		            PIN1_20_GPIO   PADTYPE_USB_SW_SEL /* USB SW SEL   */
 		       >;
 	};
 
@@ -99,11 +103,7 @@
                             pin1_71_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST  gpio1 6  */
                             pin1_73_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3  */
                             pin0_32_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* nRESET_OUT  */
-#if USB1_OTG_FUNC == OTG_HOST			    
-                            pin1_20_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* USB SW SEL  */
-#else
-                            pin1_20_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* USB SW SEL  */
-#endif
+			    pin1_20_gpio   (RSRVD_USB_SWSEL|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* USB SW SEL  */
                         >;
     };
 

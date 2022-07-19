@@ -31,6 +31,11 @@
 #define OV5645_VOLTAGE_DIGITAL_CORE         1500000
 #define OV5645_VOLTAGE_DIGITAL_IO           2800000
 
+#define LDO_ONOFF                           1
+#define LDO_ENABLE                          1
+#define LDO_DISABLE                         0
+#define LDO_INIT_VALUE                      GPIOF_OUT_INIT_HIGH
+
 #define MIN_FPS 15
 #define MAX_FPS 30
 #define DEFAULT_FPS 30
@@ -124,7 +129,7 @@ struct ov5645 {
 	int csi;
 
 	void (*io_init)(void);
-	int pwn_gpio, rst_gpio;
+	int pwn_gpio, rst_gpio, ldo_gpio;
 
 	/* Fields to keep track of loaded settings */
 	enum ov5645_frame_rate loaded_fps;
@@ -140,7 +145,8 @@ struct ov5645_res {
  * Maintains the information on the current state of the sesor.
  */
 static struct ov5645 ov5645_data;
-static int pwn_gpio, rst_gpio;
+
+static int pwn_gpio, rst_gpio, ldo_gpio;
 
 struct ov5645_res ov5645_valid_res[] = {
 	[0] = {640, 480},
@@ -2185,10 +2191,13 @@ static struct ov5645_mode_info ov5645_mode_info_data[2][ov5645_mode_MAX + 1] = {
 	},
 };
 
+#define USE_REGULATORS 0
+#if USE_REGULATORS
 static struct regulator *io_regulator;
 static struct regulator *core_regulator;
 static struct regulator *analog_regulator;
 static struct regulator *gpo_regulator;
+#endif
 static DEFINE_MUTEX(ov5645_mutex);
 
 static int ov5645_probe(struct i2c_client *adapter,
@@ -2265,24 +2274,18 @@ static const struct ov5645_datafmt
 
 static inline void ov5645_power_down(int disable)
 {
+	printk("ov5645_power_down(%d)\n", disable);
+	
 	if (pwn_gpio < 0)
 		return;
-
-	printk("ov5645_power_down(%d)\n", disable);
 	// OV5645 Powerdown = Low !!!
 	gpio_set_value(pwn_gpio, (disable) ? 0: 1);
-#if 0	
-	if (disable)
-		gpio_set_value_cansleep(pwn_gpio, 0);
-	else
-		gpio_set_value_cansleep(pwn_gpio, 1);
-
-	msleep(2);
-#else
+	
 	msleep(100);
-#endif       
 }
 
+#define UPDATE_SLAVE_ID 0
+#if     UPDATE_SLAVE_ID
 static int ov5645_update_slave_id(struct ov5645 *sensor)
 {
 	struct device *dev = &sensor->i2c_client->dev;
@@ -2314,11 +2317,10 @@ static int ov5645_update_slave_id(struct ov5645 *sensor)
 	}
 
 	ov5645_read_reg(0x3100, &slave_id);
-	dev_dbg(dev, "Updated SCCB_ID 0x%x\n", slave_id);
-	pr_err("%s:iUpdated SCCB_ID 0x%x\n", __func__,slave_id);
+	dev_info(dev, "%s:Updated SCCB_ID 0x%x\n", __func__,slave_id);
 	return 0;
 }
-
+#endif
 
 static void ov5645_reset(void)
 {
@@ -2326,9 +2328,6 @@ static void ov5645_reset(void)
 		return;
 
 	/* camera reset */
-	printk("ov5640_reset()\n");	
-#define ACD_LIKE 1
-#if     ACD_LIKE
 	gpio_set_value(rst_gpio, 1);
 	/* camera power dowmn */
 	gpio_set_value(pwn_gpio, 0);
@@ -2342,31 +2341,12 @@ static void ov5645_reset(void)
 
 	gpio_set_value(rst_gpio, 1);
 	msleep(5);
-#else
-#warning("KuK OV5645 Reset... Pls change!")
-
-	gpio_set_value(rst_gpio, 1);	
-	/* camera power down = LOW */
-	gpio_set_value(pwn_gpio, 0);
-	msleep(5);
-
-	gpio_set_value(pwn_gpio, 1);
-	msleep(5);
-
-	gpio_set_value(rst_gpio, 0);
-	msleep(1);
-
-	gpio_set_value(rst_gpio, 1);
-	msleep(5);
-	
-	gpio_set_value(pwn_gpio, 1);	
-#endif	
 }
 
 static int ov5645_regulator_enable(struct device *dev)
 {
 	int ret = 0;
-#if 0
+#if USE_REGULATORS
 	io_regulator = devm_regulator_get(dev, "DOVDD");
 	if (!IS_ERR(io_regulator)) {
 		regulator_set_voltage(io_regulator,
@@ -2422,12 +2402,18 @@ static int ov5645_regulator_enable(struct device *dev)
 		pr_err("%s: cannot get analog voltage error\n", __func__);
 	}
 #endif
+#if LDO_ONOFF 
+	// LDO 1=On
+	if (ldo_gpio >= 0)
+	  gpio_set_value(ldo_gpio,LDO_ENABLE);
+#endif
+	
 	return ret;
 }
 
 static void ov5645_regulator_disable(void)
 {
-#if 0  
+#if USE_REGULATORS  
         if (!IS_ERR(analog_regulator)) {
 		regulator_disable(analog_regulator);
 	}
@@ -2440,6 +2426,11 @@ static void ov5645_regulator_disable(void)
 
 	if (!IS_ERR(gpo_regulator))
 		regulator_disable(gpo_regulator);
+#endif
+#if LDO_ONOFF 
+	// LDO 1=On
+	if (ldo_gpio >= 0)
+	  gpio_set_value(ldo_gpio,LDO_DISABLE);
 #endif	
 }
 
@@ -3126,7 +3117,7 @@ static int ov5645_s_power(struct v4l2_subdev *sd, int on)
 	struct ov5645 *sensor = to_ov5645(client);
 
 	if (on && !sensor->on) {
-#if 0	  
+#if USE_REGULATORS	  
 		if (io_regulator)
 			if (regulator_enable(io_regulator) != 0)
 				return -EIO;
@@ -3139,7 +3130,13 @@ static int ov5645_s_power(struct v4l2_subdev *sd, int on)
 		if (analog_regulator)
 			if (regulator_enable(analog_regulator) != 0)
 				return -EIO;
-#endif		
+#endif
+#if LDO_ONOFF 
+	        // LDO 1=On
+		if (ldo_gpio >= 0)
+		  gpio_set_value(ldo_gpio,LDO_ENABLE);
+#endif
+		
 	} else if (!on && sensor->on) {
 		ov5645_regulator_disable();
 	}
@@ -3511,7 +3508,7 @@ static void ov5645_adjust_setting_20mhz(void)
 			regsetting->u8Val = 0x17;
 }
 
-static int ov5645_set_regs(const char *buffer, struct kernel_param *kp)
+static int ov5645_set_regs(const char *buffer, const struct kernel_param *kp)
 {
 	// Use this sysfs node to set the ov5645 isp regs by sending it a
 	// comma separated list of register value pairs in hex
@@ -3547,7 +3544,7 @@ static int ov5645_set_regs(const char *buffer, struct kernel_param *kp)
 }
 
 static int reg_addr_to_read;
-static int ov5645_set_print_reg(const char *buffer, struct kernel_param *kp)
+static int ov5645_set_print_reg(const char *buffer, const struct kernel_param *kp)
 {
 	int cnt;
 	cnt = sscanf(buffer, "%x", &reg_addr_to_read);
@@ -3557,7 +3554,7 @@ static int ov5645_set_print_reg(const char *buffer, struct kernel_param *kp)
 	return 0;
 }
 
-static int ov5645_get_print_reg(char *buffer, struct kernel_param *kp)
+static int ov5645_get_print_reg(char *buffer, const struct kernel_param *kp)
 {
 	int cnt, retval;
 	u8 val;
@@ -3571,7 +3568,7 @@ static int ov5645_get_print_reg(char *buffer, struct kernel_param *kp)
 	return cnt;
 }
 
-static int ov5645_set_af_mode(const char *buffer, struct kernel_param *kp)
+static int ov5645_set_af_mode(const char *buffer, const struct kernel_param *kp)
 {
 	int cnt, val;
 	cnt = sscanf(buffer, "%d", &val);
@@ -3593,7 +3590,7 @@ static int ov5645_set_af_mode(const char *buffer, struct kernel_param *kp)
 	return 0;
 }
 
-static int ov5645_read_af(char *buffer, struct kernel_param *kp)
+static int ov5645_read_af(char *buffer, const struct kernel_param *kp)
 {
 	int cnt, retval;
 	u8 val;
@@ -3623,7 +3620,7 @@ static int ov5645_probe(struct i2c_client *client,
 	u8 chip_id_high, chip_id_low;
 	struct ov5645 *sensor;
 
-	dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(.....)\n");	
+	dev_info(dev, "ov5645_mipi_v2.c ov5640_probe()\n");	
 
 	sensor = devm_kzalloc(dev, sizeof(*sensor), GFP_KERNEL);
 	if (!sensor)
@@ -3634,6 +3631,21 @@ static int ov5645_probe(struct i2c_client *client,
 	if (IS_ERR(pinctrl))
 		dev_warn(dev, "No pin available\n");
 
+	/* request power down pin */
+	ldo_gpio = of_get_named_gpio(dev->of_node, "ldo_enable-gpios", 0);
+	sensor->ldo_gpio = ldo_gpio;
+	if (!gpio_is_valid(pwn_gpio))
+		dev_warn(dev, "no sensor ldo pin available");
+	else {
+		retval = devm_gpio_request_one(dev, ldo_gpio, LDO_INIT_VALUE,
+						"ov5645_mipi_ldo_enable");
+		if (retval < 0) {
+			dev_warn(dev, "Failed to set power pin\n");
+			dev_warn(dev, "retval=%d\n", retval);
+			return retval;
+		}
+	}
+	
 	/* request power down pin */
 	pwn_gpio = of_get_named_gpio(dev->of_node, "pwn-gpios", 0);
 	sensor->pwn_gpio = pwn_gpio;
@@ -3724,21 +3736,20 @@ static int ov5645_probe(struct i2c_client *client,
 
 	ov5645_regulator_enable(&client->dev);
 
-	dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(mutex lock..)\n");	
 	mutex_lock(&ov5645_mutex);
 	{
-	        dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(reset)\n");		  
 	        ov5645_reset();
-		dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(power_down 0)\n");		  		
 		ov5645_power_down(0);
-		// dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(ov5645_update_slave_id)\n");
-		// retval = ov5645_update_slave_id(sensor);
-		retval=0;		
-		// dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(ov5645_update_slave_id done)\n");		
+#if     UPDATE_SLAVE_ID		
+		dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(ov5645_update_slave_id)\n");
+		retval = ov5645_update_slave_id(sensor);
+		dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(ov5645_update_slave_id done)\n");		
+#else		
+		retval=0;
+#endif		
 		pr_err("%s:SCCB_ID 0x%x\n", __func__,sensor->i2c_client->addr);
 		
 	}
-	dev_info(dev, "ov5645_mipi_v2.c ov5640_probe(mutex unlock..)\n");	
 	mutex_unlock(&ov5645_mutex);
 #if 0	
 	if (retval < 0) {
@@ -3763,9 +3774,7 @@ static int ov5645_probe(struct i2c_client *client,
 		return -ENODEV;
 	}
 
-	dev_info(dev, "ov5645_mipi_v2.c ov5640_probe found 0x%x:0x%x now init device)\n",
-		 chip_id_high, chip_id_low);
-	
+	dev_info(dev, "ov5645_mipi_v2.c ov5640_probe found 0x%x:0x%x now init device)\n",chip_id_high,chip_id_low);
 	retval = init_device();
 	
 	if (retval < 0) {
@@ -3781,8 +3790,7 @@ static int ov5645_probe(struct i2c_client *client,
 	ov5645_data.subdev.grp_id = 678;
 	retval = v4l2_async_register_subdev(&ov5645_data.subdev);
 	if (retval < 0)
-		dev_err(&client->dev,
-					"%s--Async register failed, ret=%d\n", __func__, retval);
+		dev_err(&client->dev,"%s--Async register failed, ret=%d\n", __func__, retval);
 
 	OV5645_stream_off();
 	pr_info("camera ov5645_mipi is found\n");
