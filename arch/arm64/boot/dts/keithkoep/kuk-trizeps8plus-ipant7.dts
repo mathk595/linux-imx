@@ -6,7 +6,6 @@
 /dts-v1/;
 
 // Add defines here, which control behaviour of .dtsi:
-//#define DISPLAY_ENABLE SPIN100_GPIO1_IO05
 #define display_enable &gpio1 5
 #define USDHC_MHZ 100
 
