@@ -34,6 +34,8 @@
 #endif
 
 extern int handle_reserved_gpio(void);
+int handle_reserved_mcu(void);
+
 
 enum mxc_gpio_hwtype {
 	IMX1_GPIO,	/* runs on i.mx1 */
@@ -749,7 +751,8 @@ static int mxc_gpio_probe(struct platform_device *pdev)
 
 	if (of_property_read_bool(np, "kukmiscinit"))
 	{
-	  handle_reserved_gpio();	  
+	  handle_reserved_gpio();
+	  /* handle_reserved_mcu(); */
 	}
 
 

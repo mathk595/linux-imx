@@ -180,8 +180,12 @@ Defines:
                             spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3   */
                             spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En  gpio1 8   */
                             spin100_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* LVDS_EN   gpio1 5   */
-#if NOBACKLIGHT_PWM			    
-                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* PWM Backl gpio1 1   */
+#if NOBACKLIGHT_PWM
+#ifdef DISPLAY_ONLY_18BPP
+			spin77_gpio    (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* PWM Backl gpio1 1   */
+#else
+			spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* PWM Backl gpio1 1   */
+#endif
 			    spin114_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(3)) /* Backlight gpio4 14  */
 #endif			    
                             >;

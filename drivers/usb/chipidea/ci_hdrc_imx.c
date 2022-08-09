@@ -416,7 +416,9 @@ static int ci_hdrc_imx_probe(struct platform_device *pdev)
 	if (pdata.flags & CI_HDRC_PMQOS)
 		cpu_latency_qos_add_request(&data->pm_qos_req, 0);
 
+#ifdef CONFIG_PM
 	request_bus_freq(BUS_FREQ_HIGH);
+#endif
 	ret = imx_get_clks(dev);
 	if (ret)
 		goto disable_hsic_regulator;
@@ -506,7 +508,9 @@ disable_device:
 err_clk:
 	imx_disable_unprepare_clks(dev);
 disable_hsic_regulator:
+#ifdef CONFIG_PM
 	release_bus_freq(BUS_FREQ_HIGH);
+#endif
 	if (data->hsic_pad_regulator)
 		/* don't overwrite original ret (cf. EPROBE_DEFER) */
 		regulator_disable(data->hsic_pad_regulator);
@@ -531,7 +535,9 @@ static int ci_hdrc_imx_remove(struct platform_device *pdev)
 		usb_phy_shutdown(data->phy);
 	if (data->ci_pdev) {
 		imx_disable_unprepare_clks(&pdev->dev);
+#ifdef CONFIG_PM
 		release_bus_freq(BUS_FREQ_HIGH);
+#endif
 		if (data->plat_data->flags & CI_HDRC_PMQOS)
 			cpu_latency_qos_remove_request(&data->pm_qos_req);
 		if (data->hsic_pad_regulator)

@@ -223,7 +223,8 @@ Switches:
 		};
 
 		simple-audio-card,codec {
-			sound-dai = <&wm8983>;
+			//sound-dai = <&wm8983>;
+			sound-dai = <&audiocodec>;
 			clocks = <&clk IMX8MM_CLK_SAI2_ROOT>;
 		};
 	};
@@ -684,7 +685,8 @@ Switches:
 		};
 	};
 
-	wm8983: wm8983@1a {	/* Audio-Codec */
+	//wm8983: wm8983@1a {	/* Audio-Codec */
+	audiocodec: wm8983@1a {	/* Audio-Codec */
         #sound-dai-cells = <0>;
 		compatible = "kuk,wm8983";
 		reg = <0x1a>;
@@ -701,29 +703,29 @@ Switches:
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_i2c3_sn65dsi84_en>;
 	};
-	
+#endif	
 	mcutouch: kuk_tr8mcu_touch@10 { /* Kinetis MCU and touch-controller */
-		compatible = "kuk,kuk-tr8mcu-touch";
-		reg = <0x10>;
-        regulator-name = "sd_pwr";
-        regulator-min-microvolt = <1800000>;
-        regulator-max-microvolt = <3300000>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_restouch>;
-		interrupts-extended = <&gpio2 20 IRQ_TYPE_LEVEL_LOW>;	        	
-		xscale              = <800>;
-		yscale              = <480>;
-		xmin                = <306>;
-		xmax                = <3781>;
-        ymin                = <692>;
-        ymax                = <3459>;
-        settle              = <10>;
-		average             = <25>;
-		yreverse            = "true" ;
-        enable_touch        = "false";
-		linux,wakeup;
+		  compatible = "kuk,kuk-tr8mcu-touch";
+		  reg = <0x10>;
+        	  regulator-name = "sd_pwr";
+        	  regulator-min-microvolt = <1800000>;
+        	  regulator-max-microvolt = <3300000>;
+		  pinctrl-names = "default";
+		  pinctrl-0 = <&pinctrl_restouch>;
+		  interrupts-extended = <&gpio2 20 IRQ_TYPE_LEVEL_LOW>;	        	
+		  xscale              = <800>;
+		  yscale              = <480>;
+		  xmin                = <306>;
+		  xmax                = <3781>;
+        	  ymin                = <692>;
+        	  ymax                = <3459>;
+        	  settle              = <10>;
+		  average             = <25>;
+		  yreverse            = "true" ;
+        	  enable_touch        = "false";
+		  linux,wakeup;
 	};
-#endif
+
 };
 
 

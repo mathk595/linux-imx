@@ -1,0 +1,20 @@
+/*
+ * Copyright 2022 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+
+#include "trizeps8plus.dtsi"
+#include "pconxs-tr8p.dtsi"
+#include "hdmi-tr8p.dtsi"
+#include "gpu-tr8p.dtsi"
+#include "ov5640-tr8p.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH pConXS V2 HDMI i.MX8MP Trizeps8-Plus";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "kk,trizeps8plus", "fsl,imx8mp-evk", "fsl,imx8mp";
+
+};

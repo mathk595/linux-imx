@@ -224,7 +224,8 @@
 };
 
 
-&wm8983 {
+//&wm8983 {
+&audiocodec {
 /*	mute-gpios = <spin102_gpio GPIO_ACTIVE_HIGH>; *//* Works but leads to "plops" */ 
 };
 

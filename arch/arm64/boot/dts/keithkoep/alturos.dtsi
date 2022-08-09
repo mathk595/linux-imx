@@ -1,0 +1,378 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/*
+Remarks:
+    The main device-tree difference between pConXS V1 and V2 is, that pConXS features:
+    - a switch to enable pcie-power
+    - 1GBit Ethernet. Use ETHERNET_ONLY_100MBIT define for pConXS V1!
+
+Defines:
+    PCONXS_NOT_USE_PCIE_PWR         SPIN113 is used on pConXS V2 to switch power. Since this pin is not connected on V1 no need to actually set this.
+	PCONXS_V1 on pConXS V1 pcie-power can not be switched separately but
+	          3V3_AUX can be switched by SPIN43 aka. GPIO1_OI7
+*/
+
+#define NOBACKLIGHT_PWM         1
+
+&iomuxc {
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+        pinctrl_hog: hoggrp {
+		fsl,pins = < 
+					 TRIZEPS_HOGGRP_COMMON
+#ifdef USB1_OTG_ID_PIN_PD
+					 MX8MM_IOMUXC_GPIO1_IO10_USB1_OTG_ID  MX8MM_PAD_GPIO_PD
+#else
+					 MX8MM_IOMUXC_GPIO1_IO10_USB1_OTG_ID  MX8MM_PAD_GPIO_PU
+#endif
+					 SPIN100_GPIO           PAD_GPIO_PU   /* BL-Power EN  SODIMM Pin 110 gpio 1.05=005 */ 
+					 SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                                 */
+					 SPIN65_GPIO		PAD_GPIO_PD   /* Piezo   */
+					 SPIN111_GPIO		PAD_GPIO_PD   /* EXT-A00 */
+					 SPIN113_GPIO		PAD_GPIO_PD   /* EXT-A01 */
+					 SPIN115_GPIO		PAD_GPIO_PD   /* EXT-A02 */
+					 SPIN117_GPIO		PAD_GPIO_PD   /* EXT-A03 */
+					 SPIN119_GPIO		PAD_GPIO_PD   /* EXT-A04 */
+					 SPIN121_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN123_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN125_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN110_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN112_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN114_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN116_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN118_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN120_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN49_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN53_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN57_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN61_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN63_GPIO		PAD_GPIO_PD   /* EXT-A05 */					 
+#ifndef NOBACKLIGHT_PWM					 
+					 SPIN77_GPIO             PAD_GPIO_PU   /* Gpio PWM */
+#endif					 
+		       >;
+	};
+
+#if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
+        pinctrl_gpio_keys: gpio_keys {
+		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
+	};
+#endif        
+
+#ifndef NOBACKLIGHT_PWM
+	pinctrl_backlight_pwm1: pwm-backlight {
+		fsl,pins = < SPIN77_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM */
+	};
+#endif
+
+	pinctrl_backlight_enable: backlight-enable {
+		fsl,pins = < SPIN73_GPIO	    PAD_GPIO 	/* BACKLIGHT_ENABLE SODIMM Pin 73 */
+			   >;
+#if 0
+                             SPIN114 for LVDS Backlight init via HOG 
+/* 		             SPIN114_GPIO           PAD_GPIO_PU /* BACKLIGHT_ENABLE SODIMM Pin 114 gpio 4.14=110 */
+#endif			   
+	};
+
+#if 1 //!defined (PCONXS_NOT_USE_PCIE_PWR) || (PCONXS_NOT_USE_PCIE_PWR==0)
+	pinctrl_pcie_enable: pcie-enable 	{
+#ifdef PCONXS_V1
+		fsl,pins = < SPIN43_GPIO1_IO7   PAD_GPIO_PU >;
+#else
+		fsl,pins = < SPIN113_GPIO       PAD_GPIO_PU >; /* USBH_PWR SODIMM Pin 113 */
+#endif
+	};
+#endif
+
+	pinctrl_ipan5_led_yellow: gpio_leds
+	{
+		fsl,pins = <SPIN69_GPIO MX8MM_PAD_GPIO_PD>;  /* Heartbeat LED gpio5.2 SODIMM Pin 69 J12-9 */
+	};
+
+	pinctrl_usbhost_enable: usbhost-enable 	{
+		fsl,pins = < SPIN129_GPIO		PAD_GPIO >; /* USBH_PWR */
+	};
+
+	pinctrl_usbotg_enable: usbotg-enable 	{
+		fsl,pins = < SPIN127_GPIO		PAD_GPIO >; /* USBOTG_PWR */
+	};		
+};
+
+/ {
+	reg_vin_fused: vin_fused {
+		compatible = "regulator-fixed";
+		regulator-name = "VIN_FUSED";
+		regulator-min-microvolt = <12000000>;
+		/* max	should be 24V but the fixed regulator driver does
+		not allow a range here */
+		regulator-max-microvolt = <12000000>;
+		regulator-always-on;
+	};
+
+	reg_board_5v: 5v {
+		compatible = "regulator-fixed";
+		regulator-name = "+5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_3v3: 3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "+3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+    reg_display_pwr: display-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "DISPLAY PWCTRL";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+#if 1 //!defined (PCONXS_NOT_USE_PCIE_PWR) || (PCONXS_NOT_USE_PCIE_PWR==0)
+	reg_pcie_pwr: pcie-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "PCIE PWR";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pcie_enable>;
+#ifdef PCONXS_V1
+		gpio = <spin43_gpio 0>;
+#else
+		gpio = <spin113_gpio 0>;
+#endif    
+		enable-active-high;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+#endif    
+
+	reg_usbhost_pwr: usbhost-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBHOST PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbhost_enable>;
+		gpio = <spin129_gpio 0>;
+		enable-active-low;
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+
+	reg_usbotg_pwr: usbotg-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "USBOTG PWR";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbotg_enable>;
+		gpio = <spin127_gpio 0>;
+#if defined(PCONXS_III_OTG_ACTIVE_HIGH) && (PCONXS_III_OTG_ACTIVE_HIGH==1)
+		enable-active-high;
+#else
+		enable-active-low;
+#endif
+		regulator-always-on;
+		vin-supply = <&reg_board_5v>;
+	};
+
+  	reserved@board {
+        compatible      = "kk,trizeps7-reserved";
+#if NOBACKLIGHT_PWM			    
+        kk,gpio-names   = "LVDS_EN","Mute",   "EXT-A00","EXT-A01","EXT-A02","EXT-A03","EXT-A04","EXT-A05","EXT-A06",
+			  "EXT-A07","EXT-A08","EXT-A09","EXT-A10","EXT-A11","EXT-A12","EXT-A13",
+			  "EXT-DD0","EXT-DD1","EXT-DD2","EXT-DD3","EXT-DD4","EXT-PIEZO","Backlight";
+#else
+        kk,gpio-names   = "LVDS_EN","Mute",   "EXT-A00","EXT-A01","EXT-A02","EXT-A03","EXT-A04","EXT-A05","EXT-A06",
+			  "EXT-A07","EXT-A08","EXT-A09","EXT-A10","EXT-A11","EXT-A12","EXT-A13",
+			  "EXT-DD0","EXT-DD1","EXT-DD2","EXT-DD3","EXT-DD4","EXT-PIEZO";
+#endif
+
+        kk,os-gpios     = < 
+                            spin100_gpio   (KK_RSRVD_OUT_HI |KK_RSRVD_EXPORT          |KK_RSRVD_REQUEST( 0)) /* LVDS_EN    gpio1  5  005 */
+                            spin102_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT          |KK_RSRVD_REQUEST( 1)) /* Mute-Audio gpio1  8  008 */
+	                    spin111_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 2)) /* EXT-A00    gpio3  6  070 */
+			    spin113_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 3)) /* EXT-A01    gpio3  7  071 */
+			    spin115_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 4)) /* EXT-A02    gpio5 20  148 */
+			    spin117_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 5)) /* EXT-A03    gpio3  8  072 */
+			    spin119_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 6)) /* EXT-A04    gpio3  9  073 */
+			    spin121_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 7)) /* EXT-A05    gpio3 10  074 */
+			    spin123_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 8)) /* EXT-A06    gpio1  3  003 */
+			    spin125_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 9)) /* EXT-A07    gpio1  6  006 */
+			    spin110_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(10)) /* EXT-A08    gpio4 12  108 */
+			    spin112_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(11)) /* EXT-A09    gpio4 13  109 */
+			    spin114_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(12)) /* EXT-A10    gpio4 14  110 */
+			    spin116_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(13)) /* EXT-A11    gpio4 15  111 */
+			    spin118_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(14)) /* EXT-A12    gpio4 16  112 */
+			    spin120_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(15)) /* EXT-A13    gpio4 17  113 */
+			    spin49_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(16)) /* EXT-DD0    gpio4  2   98 */
+			    spin53_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(17)) /* EXT-DD1    gpio4  3   99 */
+			    spin57_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(18)) /* EXT-DD2    gpio4  4  100 */
+			    spin61_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(19)) /* EXT-DD3    gpio4  5  101 */
+			    spin63_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(20)) /* EXT-DD4    gpio4  6  102 */
+			    spin65_gpio    (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(21)) /* EXT-PIEZO  gpio4  7  103 */
+#if NOBACKLIGHT_PWM			    
+                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(22))            /* PWM Backlt gpio1 1   001 */
+#endif			    
+                            >;
+			    
+			    
+    };
+
+#if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
+	gpio-keys {
+        compatible = "gpio-keys1";
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_gpio_keys>;
+        power { /* Reconfig to power key in Android*/
+            label = "Power Button";
+            gpios = <spin122_gpio GPIO_ACTIVE_LOW>;
+            linux,code = <116>; /* KEY_POWER */
+            gpio-key,wakeup;
+          };
+        };
+
+	leds {
+		compatible = "gpio-leds";
+		pConXS_yellow {
+			pinctrl-names = "default";
+			pinctrl-0     = <&pinctrl_ipan5_led_yellow>;
+			label         = "pConXS:yellow";
+			linux,default-trigger = "heartbeat";
+			gpios         = <spin69_gpio 0>; /* Gpio 5 2 */
+		};
+	};
+#endif    
+};
+
+#ifndef NOBACKLIGHT_PWM
+&pwm1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_backlight_pwm1>;	
+	status = "okay";
+};
+
+
+&backlight {
+	status = "okay";
+	pinctrl-0 = <&pinctrl_backlight_enable>;
+#if defined(PRIMARY_DISPLAY_LVDS) && (PRIMARY_DISPLAY_LVDS==1)
+	enable-gpios = <spin114_gpio GPIO_ACTIVE_HIGH>;
+#else
+	enable-gpios = <spin73_gpio GPIO_ACTIVE_HIGH>;
+#endif	
+	brightness-levels = < 100 
+				99 98 97 96 95 94 93 92 91 90
+				89 88 87 86 85 84 83 82 81 80
+				79 78 77 76 75 74 73 72 71 70
+				69 68 67 66 65 64 63 62 61 60
+				59 58 57 56 55 54 53 52 51 50
+				49 48 47 46 45 44 43 42 41 40
+				39 38 37 36 35 34 33 32 31 30
+				29 28 27 26 25 24 23 22 21 20
+				19 18 17 16 15 14 13 12 11 10
+				 9  8  7  6  5  4  3  2  1  0>;    
+};
+#endif
+
+&i2c2 {
+	rtc@51 {
+		compatible = "nxp,pcf8563";
+		reg = <0x51>;
+	};
+	
+	lm75@48 {
+		compatible = "national,lm75";
+		reg = <0x48>;
+	};
+	
+};
+
+#if !defined (__DTS_IMX8MQ_PINFUNC_H)
+
+&usbotg1 {
+	vbus-supply = <&reg_usbotg_pwr>; 
+	disable-over-current;
+ #if  defined(USB1_OTG_FUNC) && (USB1_OTG_FUNC==OTG_HOST)
+	dr_mode = "host";
+ #else
+  #if defined(USB1_OTG_FUNC) && (USB1_OTG_FUNC==OTG_FUNC)
+	dr_mode = "otg";
+  #else
+        dr_mode = "peripheral";
+  #endif
+ #endif
+};
+
+#if !defined (__DTS_IMX8MN_PINFUNC_H)
+&usbotg2 {
+	dr_mode = "host";
+	vbus-supply = <&reg_usbhost_pwr>; 
+	disable-over-current; 
+};
+#endif
+#endif
+
+&usdhc2 {
+	cd-gpios = <spin59_gpio GPIO_ACTIVE_HIGH>;
+        no-1-8-v;
+	status = "okay";
+};
+
+#if 0
+&wm8983 {
+	mute-gpios = <spin102_gpio GPIO_ACTIVE_HIGH>; /* Works but leads to "plops" */
+};
+#endif
+
+
+/************************************************************************/
+#if defined (__DTS_TRIZEPS8_PINFUNC_H) || defined (__DTS_TRIZEPS8MINI_PINFUNC_H) || defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
+/ {
+	reserved@mcu{
+	/*
+         * gpio --320:AD3,
+	 *        321:AD2,
+	 *        322:AD1,
+	 *	  323:AD0,
+	 *	  324:TSPX,
+	 *	  325:TSMX,
+	 *	  326:TSPY,
+	 *	  327:TSMY,
+	 *	  328:RESET_OUT,
+	 *	  329:CAN1_RX,
+	 *	  330:CAN1_TX
+	 */	
+
+	compatible     = "kk,trizeps8mcu-reserved";
+	kk,gpio-names  = "nRESET_OUT", "CAN1_RX", "CAN1_TX";
+        kk,os-gpios = <\
+                	&gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* RESET_OUT 328 */
+			&gpio1  9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* CAN1_RX   329 */
+			&gpio1 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* CAN1_TX   330 */
+                    >;
+    };	
+};
+
+&pcie0{
+	pinctrl-0     = <&pinctrl_pcie1>;
+	disable-gpio  = <&gpio4 15 GPIO_ACTIVE_LOW>;
+	reset-gpio    = <&gpio4 17 GPIO_ACTIVE_LOW>;
+};
+
+#endif
+

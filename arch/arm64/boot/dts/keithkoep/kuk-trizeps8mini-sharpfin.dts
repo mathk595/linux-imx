@@ -1,0 +1,31 @@
+/*
+ * Copyright 2022 SECO Northern Europe GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+#define ETHERNET_ONLY_100MBIT       0
+
+#include "trizeps8mini.dtsi"
+#include "ipant7.dtsi"
+//#include "atm0700.dtsi"
+#include "g104xvn01.dtsi"
+
+/ {
+	model      = "Keith & Koep GmbH i.MX8MM Trizeps8-Mini";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mm-evk", "fsl,imx8mm";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+
+
+
+
+
+
+

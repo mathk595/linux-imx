@@ -1,0 +1,47 @@
+/*
+ * Copyright 2022 Keith & Koep GmbH
+ *
+ */
+
+ /************************************************************************/
+
+#ifndef IPANT7_TR8P_DTSI
+#define IPANT7_TR8P_DTSI
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	reg_display_pwr: display-pwr {
+		compatible = "regulator-fixed";
+		regulator-name = "DISPLAY PWCTRL";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_3v3>;
+	};
+
+};
+
+&iomuxc {
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+		>;
+	};
+
+	pinctrl_display_enable: display-enable 	{
+		//fsl,pins = < DISPLAY_ENABLE		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
+		fsl,pins = < SPIN100_GPIO1_IO05		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
+	};
+};
+
+&backlight {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
+
+#endif

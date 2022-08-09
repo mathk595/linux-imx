@@ -573,6 +573,7 @@ static void imx_blk_ctrl_read_write(struct device *dev, bool write)
 
 static int imx_blk_ctrl_runtime_suspend(struct device *dev)
 {
+	printk("%s\n",__FUNCTION__);
 	imx_blk_ctrl_read_write(dev, false);
 
 	return 0;
@@ -580,6 +581,7 @@ static int imx_blk_ctrl_runtime_suspend(struct device *dev)
 
 static int imx_blk_ctrl_runtime_resume(struct device *dev)
 {
+	printk("%s\n",__FUNCTION__);
 	imx_blk_ctrl_read_write(dev, true);
 
 	return 0;

@@ -143,7 +143,8 @@
 		compatible = "kuk,imx-audio-wm8983";
 		model = "wm8983-audio";
 		audio-cpu = <&sai2>;
-		audio-codec = <&wm8983>;
+		//audio-codec = <&wm8983>;
+		audio-codec = <&audiocodec>;
 		audio-routing =
 			"Headphone Jack", "HPL",
 			"Headphone Jack", "HPR",
@@ -406,7 +407,8 @@
 		fcs,suspend-voltage-selector = <1>;
 	};
 
-	wm8983: wm8983@1a {	/* Audio-Codec */
+	//wm8983: wm8983@1a {	/* Audio-Codec */
+	audiocodec: wm8983@1a {	/* Audio-Codec */
 		compatible = "kuk,wm8983";
 		reg = <0x1a>;
 		clocks = <&clk IMX8MQ_CLK_SAI2_ROOT>;
