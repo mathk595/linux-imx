@@ -25,11 +25,33 @@ Defines:
         pinctrl_hog: hoggrp {
 		fsl,pins = < 
 					 TRIZEPS_HOGGRP_COMMON
-					 SPIN100_GPIO           PAD_GPIO_PU   /* LVDS    EN  SODIMM Pin 110 gpio 1.05=005 */
-					 SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                                */
-		    		         SPIN123_GPIO		PAD_GPIO_PU   /* Camera Pwdn SODIMM Pin 123               */
-   					 SPIN125_GPIO		PAD_GPIO_PU   /* Camera nRST SODIMM Pin 125               */
-   					 SPIN114_GPIO		PAD_GPIO_PU   /* BL EN(LVDS) SODIMM Pin 114 gpio 4.14=110 */
+#ifdef USB1_OTG_ID_PIN_PD
+					 MX8MM_IOMUXC_GPIO1_IO10_USB1_OTG_ID  MX8MM_PAD_GPIO_PD
+#else
+					 MX8MM_IOMUXC_GPIO1_IO10_USB1_OTG_ID  MX8MM_PAD_GPIO_PU
+#endif
+					 SPIN100_GPIO           PAD_GPIO_PU   /* BL-Power EN  SODIMM Pin 110 gpio 1.05=005 */ 
+					 SPIN102_GPIO  		PAD_GPIO_PU   /* Audio Amp                                 */
+					 SPIN65_GPIO		PAD_GPIO_PD   /* Piezo   */
+					 SPIN111_GPIO		PAD_GPIO_PD   /* EXT-A00 */
+					 SPIN113_GPIO		PAD_GPIO_PD   /* EXT-A01 */
+					 SPIN115_GPIO		PAD_GPIO_PD   /* EXT-A02 */
+					 SPIN117_GPIO		PAD_GPIO_PD   /* EXT-A03 */
+					 SPIN119_GPIO		PAD_GPIO_PD   /* EXT-A04 */
+					 SPIN121_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN123_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN125_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN110_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN112_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN114_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN116_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN118_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN120_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN49_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN53_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN57_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN61_GPIO		PAD_GPIO_PD   /* EXT-A05 */
+					 SPIN63_GPIO		PAD_GPIO_PD   /* EXT-A05 */					 
 #ifndef NOBACKLIGHT_PWM					 
 					 SPIN77_GPIO             PAD_GPIO_PU   /* Gpio PWM */
 #endif					 
@@ -42,7 +64,7 @@ Defines:
 	};
 #endif        
 
-#ifndef NOBACKLIGHT
+#ifndef NOBACKLIGHT_PWM
 	pinctrl_backlight_pwm1: pwm-backlight {
 		fsl,pins = < SPIN77_PWM1_OUT	PAD_GPIO >;	/* BACKLIGHT_PWM */
 	};
@@ -170,25 +192,45 @@ Defines:
 
   	reserved@board {
         compatible      = "kk,trizeps7-reserved";
-#if NOBACKLIGHT_PWM			    	
-        kk,gpio-names   = "Cam-nRst","CAM-PWDN","EN-Audio","LVDS_EN", "PWM-PIN", "BACKLIGHT";
+#if NOBACKLIGHT_PWM			    
+        kk,gpio-names   = "LVDS_EN","Mute",   "EXT-A00","EXT-A01","EXT-A02","EXT-A03","EXT-A04","EXT-A05","EXT-A06",
+			  "EXT-A07","EXT-A08","EXT-A09","EXT-A10","EXT-A11","EXT-A12","EXT-A13",
+			  "EXT-DD0","EXT-DD1","EXT-DD2","EXT-DD3","EXT-DD4","EXT-PIEZO","Backlight";
 #else
-        kk,gpio-names   = "Cam-nRst","CAM-PWDN","EN-Audio","LVDS_EN";
+        kk,gpio-names   = "LVDS_EN","Mute",   "EXT-A00","EXT-A01","EXT-A02","EXT-A03","EXT-A04","EXT-A05","EXT-A06",
+			  "EXT-A07","EXT-A08","EXT-A09","EXT-A10","EXT-A11","EXT-A12","EXT-A13",
+			  "EXT-DD0","EXT-DD1","EXT-DD2","EXT-DD3","EXT-DD4","EXT-PIEZO";
 #endif
+
         kk,os-gpios     = < 
-                            spin125_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-nRST  gpio1 6   */
-                            spin123_gpio   (KK_RSRVD_OUT_HI)                                     /* Cam-PWDN  gpio1 3   */
-                            spin102_gpio   (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* Audio En  gpio1 8   */
-                            spin100_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* LVDS_EN   gpio1 5   */
-#if NOBACKLIGHT_PWM
-#ifdef DISPLAY_ONLY_18BPP
-			spin77_gpio    (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* PWM Backl gpio1 1   */
-#else
-			spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* PWM Backl gpio1 1   */
-#endif
-			    spin114_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(3)) /* Backlight gpio4 14  */
+                            spin100_gpio   (KK_RSRVD_OUT_HI |KK_RSRVD_EXPORT          |KK_RSRVD_REQUEST( 0)) /* LVDS_EN    gpio1  5  005 */
+                            spin102_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT          |KK_RSRVD_REQUEST( 1)) /* Mute-Audio gpio1  8  008 */
+	                    spin111_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 2)) /* EXT-A00    gpio3  6  070 */
+			    spin113_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 3)) /* EXT-A01    gpio3  7  071 */
+			    spin115_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 4)) /* EXT-A02    gpio5 20  148 */
+			    spin117_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 5)) /* EXT-A03    gpio3  8  072 */
+			    spin119_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 6)) /* EXT-A04    gpio3  9  073 */
+			    spin121_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 7)) /* EXT-A05    gpio3 10  074 */
+			    spin123_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 8)) /* EXT-A06    gpio1  3  003 */
+			    spin125_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST( 9)) /* EXT-A07    gpio1  6  006 */
+			    spin110_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(10)) /* EXT-A08    gpio4 12  108 */
+			    spin112_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(11)) /* EXT-A09    gpio4 13  109 */
+			    spin114_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(12)) /* EXT-A10    gpio4 14  110 */
+			    spin116_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(13)) /* EXT-A11    gpio4 15  111 */
+			    spin118_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(14)) /* EXT-A12    gpio4 16  112 */
+			    spin120_gpio   (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(15)) /* EXT-A13    gpio4 17  113 */
+			    spin49_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(16)) /* EXT-DD0    gpio4  2   98 */
+			    spin53_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(17)) /* EXT-DD1    gpio4  3   99 */
+			    spin57_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(18)) /* EXT-DD2    gpio4  4  100 */
+			    spin61_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(19)) /* EXT-DD3    gpio4  5  101 */
+			    spin63_gpio    (KK_RSRVD_IN     |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(20)) /* EXT-DD4    gpio4  6  102 */
+			    spin65_gpio    (KK_RSRVD_OUT_LO |KK_RSRVD_EXPORT_CHANGABLE|KK_RSRVD_REQUEST(21)) /* EXT-PIEZO  gpio4  7  103 */
+#if NOBACKLIGHT_PWM			    
+                            spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(22))            /* PWM Backlt gpio1 1   001 */
 #endif			    
                             >;
+			    
+			    
     };
 
 #if !defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
@@ -252,6 +294,12 @@ Defines:
 		compatible = "nxp,pcf8563";
 		reg = <0x51>;
 	};
+	
+	lm75@48 {
+		compatible = "national,lm75";
+		reg = <0x48>;
+	};
+	
 };
 
 #if !defined (__DTS_IMX8MQ_PINFUNC_H)
@@ -280,8 +328,9 @@ Defines:
 #endif
 
 &usdhc2 {
-	cd-gpios = <spin59_gpio GPIO_ACTIVE_LOW>;
-	status = "okay";	
+	cd-gpios = <spin59_gpio GPIO_ACTIVE_HIGH>;
+        no-1-8-v;
+	status = "okay";
 };
 
 #if 0
@@ -295,13 +344,26 @@ Defines:
 #if defined (__DTS_TRIZEPS8_PINFUNC_H) || defined (__DTS_TRIZEPS8MINI_PINFUNC_H) || defined (__DTS_TRIZEPS8NANO_PINFUNC_H)
 / {
 	reserved@mcu{
-		compatible     = "kk,trizeps8mcu-reserved";
-        kk,gpio-names  = "nRESET_OUT", "CAN1_RX", "CAN1_TX";
-        /* gpio1 -- 0:AD3, 1:AD2, 2:AD1, 3:AD0, 4:TSPX, 5:TSMX, 6:TSPY, 7:TSMY, 8:RESET_OUT, 9:CAN1_RX, 10:CAN1_TX */
+	/*
+         * gpio --320:AD3,
+	 *        321:AD2,
+	 *        322:AD1,
+	 *	  323:AD0,
+	 *	  324:TSPX,
+	 *	  325:TSMX,
+	 *	  326:TSPY,
+	 *	  327:TSMY,
+	 *	  328:RESET_OUT,
+	 *	  329:CAN1_RX,
+	 *	  330:CAN1_TX
+	 */	
+
+	compatible     = "kk,trizeps8mcu-reserved";
+	kk,gpio-names  = "nRESET_OUT", "CAN1_RX", "CAN1_TX";
         kk,os-gpios = <\
-                		&gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* RESET_OUT */
-			        &gpio1  9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* CAN1_RX */
-			        &gpio1 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* CAN1_TX */
+                	&gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* RESET_OUT 328 */
+			&gpio1  9 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* CAN1_RX   329 */
+			&gpio1 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* CAN1_TX   330 */
                     >;
     };	
 };

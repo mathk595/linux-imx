@@ -10,13 +10,14 @@
 #ifndef __DTS_TRIZEPS8MINI_PINFUNC_H
 #define __DTS_TRIZEPS8MINI_PINFUNC_H
 
-#define KK_RSRVD_IN	            (1 << 0)
-#define KK_RSRVD_OUT            (0 << 0)
-#define KK_RSRVD_CHANGEABLE     (1 << 6)
-#define KK_RSRVD_OUT_LO		    ((0 << 1) | KK_RSRVD_OUT)
-#define KK_RSRVD_OUT_HI		    ((1 << 1) | KK_RSRVD_OUT)
-#define KK_RSRVD_REQUEST(_idx)	((1 << 8) | ((_idx) << 16))
-#define KK_RSRVD_EXPORT			(1 << 5)					// @+15.05.2017 S&B HL
+#define KK_RSRVD_IN	          (1 << 0)
+#define KK_RSRVD_OUT              (0 << 0)
+#define KK_RSRVD_CHANGEABLE	  (1 << 6)
+#define KK_RSRVD_OUT_LO		  ((0 << 1)     | KK_RSRVD_OUT)
+#define KK_RSRVD_OUT_HI		  ((1 << 1)     | KK_RSRVD_OUT)
+#define KK_RSRVD_REQUEST(_idx)	  ((1 << 8)     | ((_idx) << 16))
+#define KK_RSRVD_EXPORT		   (1 << 5)	// @+15.05.2017 S&B HL
+#define KK_RSRVD_EXPORT_CHANGABLE  ((1 << 5)    | KK_RSRVD_CHANGEABLE)
 
 #define PAD_GPIO_PU  (MX8MM_IOMUXC_PULLUP_ENABLE|MX8MM_IOMUXC_HYS|MX8MM_IOMUXC_SLOW|MX8MM_IOMUXC_DRIVE(6))
 #define PAD_GPIO_PD  (MX8MM_IOMUXC_PULLDOWN_ENABLE|MX8MM_IOMUXC_HYS|MX8MM_IOMUXC_SLOW|MX8MM_IOMUXC_DRIVE(6))
@@ -50,9 +51,9 @@
 #define WDOGRESET_SJC_DE_B                                 0x030 0x298 0x000 0x7 0x0
 #define SPIN123_GPIO1_IO3                                  0x034 0x29C 0x000 0x0 0x0
 #define SPIN123_GPIO                                       0x034 0x29C 0x000 0x0 0x0
-#define spin123_gpio    &gpio1 3
+#define spin123_gpio                                       &gpio1 3
 #define CAMERA_PWDN                                        0x034 0x29C 0x000 0x0 0x0
-#define camera_pwdn    &gpio1 3
+#define camera_pwdn                                        &gpio1 3
 #define SPIN123_USDHC1_VSELECT                             0x034 0x29C 0x000 0x1 0x0
 #define SPIN123_SDMA1_EXT_EVENT0                           0x034 0x29C 0x000 0x5 0x0
 #define SPIN123_ANAMIX_XTAL_OK                             0x034 0x29C 0x000 0x6 0x0
@@ -74,10 +75,10 @@
 #define SPIN100_CCMSRCGPCMIX_INT_BOOT                       0x03C 0x2A4 0x000 0x6 0x0
 #define SPIN100_USDHC2_TEST_TRIG                            0x03C 0x2A4 0x000 0x7 0x0
 #define SPIN125_GPIO1_IO6                                   0x040 0x2A8 0x000 0x0 0x0
-#define SPIN125_GPIO                                       0x040 0x2A8 0x000 0x0 0x0
-#define spin125_gpio    &gpio1 6
-#define CAMERA_RESET                                       0x040 0x2A8 0x000 0x0 0x0
-#define camera_reset    &gpio1 6
+#define SPIN125_GPIO                                        0x040 0x2A8 0x000 0x0 0x0
+#define spin125_gpio                                        &gpio1 6
+#define CAMERA_RESET                                        0x040 0x2A8 0x000 0x0 0x0
+#define camera_reset                                        &gpio1 6
 #define SPIN125_ENET1_MDC                                   0x040 0x2A8 0x000 0x1 0x0
 #define SPIN125_USDHC1_CD_B                                 0x040 0x2A8 0x000 0x5 0x0
 #define SPIN125_CCMSRCGPCMIX_EXT_CLK3                       0x040 0x2A8 0x000 0x6 0x0
@@ -243,24 +244,27 @@
 #define SPIN113_RAWNAND_DATA01                             0x110 0x378 0x000 0x0 0x0
 #define SPIN113_QSPI_A_DATA1                               0x110 0x378 0x000 0x1 0x0
 #define SPIN113_GPIO3_IO7                                  0x110 0x378 0x000 0x5 0x0
-#define SPIN113_GPIO                                      0x110 0x378 0x000 0x5 0x0
+#define SPIN113_GPIO                                       0x110 0x378 0x000 0x5 0x0
 #define spin113_gpio    &gpio3 7
 #define SPIN113_SIM_M_HADDR3                               0x110 0x378 0x000 0x7 0x0
 #define SPIN117_RAWNAND_DATA02                             0x114 0x37C 0x000 0x0 0x0
 #define SPIN117_QSPI_A_DATA2                               0x114 0x37C 0x000 0x1 0x0
 #define SPIN117_GPIO3_IO8                                  0x114 0x37C 0x000 0x5 0x0
-#define SPIN117_GPIO                                      0x114 0x37C 0x000 0x5 0x0
+#define SPIN117_GPIO                                       0x114 0x37C 0x000 0x5 0x0
+#define spin117_gpio                                       &gpio3 8
 #define SPIN117_SIM_M_HADDR4                               0x114 0x37C 0x000 0x7 0x0
 #define SPIN119_RAWNAND_DATA03                             0x118 0x380 0x000 0x0 0x0
 #define SPIN119_QSPI_A_DATA3                               0x118 0x380 0x000 0x1 0x0
 #define SPIN119_GPIO3_IO9                                  0x118 0x380 0x000 0x5 0x0
-#define SPIN119_GPIO                                      0x118 0x380 0x000 0x5 0x0
+#define SPIN119_GPIO                                       0x118 0x380 0x000 0x5 0x0
+#define spin119_gpio                                       &gpio3 9
 #define SPIN119_SIM_M_HADDR5                               0x118 0x380 0x000 0x7 0x0
 #define SPIN121_RAWNAND_DATA04                             0x11C 0x384 0x000 0x0 0x0
 #define SPIN121_QSPI_B_DATA0                               0x11C 0x384 0x000 0x1 0x0
 #define SPIN121_USDHC3_DATA0                               0x11C 0x384 0x000 0x2 0x0
 #define SPIN121_GPIO3_IO10                                 0x11C 0x384 0x000 0x5 0x0
-#define SPIN121_GPIO                                     0x11C 0x384 0x000 0x5 0x0
+#define SPIN121_GPIO                                       0x11C 0x384 0x000 0x5 0x0
+#define spin121_gpio                                       &gpio3 10
 #define SPIN121_SIM_M_HADDR6                               0x11C 0x384 0x000 0x7 0x0
 #define SPIN104_RAWNAND_DATA05                             0x120 0x388 0x000 0x0 0x0
 #define SPIN104_QSPI_B_DATA1                               0x120 0x388 0x000 0x1 0x0
@@ -373,89 +377,100 @@
 #define SPIN90_GPIO4_IO1                                     0x160 0x3C8 0x000 0x5 0x0
 #define SPIN90_GPIO                                          0x160 0x3C8 0x000 0x5 0x0
 #define SPIN90_SIM_M_HADDR16                                 0x160 0x3C8 0x000 0x7 0x0
-#define SPIN49_SAI1_RX_DATA0                                0x164 0x3CC 0x000 0x0 0x0
-#define SPIN49_SAI5_RX_DATA0                                0x164 0x3CC 0x4D4 0x1 0x1
-#define SPIN49_PDM_DATA0                                    0x164 0x3CC 0x534 0x3 0x1
-#define SPIN49_CORESIGHT_TRACE0                             0x164 0x3CC 0x000 0x4 0x0
-#define SPIN49_GPIO4_IO2                                    0x164 0x3CC 0x000 0x5 0x0
-#define SPIN49_GPIO                                         0x164 0x3CC 0x000 0x5 0x0
-#define SPIN49_CCMSRCGPCMIX_BOOT_CFG0                       0x164 0x3CC 0x000 0x6 0x0
-#define SPIN49_SIM_M_HADDR17                                0x164 0x3CC 0x000 0x7 0x0
-#define SPIN53_SAI1_RX_DATA1                                0x168 0x3D0 0x000 0x0 0x0
-#define SPIN53_SAI5_RX_DATA1                                0x168 0x3D0 0x4D8 0x1 0x1
-#define SPIN53_PDM_DATA1                                    0x168 0x3D0 0x538 0x3 0x1
-#define SPIN53_CORESIGHT_TRACE1                             0x168 0x3D0 0x000 0x4 0x0
-#define SPIN53_GPIO4_IO3                                    0x168 0x3D0 0x000 0x5 0x0
-#define SPIN53_GPIO                                         0x168 0x3D0 0x000 0x5 0x0
-#define SPIN53_CCMSRCGPCMIX_BOOT_CFG1                       0x168 0x3D0 0x000 0x6 0x0
-#define SPIN53_SIM_M_HADDR18                                0x168 0x3D0 0x000 0x7 0x0
-#define SPIN57_SAI1_RX_DATA2                                0x16C 0x3D4 0x000 0x0 0x0
-#define SPIN57_SAI5_RX_DATA2                                0x16C 0x3D4 0x4DC 0x1 0x1
-#define SPIN57_PDM_DATA2                                    0x16C 0x3D4 0x53C 0x3 0x1
-#define SPIN57_CORESIGHT_TRACE2                             0x16C 0x3D4 0x000 0x4 0x0
-#define SPIN57_GPIO4_IO4                                    0x16C 0x3D4 0x000 0x5 0x0
-#define SPIN57_GPIO                                         0x16C 0x3D4 0x000 0x5 0x0
-#define SPIN57_CCMSRCGPCMIX_BOOT_CFG2                       0x16C 0x3D4 0x000 0x6 0x0
-#define SPIN57_SIM_M_HADDR19                                0x16C 0x3D4 0x000 0x7 0x0
-#define SPIN61_SAI1_RX_DATA3                                0x170 0x3D8 0x4E0 0x0 0x1
-#define SPIN61_SAI5_RX_DATA3                                0x170 0x3D8 0x000 0x1 0x0
-#define SPIN61_PDM_DATA3                                    0x170 0x3D8 0x540 0x3 0x1
-#define SPIN61_CORESIGHT_TRACE3                             0x170 0x3D8 0x000 0x4 0x0
-#define SPIN61_GPIO4_IO5                                    0x170 0x3D8 0x000 0x5 0x0
-#define SPIN61_GPIO                                         0x170 0x3D8 0x000 0x5 0x0
-#define SPIN61_CCMSRCGPCMIX_BOOT_CFG3                       0x170 0x3D8 0x000 0x6 0x0
-#define SPIN61_SIM_M_HADDR20                                0x170 0x3D8 0x000 0x7 0x0
-#define SPIN63_SAI1_RX_DATA4                                0x174 0x3DC 0x000 0x0 0x0
-#define SPIN63_SAI6_TX_BCLK                                 0x174 0x3DC 0x51C 0x1 0x0
-#define SPIN63_SAI6_RX_BCLK                                 0x174 0x3DC 0x510 0x2 0x0
-#define SPIN63_CORESIGHT_TRACE4                             0x174 0x3DC 0x000 0x4 0x0
-#define SPIN63_GPIO4_IO6                                    0x174 0x3DC 0x000 0x5 0x0
-#define SPIN63_GPIO                                         0x174 0x3DC 0x000 0x5 0x0
-#define SPIN63_CCMSRCGPCMIX_BOOT_CFG4                       0x174 0x3DC 0x000 0x6 0x0
-#define SPIN63_SIM_M_HADDR21                                0x174 0x3DC 0x000 0x7 0x0
-#define SPIN65_SAI1_RX_DATA5                                0x178 0x3E0 0x000 0x0 0x0
-#define SPIN65_SAI6_TX_DATA0                                0x178 0x3E0 0x000 0x1 0x0
-#define SPIN65_SAI6_RX_DATA0                                0x178 0x3E0 0x514 0x2 0x0
-#define SPIN65_SAI1_RX_SYNC                                 0x178 0x3E0 0x4C4 0x3 0x1
-#define SPIN65_CORESIGHT_TRACE5                             0x178 0x3E0 0x000 0x4 0x0
-#define SPIN65_GPIO4_IO7                                    0x178 0x3E0 0x000 0x5 0x0
-#define SPIN65_GPIO                                         0x178 0x3E0 0x000 0x5 0x0
-#define SPIN65_CCMSRCGPCMIX_BOOT_CFG5                       0x178 0x3E0 0x000 0x6 0x0
-#define SPIN65_SIM_M_HADDR22                                0x178 0x3E0 0x000 0x7 0x0
-#define SPIN67_SAI1_RX_DATA6                                0x17C 0x3E4 0x520 0x0 0x0
-#define SPIN67_SAI6_TX_SYNC                                 0x17C 0x3E4 0x000 0x1 0x0
-#define SPIN67_SAI6_RX_SYNC                                 0x17C 0x3E4 0x518 0x2 0x0
-#define SPIN67_CORESIGHT_TRACE6                             0x17C 0x3E4 0x000 0x4 0x0
-#define SPIN67_GPIO4_IO8                                    0x17C 0x3E4 0x000 0x5 0x0
-#define SPIN67_GPIO                                         0x17C 0x3E4 0x000 0x5 0x0
-#define SPIN67_CCMSRCGPCMIX_BOOT_CFG6                       0x17C 0x3E4 0x000 0x6 0x0
-#define SPIN67_SIM_M_HADDR23                                0x17C 0x3E4 0x000 0x7 0x0
-#define SPIN71_SAI1_RX_DATA7                                0x180 0x3E8 0x000 0x0 0x0
-#define SPIN71_SAI6_MCLK                                    0x180 0x3E8 0x530 0x1 0x0
-#define SPIN71_SAI1_TX_SYNC                                 0x180 0x3E8 0x4CC 0x2 0x4
-#define SPIN71_SAI1_TX_DATA4                                0x180 0x3E8 0x000 0x3 0x0
-#define SPIN71_CORESIGHT_TRACE7                             0x180 0x3E8 0x000 0x4 0x0
-#define SPIN71_GPIO4_IO9                                    0x180 0x3E8 0x000 0x5 0x0
-#define SPIN71_GPIO                                    0x180 0x3E8 0x000 0x5 0x0
-#define SPIN71_CCMSRCGPCMIX_BOOT_CFG7                       0x180 0x3E8 0x000 0x6 0x0
-#define SPIN71_SIM_M_HADDR24                                0x180 0x3E8 0x000 0x7 0x0
+#define SPIN49_SAI1_RX_DATA0                                 0x164 0x3CC 0x000 0x0 0x0
+#define SPIN49_SAI5_RX_DATA0                                 0x164 0x3CC 0x4D4 0x1 0x1
+#define SPIN49_PDM_DATA0                                     0x164 0x3CC 0x534 0x3 0x1
+#define SPIN49_CORESIGHT_TRACE0                              0x164 0x3CC 0x000 0x4 0x0
+#define SPIN49_GPIO4_IO2                                     0x164 0x3CC 0x000 0x5 0x0
+#define SPIN49_GPIO                                          0x164 0x3CC 0x000 0x5 0x0
+#define spin49_gpio                                          &gpio4 2
+#define SPIN49_CCMSRCGPCMIX_BOOT_CFG0                        0x164 0x3CC 0x000 0x6 0x0
+#define SPIN49_SIM_M_HADDR17                                 0x164 0x3CC 0x000 0x7 0x0
+#define SPIN53_SAI1_RX_DATA1                                 0x168 0x3D0 0x000 0x0 0x0
+#define SPIN53_SAI5_RX_DATA1                                 0x168 0x3D0 0x4D8 0x1 0x1
+#define SPIN53_PDM_DATA1                                     0x168 0x3D0 0x538 0x3 0x1
+#define SPIN53_CORESIGHT_TRACE1                              0x168 0x3D0 0x000 0x4 0x0
+#define SPIN53_GPIO4_IO3                                     0x168 0x3D0 0x000 0x5 0x0
+#define SPIN53_GPIO                                          0x168 0x3D0 0x000 0x5 0x0
+#define spin53_gpio                                          &gpio4 3
+#define SPIN53_CCMSRCGPCMIX_BOOT_CFG1                        0x168 0x3D0 0x000 0x6 0x0
+#define SPIN53_SIM_M_HADDR18                                 0x168 0x3D0 0x000 0x7 0x0
+#define SPIN57_SAI1_RX_DATA2                                 0x16C 0x3D4 0x000 0x0 0x0
+#define SPIN57_SAI5_RX_DATA2                                 0x16C 0x3D4 0x4DC 0x1 0x1
+#define SPIN57_PDM_DATA2                                     0x16C 0x3D4 0x53C 0x3 0x1
+#define SPIN57_CORESIGHT_TRACE2                              0x16C 0x3D4 0x000 0x4 0x0
+#define SPIN57_GPIO4_IO4                                     0x16C 0x3D4 0x000 0x5 0x0
+#define SPIN57_GPIO                                          0x16C 0x3D4 0x000 0x5 0x0
+#define spin57_gpio                                          &gpio4 4
+#define SPIN57_CCMSRCGPCMIX_BOOT_CFG2                        0x16C 0x3D4 0x000 0x6 0x0
+#define SPIN57_SIM_M_HADDR19                                 0x16C 0x3D4 0x000 0x7 0x0
+#define SPIN61_SAI1_RX_DATA3                                 0x170 0x3D8 0x4E0 0x0 0x1
+#define SPIN61_SAI5_RX_DATA3                                 0x170 0x3D8 0x000 0x1 0x0
+#define SPIN61_PDM_DATA3                                     0x170 0x3D8 0x540 0x3 0x1
+#define SPIN61_CORESIGHT_TRACE3                              0x170 0x3D8 0x000 0x4 0x0
+#define SPIN61_GPIO4_IO5                                     0x170 0x3D8 0x000 0x5 0x0
+#define SPIN61_GPIO                                          0x170 0x3D8 0x000 0x5 0x0
+#define spin61_gpio                                          &gpio4 5
+#define SPIN61_CCMSRCGPCMIX_BOOT_CFG3                        0x170 0x3D8 0x000 0x6 0x0
+#define SPIN61_SIM_M_HADDR20                                 0x170 0x3D8 0x000 0x7 0x0
+#define SPIN63_SAI1_RX_DATA4                                 0x174 0x3DC 0x000 0x0 0x0
+#define SPIN63_SAI6_TX_BCLK                                  0x174 0x3DC 0x51C 0x1 0x0
+#define SPIN63_SAI6_RX_BCLK                                  0x174 0x3DC 0x510 0x2 0x0
+#define SPIN63_CORESIGHT_TRACE4                              0x174 0x3DC 0x000 0x4 0x0
+#define SPIN63_GPIO4_IO6                                     0x174 0x3DC 0x000 0x5 0x0
+#define SPIN63_GPIO                                          0x174 0x3DC 0x000 0x5 0x0
+#define spin63_gpio                                          &gpio4 6
+#define SPIN63_CCMSRCGPCMIX_BOOT_CFG4                        0x174 0x3DC 0x000 0x6 0x0
+#define SPIN63_SIM_M_HADDR21                                 0x174 0x3DC 0x000 0x7 0x0
+#define SPIN65_SAI1_RX_DATA5                                 0x178 0x3E0 0x000 0x0 0x0
+#define SPIN65_SAI6_TX_DATA0                                 0x178 0x3E0 0x000 0x1 0x0
+#define SPIN65_SAI6_RX_DATA0                                 0x178 0x3E0 0x514 0x2 0x0
+#define SPIN65_SAI1_RX_SYNC                                  0x178 0x3E0 0x4C4 0x3 0x1
+#define SPIN65_CORESIGHT_TRACE5                              0x178 0x3E0 0x000 0x4 0x0
+#define SPIN65_GPIO4_IO7                                     0x178 0x3E0 0x000 0x5 0x0
+#define SPIN65_GPIO                                          0x178 0x3E0 0x000 0x5 0x0
+#define spin65_gpio                                          &gpio4 7
+#define SPIN65_CCMSRCGPCMIX_BOOT_CFG5                        0x178 0x3E0 0x000 0x6 0x0
+#define SPIN65_SIM_M_HADDR22                                 0x178 0x3E0 0x000 0x7 0x0
+#define SPIN67_SAI1_RX_DATA6                                 0x17C 0x3E4 0x520 0x0 0x0
+#define SPIN67_SAI6_TX_SYNC                                  0x17C 0x3E4 0x000 0x1 0x0
+#define SPIN67_SAI6_RX_SYNC                                  0x17C 0x3E4 0x518 0x2 0x0
+#define SPIN67_CORESIGHT_TRACE6                              0x17C 0x3E4 0x000 0x4 0x0
+#define SPIN67_GPIO4_IO8                                     0x17C 0x3E4 0x000 0x5 0x0
+#define SPIN67_GPIO                                          0x17C 0x3E4 0x000 0x5 0x0
+#define spin67_gpio                                          &gpio4 8
+#define SPIN67_CCMSRCGPCMIX_BOOT_CFG6                        0x17C 0x3E4 0x000 0x6 0x0
+#define SPIN67_SIM_M_HADDR23                                 0x17C 0x3E4 0x000 0x7 0x0
+#define SPIN71_SAI1_RX_DATA7                                 0x180 0x3E8 0x000 0x0 0x0
+#define SPIN71_SAI6_MCLK                                     0x180 0x3E8 0x530 0x1 0x0
+#define SPIN71_SAI1_TX_SYNC                                  0x180 0x3E8 0x4CC 0x2 0x4
+#define SPIN71_SAI1_TX_DATA4                                 0x180 0x3E8 0x000 0x3 0x0
+#define SPIN71_CORESIGHT_TRACE7                              0x180 0x3E8 0x000 0x4 0x0
+#define SPIN71_GPIO4_IO9                                     0x180 0x3E8 0x000 0x5 0x0
+#define SPIN71_GPIO                                          0x180 0x3E8 0x000 0x5 0x0
+#define spin71_gpio                                          &gpio4 9
+#define SPIN71_CCMSRCGPCMIX_BOOT_CFG7                        0x180 0x3E8 0x000 0x6 0x0
+#define SPIN71_SIM_M_HADDR24                                 0x180 0x3E8 0x000 0x7 0x0
 #define SPIN126_SAI1_TX_SYNC                                 0x184 0x3EC 0x4CC 0x0 0x3
 #define SPIN126_SAI5_TX_SYNC                                 0x184 0x3EC 0x4EC 0x1 0x1
 #define SPIN126_CORESIGHT_EVENTO                             0x184 0x3EC 0x000 0x4 0x0
 #define SPIN126_GPIO4_IO10                                   0x184 0x3EC 0x000 0x5 0x0
 #define SPIN126_GPIO                                         0x184 0x3EC 0x000 0x5 0x0
+#define spin126_gpio                                         &gpio4 10
 #define SPIN126_SIM_M_HADDR25                                0x184 0x3EC 0x000 0x7 0x0
-#define SPIN128_SAI1_TX_BCLK                                  0x188 0x3F0 0x4C8 0x0 0x1
-#define SPIN128_SAI5_TX_BCLK                                  0x188 0x3F0 0x4E8 0x1 0x1
-#define SPIN128_CORESIGHT_EVENTI                              0x188 0x3F0 0x000 0x4 0x0
-#define SPIN128_GPIO4_IO11                                    0x188 0x3F0 0x000 0x5 0x0
-#define SPIN128_GPIO                                        0x188 0x3F0 0x000 0x5 0x0
-#define SPIN128_SIM_M_HADDR26                                 0x188 0x3F0 0x000 0x7 0x0
+#define SPIN128_SAI1_TX_BCLK                                 0x188 0x3F0 0x4C8 0x0 0x1
+#define SPIN128_SAI5_TX_BCLK                                 0x188 0x3F0 0x4E8 0x1 0x1
+#define SPIN128_CORESIGHT_EVENTI                             0x188 0x3F0 0x000 0x4 0x0
+#define SPIN128_GPIO4_IO11                                   0x188 0x3F0 0x000 0x5 0x0
+#define SPIN128_GPIO                                         0x188 0x3F0 0x000 0x5 0x0
+#define spin128_gpio                                         &gpio4 11
+#define SPIN128_SIM_M_HADDR26                                0x188 0x3F0 0x000 0x7 0x0
 #define SPIN110_SAI1_TX_DATA0                                0x18C 0x3F4 0x000 0x0 0x0
 #define SPIN110_SAI5_TX_DATA0                                0x18C 0x3F4 0x000 0x1 0x0
 #define SPIN110_CORESIGHT_TRACE8                             0x18C 0x3F4 0x000 0x4 0x0
 #define SPIN110_GPIO4_IO12                                   0x18C 0x3F4 0x000 0x5 0x0
-#define SPIN110_GPIO                                       0x18C 0x3F4 0x000 0x5 0x0
+#define SPIN110_GPIO                                         0x18C 0x3F4 0x000 0x5 0x0
+#define spin110_gpio                                         &gpio4 12
 #define SPIN110_CCMSRCGPCMIX_BOOT_CFG8                       0x18C 0x3F4 0x000 0x6 0x0
 #define SPIN110_SIM_M_HADDR27                                0x18C 0x3F4 0x000 0x7 0x0
 #define SPIN112_SAI1_TX_DATA1                                0x190 0x3F8 0x000 0x0 0x0
@@ -463,6 +478,7 @@
 #define SPIN112_CORESIGHT_TRACE9                             0x190 0x3F8 0x000 0x4 0x0
 #define SPIN112_GPIO4_IO13                                   0x190 0x3F8 0x000 0x5 0x0
 #define SPIN112_GPIO                                         0x190 0x3F8 0x000 0x5 0x0
+#define spin112_gpio                                         &gpio4 13
 #define SPIN112_CCMSRCGPCMIX_BOOT_CFG9                       0x190 0x3F8 0x000 0x6 0x0
 #define SPIN112_SIM_M_HADDR28                                0x190 0x3F8 0x000 0x7 0x0
 #define SPIN114_SAI1_TX_DATA2                                0x194 0x3FC 0x000 0x0 0x0
@@ -470,7 +486,7 @@
 #define SPIN114_CORESIGHT_TRACE10                            0x194 0x3FC 0x000 0x4 0x0
 #define SPIN114_GPIO4_IO14                                   0x194 0x3FC 0x000 0x5 0x0
 #define SPIN114_GPIO                                         0x194 0x3FC 0x000 0x5 0x0
-#define spin114_gpio      &gpio4 14
+#define spin114_gpio                                         &gpio4 14
 #define SPIN114_CCMSRCGPCMIX_BOOT_CFG10                      0x194 0x3FC 0x000 0x6 0x0
 #define SPIN114_SIM_M_HADDR29                                0x194 0x3FC 0x000 0x7 0x0
 #define SPIN116_SAI1_TX_DATA3                                0x198 0x400 0x000 0x0 0x0
@@ -478,6 +494,7 @@
 #define SPIN116_CORESIGHT_TRACE11                            0x198 0x400 0x000 0x4 0x0
 #define SPIN116_GPIO4_IO15                                   0x198 0x400 0x000 0x5 0x0
 #define SPIN116_GPIO                                         0x198 0x400 0x000 0x5 0x0
+#define spin116_gpio                                         &gpio4 15
 #define SPIN116_CCMSRCGPCMIX_BOOT_CFG11                      0x198 0x400 0x000 0x6 0x0
 #define SPIN116_SIM_M_HADDR30                                0x198 0x400 0x000 0x7 0x0
 #define SPIN118_SAI1_TX_DATA4                                0x19C 0x404 0x000 0x0 0x0
@@ -486,6 +503,7 @@
 #define SPIN118_CORESIGHT_TRACE12                            0x19C 0x404 0x000 0x4 0x0
 #define SPIN118_GPIO4_IO16                                   0x19C 0x404 0x000 0x5 0x0
 #define SPIN118_GPIO                                         0x19C 0x404 0x000 0x5 0x0
+#define spin118_gpio                                         &gpio4 16
 #define SPIN118_CCMSRCGPCMIX_BOOT_CFG12                      0x19C 0x404 0x000 0x6 0x0
 #define SPIN118_SIM_M_HADDR31                                0x19C 0x404 0x000 0x7 0x0
 #define SPIN120_SAI1_TX_DATA5                                0x1A0 0x408 0x000 0x0 0x0
@@ -494,6 +512,7 @@
 #define SPIN120_CORESIGHT_TRACE13                            0x1A0 0x408 0x000 0x4 0x0
 #define SPIN120_GPIO4_IO17                                   0x1A0 0x408 0x000 0x5 0x0
 #define SPIN120_GPIO                                         0x1A0 0x408 0x000 0x5 0x0
+#define spin120_gpio                                         &gpio4 17
 #define SPIN120_CCMSRCGPCMIX_BOOT_CFG13                      0x1A0 0x408 0x000 0x6 0x0
 #define SPIN120_SIM_M_HBURST0                                0x1A0 0x408 0x000 0x7 0x0
 #define SPIN122_SAI1_TX_DATA6                                0x1A4 0x40C 0x000 0x0 0x0
@@ -700,6 +719,7 @@
 #define SPIN115_PCIE1_CLKREQ_B                              0x22C 0x494 0x524 0x12 0x0
 #define SPIN115_GPIO5_IO20                                  0x22C 0x494 0x000 0x5 0x0
 #define SPIN115_GPIO                                        0x22C 0x494 0x000 0x5 0x0
+#define spin115_gpio                &gpio5 20
 #define SPIN115_TPSMP_HDATA22                               0x22C 0x494 0x000 0x7 0x0
 #define NOTCONNECTED_I2C4_SDA                               0x230 0x498 0x000 0x0 0x0
 #define NOTCONNECTED_PWM1_OUT                               0x230 0x498 0x000 0x1 0x0

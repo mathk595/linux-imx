@@ -62,15 +62,6 @@ Defines:
 	};
 };
 
-/*
-&lcdif1 {
-	status = "okay";
-};
-
-&lcdif2 {
-	status = "okay";
-};
-*/
 
 &ldb {
 	status = "okay";

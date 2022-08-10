@@ -752,7 +752,7 @@ static int mxc_gpio_probe(struct platform_device *pdev)
 	if (of_property_read_bool(np, "kukmiscinit"))
 	{
 	  handle_reserved_gpio();
-	  handle_reserved_mcu();
+	  /* handle_reserved_mcu(); */
 	}
 
 

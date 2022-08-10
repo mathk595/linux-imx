@@ -8,6 +8,10 @@
 #ifndef PCONXS_TR8P_DTSI
 #define PCONXS_TR8P_DTSI
 
+#ifndef DISPLAY_ONLY_18BPP
+#define DISPLAY_ONLY_18BPP          0
+#endif
+
 / {
 	chosen {
 		stdout-path = &uart1;
@@ -33,6 +37,21 @@
             gpio-key,wakeup;
         };
     };
+
+	reserved@board {
+        compatible      = "kk,trizeps7-reserved";
+        kk,gpio-names   = "LVDS_EN", "PWM-PIN", "BACKLIGHT";//, "BACKLIGHT2";
+        kk,os-gpios     = <
+			spin100_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* LVDS_EN   gpio1 5   */
+#if DISPLAY_ONLY_18BPP
+			spin77_gpio    (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* PWM Backl gpio1 1   */
+#else
+			spin77_gpio    (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* PWM Backl gpio1 1   */
+#endif
+			//spin114_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(3)) /* Backlight gpio4 14  */
+			spin73_gpio   (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(4)) /* Backlight gpio4 31  */
+			>;
+	};
 };
 
 &iomuxc {
@@ -51,14 +70,28 @@
     pinctrl_gpio_keys: gpio_keys {
 		fsl,pins = < SPIN122_GPIO       PAD_GPIO >;  /* PowerButton SODIMM Pin 122 */
 	};
+
+	pinctrl_display_enable: display-enable 	{
+		//fsl,pins = < DISPLAY_ENABLE		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
+		fsl,pins = < SPIN100_GPIO1_IO05		PAD_GPIO_PU >; /* DISPLAY_ENABLE */
+	};
 };
 
 &backlight {
+#if DISPLAY_ONLY_18BPP
+	status = "disabled";
+#else
 	status = "okay";
+#endif
 };
 
+
 &pwm1 {
+#if DISPLAY_ONLY_18BPP
+	status = "disabled";
+#else
 	status = "okay";
+#endif
 };
 
 &usdhc2 {

@@ -1,0 +1,84 @@
+/*
+ * Copyright 2020 Keith & Koep GmbH
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+#define ETHERNET_ONLY_100MBIT       1
+#define PCONXS_V1 1
+#define USB1_OTG_ID_PIN_PD          1
+#define PCONXS_III_OTG_ACTIVE_HIGH  1
+
+#include "trizeps8mini.dtsi"
+#include "alturos.dtsi"
+#include "edt7cap.dtsi"
+// #include "ov5640.dtsi"
+
+
+/ {
+	model      = "Alturos Odysseus EDT7CAP i.MX8MM Trizeps8-Mini";
+	compatible = "kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mm-evk", "fsl,imx8mm";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+/*********************************************************************************
+
+Label        Comment          TrizepsPin with Func                 Support
+---------------------------------------------------------------------------------
+Mute         Mute-Audio-Amp   SPIN102_GPIO1_IO8                    GPIO (008)
+Ext-Irq      RTC Irq          SPIN43_GPIO1_IO7                     GPIO (007)
+Ext-PCD      BL-PWM(1)        SPIN77_PWM1_OUT                      *    (pwm1)
+Ext-PSKTSEL  BL-Power         SPIN100_GPIO1_IO5                    GPIO (005)
+Ext-PRDY     RTC-IRQ          SPIN45_GPIO3_IO4                     GPIO (068)
+Ext-Reset    RESET Extern     SPIN87_GPIO3_IO14                    GPIO (078)
+Ext-Piezo    Piezo            SPIN65_GPIO4_IO7                     GPIO (103)
+
+Ext-A00      Ext-A00          SPIN111_GPIO3_IO6                    GPIO (070)
+Ext-A01      Ext-A01          SPIN113_GPIO3_IO7		   	   GPIO (071)
+Ext-A02      Ext-A02          SPIN115_GPIO5_IO20		   GPIO (148)
+Ext-A03      Ext-A03          SPIN117_GPIO3_IO8			   GPIO (072)
+Ext-A04      Ext-A04          SPIN119_GPIO3_IO9			   GPIO (073)
+Ext-A05      Ext-A05          SPIN121_GPIO3_IO10		   GPIO (074)
+Ext-A06      Ext-A06          SPIN123_GPIO1_IO3			   GPIO (003)
+Ext-A07      Ext-A07          SPIN125_GPIO1_IO6			   GPIO (006)
+Ext-A08      Ext-A08          SPIN110_GPIO4_IO12		   GPIO (108)
+Ext-A09      Ext-A09          SPIN112_GPIO4_IO13		   GPIO (109)
+Ext-A10      Ext-A10          SPIN114_GPIO4_IO14		   GPIO (110)
+Ext-A11      Ext-A11          SPIN116_GPIO4_IO15		   GPIO (111)
+Ext-A12      Ext-A12          SPIN118_GPIO4_IO16		   GPIO (112)
+Ext-A13      Ext-A13          SPIN120_GPIO4_IO17		   GPIO (113)
+Ext-DD0      Ext-DD0          SPIN49_GPIO4_IO2			   GPIO (098)
+Ext-DD1      Ext-DD1	      SPIN53_GPIO4_IO3			   GPIO (099)
+Ext-DD2      Ext-DD2	      SPIN57_GPIO4_IO4			   GPIO (100)
+Ext-DD3      Ext-DD3	      SPIN61_GPIO4_IO5			   GPIO (101)
+Ext-DD3      Ext-DD4          SPIN63_GPIO4_IO6			   GPIO (102)
+
+*********************************************************************************
+I2C:   TESTED
+-----------------------------
+1-0038      Focaltech Touch
+1-0048 *    LM75            
+1-0051 *    PCF8564
+-----------------------------
+2-0010 *    kuk-tr8mcu-touch
+2-001a *    WM8983
+2-0041 *    FPGA MIPI->RGB
+2-004b      BD71847
+
+*********************************************************************************
+MMC0/1  *   EMMC + SD-CARD 
+*********************************************************************************
+USB HUB *   4 Ports OK
+
+*********************************************************************************/
+
+
+
+
+
+
