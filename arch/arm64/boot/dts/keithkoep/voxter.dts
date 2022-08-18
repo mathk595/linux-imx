@@ -1,0 +1,365 @@
+/*
+ * Copyright 2022 ACD Gruppe
+ *
+ */
+
+/dts-v1/;
+
+// Add defines here, which control behaviour of .dtsi:
+
+#include "trizeps8mini.dtsi"
+// #include "imx8mm-pinfunc-overlay.h"
+
+/ {
+	model      = "ACD Elektronik GmbH - Voxter VT5";
+	compatible = "acd,voxter", "kk,trizeps8", "kk,trizeps8mini", "fsl,imx8mm-evk", "fsl,imx8mm";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+};
+
+&iomuxc {
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			/* Outputs */
+			SPIN102_GPIO			MX8MM_PAD_GPIO        /* AUDIO_ENABLE  SODIMM pin 102 GPIO1_IO8 */
+			SPIN57_GPIO			MX8MM_PAD_GPIO        /* RST_BT        SODIMM pin  57 GPIO4_IO4 */
+			SPIN111_GPIO			MX8MM_PAD_GPIO_OD_NP  /* VCC_M.2_ON    SODIMM pin 111 GPIO3_IO6 */
+			/* Inputs */
+			SPIN126_GPIO			MX8MM_PAD_GPIO        /* nBackup_ON    SODIMM pin 126 GPIO4_IO10*/
+			SPIN128_GPIO			MX8MM_PAD_GPIO        /* nU_Akku_ON    SODIMM pin 128 GPIO4_IO11*/
+			SPIN132_GPIO			MX8MM_PAD_GPIO        /* Akku_removed  SODIMM pin 132 GPIO3_IO12*/
+			/* Hardware revisions */
+			SPIN61_GPIO			MX8MM_PAD_GPIO        /* HW_Rev0       SODIMM pin  61 GPIO4_IO5 */
+			SPIN63_GPIO			MX8MM_PAD_GPIO        /* HW_Rev1       SODIMM pin  63 GPIO4_IO6 */
+			SPIN65_GPIO			MX8MM_PAD_GPIO        /* HW_Rev2       SODIMM pin  65 GPIO4_IO7 */
+			SPIN67_GPIO			MX8MM_PAD_GPIO        /* HW_Rev3       SODIMM pin  67 GPIO4_IO8 */
+			SPIN69_GPIO			MX8MM_PAD_GPIO        /* HW_Rev4       SODIMM pin  69 GPIO5_IO2 */
+			SPIN71_GPIO			MX8MM_PAD_GPIO        /* HW_Rev5       SODIMM pin  71 GPIO4_IO9 */
+			SPIN73_GPIO			MX8MM_PAD_GPIO        /* HW_Rev6       SODIMM pin  73 GPIO3_IO22*/
+			SPIN75_GPIO			MX8MM_PAD_GPIO        /* HW_Rev7       SODIMM pin  75 GPIO3_IO23*/
+		>;
+	};
+
+	pinctrl_gpio_keys: gpio_keys_grp
+	{
+		fsl,pins = <
+			MX8MM_IOMUXC_GPIO1_IO07_GPIO1_IO7  MX8MM_PAD_GPIO    /* On/Off_INT  SODIMM pin 43 */
+			MX8MM_IOMUXC_SAI1_RXD1_GPIO4_IO3   MX8MM_PAD_GPIO    /* Reset Plug  SODIMM pin 53 */
+		
+		>;
+	};
+
+	pinctrl_gpio_poweroff: gpio_poweroff_grp
+	{
+		fsl,pins = <MX8MM_IOMUXC_SAI1_TXD4_GPIO4_IO16  MX8MM_PAD_GPIO>;  /* Power_OFF  SODIMM pin 118 */
+	};
+
+	pinctrl_gpio_leds: gpio_leds_grp
+	{
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_DATA05_GPIO3_IO11  MX8MM_PAD_GPIO  /* WLAN LED green    SODIMM pin 104 */
+			MX8MM_IOMUXC_SAI5_MCLK_GPIO3_IO25    MX8MM_PAD_GPIO  /* WLAN LED red      SODIMM pin 106 */
+			MX8MM_IOMUXC_SAI1_TXD0_GPIO4_IO12    MX8MM_PAD_GPIO  /* BT LED blue       SODIMM pin 110 */
+			MX8MM_IOMUXC_SAI1_TXD1_GPIO4_IO13    MX8MM_PAD_GPIO  /* BT LED red        SODIMM pin 112 */
+			MX8MM_IOMUXC_SAI1_TXD2_GPIO4_IO14    MX8MM_PAD_GPIO  /* On/Off LED green  SODIMM pin 114 */
+			MX8MM_IOMUXC_SAI1_TXD3_GPIO4_IO15    MX8MM_PAD_GPIO  /* On/Off LED red    SODIMM pin 116 */
+		>;
+	};
+
+	pinctrl_gpio_charger: gpio_charger_grp
+	{
+		fsl,pins = <MX8MM_IOMUXC_SAI1_TXD6_GPIO4_IO18  MX8MM_PAD_GPIO>;  /* DS_Connected  SODIMM pin 122 */
+	};
+	
+	pinctrl_pcie_ext: pcie_ext_grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_I2C4_SCL_GPIO5_IO20     0x61   /* open drain, pull up -- emulated clkreq! (V1R2)  SODIMM pin 115 */
+			MX8MM_IOMUXC_SAI1_TXD5_GPIO4_IO17    0x41   /* PCIE2_RESET      SODIMM pin 120 */
+			MX8MM_IOMUXC_NAND_DATA07_GPIO3_IO13  0x41   /* PCIE2_WAKE       SODIMM pin 154 */
+		>;
+	};
+
+	pinctrl_bt_uart: bt_uart_grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_UART4_TXD_UART2_DCE_RTS_B  0x140  /* SODIMM pin 32 */
+			MX8MM_IOMUXC_UART4_RXD_UART2_DCE_CTS_B  0x140  /* SODIMM pin 34 */
+			MX8MM_IOMUXC_UART2_RXD_UART2_DCE_RX     0x140  /* SODIMM pin 36 */
+			MX8MM_IOMUXC_UART2_TXD_UART2_DCE_TX     0x140  /* SODIMM pin 38 */
+		>;
+	};
+
+	pinctrl_wdog: wdoggrp {
+		fsl,pins = < MX8MM_IOMUXC_GPIO1_IO02_WDOG1_WDOG_B		0xc6 >;
+	};
+
+	pinctrl_nfc: nfc_grp {
+		fsl,pins = <
+			MX8MM_IOMUXC_NAND_DATA01_GPIO3_IO7  MX8MM_PAD_GPIO  /* NFC_VEN  SODIMM pin 113 */
+			MX8MM_IOMUXC_NAND_DATA02_GPIO3_IO8  MX8MM_PAD_GPIO  /* NFC_IRQ  SODIMM pin 117 */
+		>;
+	};
+
+	pinctrl_usbhost_enable: usbhost-enable 	{
+		fsl,pins = < SPIN129_GPIO		PAD_GPIO >; /* USBH_PWR */
+	};
+
+	pinctrl_usbotg_enable: usbotg-enable 	{
+		fsl,pins = < SPIN127_GPIO		PAD_GPIO >; /* USBOTG_PWR */
+	};
+};
+
+/ {
+	reg_vin_fused: vin_fused {
+		compatible = "regulator-fixed";
+		regulator-name = "VIN_FUSED";
+		regulator-min-microvolt = <12000000>;
+		/* max	should be 24V but the fixed regulator driver does
+		not allow a range here */
+		regulator-max-microvolt = <12000000>;
+		regulator-always-on;
+	};
+
+	reg_board_5v: 5v {
+		compatible = "regulator-fixed";
+		regulator-name = "+5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	reg_3v3: 3v3 {
+		compatible = "regulator-fixed";
+		regulator-name = "+3V3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		vin-supply = <&reg_vin_fused>;
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_keys>;
+
+		/* Reconfig to power key in Android*/
+		power {
+			label = "Power Button";
+			gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;  /* On/Off_INT  SODIMM pin 43 */
+			linux,code = <116>; /* KEY_POWER */
+			gpio-key,wakeup;
+		};
+
+		external-plug {
+			label = "External Plug";
+			gpios = <&gpio4 3 GPIO_ACTIVE_LOW>;  /* ext_GPIO  SODIMM pin  53 */
+			linux,code = <599>; /* EXTERNAL_PLUG */
+			gpio-key;
+        };
+	};
+
+	gpio-poweroff {
+		compatible = "gpio-poweroff";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_poweroff>;
+		gpios = <&gpio4 16 GPIO_ACTIVE_HIGH>;  /* Power_OFF  SODIMM pin 118 */
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_leds>;
+
+		wlan-led-green {
+			label = "WLAN:green";
+			gpios = <&gpio3 11 GPIO_ACTIVE_LOW>;  /* WLAN LED green  SODIMM pin 104 */
+			default-state = "keep";
+		};
+
+		wlan-led-red {
+			label = "WLAN:red";
+			gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;  /* WLAN LED red  SODIMM pin 106 */
+			default-state = "keep";
+		};
+
+		bt-led-blue {
+			label = "BT:blue";
+			gpios = <&gpio4 12 GPIO_ACTIVE_LOW>;  /* BT LED blue  SODIMM pin 110 */
+			default-state = "keep";
+		};
+
+		bt-led-red {
+			label = "BT:red";
+			gpios = <&gpio4 13 GPIO_ACTIVE_LOW>;  /* BT LED red  SODIMM pin 112 */
+			default-state = "keep";
+		};
+
+		onoff-led-green {
+			label = "OnOff:green";
+			gpios = <&gpio4 14 GPIO_ACTIVE_LOW>;  /* On/Off LED green  SODIMM pin 114 */
+			default-state = "keep";
+		};
+
+		onoff-led-red {
+			label = "OnOff:red";
+			gpios = <&gpio4 15 GPIO_ACTIVE_LOW>;  /* On/Off LED red  SODIMM pin 116 */
+			default-state = "keep";
+		};
+	};
+
+	charger: gpio-charger {
+		compatible = "gpio-charger";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_charger>;
+		charger-type = "mains";
+		gpios = <&gpio4 18 GPIO_ACTIVE_LOW>;  /* DS_Connected  SODIMM pin 122 */
+	};
+
+	reserved@board {
+		compatible     = "kk,trizeps7-reserved";
+		kk,gpio-names  = /* Outputs */
+		                 "AUDIO_ENABLE", "RST_BT", "VCC_M.2_ON",
+		                 /* Inputs */
+		                 "nBackup_ON", "Akku_removed",
+		                 /* Hardware revision */
+		                 "HW_Rev0", "HW_Rev1", "HW_Rev2", "HW_Rev3", "HW_Rev4", "HW_Rev5", "HW_Rev6", "HW_Rev7";
+		kk,os-gpios    = <
+			/*
+			 * Outputs
+			 * 1.8 	= 	AUDIO_ENABLE  SODIMM pin 102 
+			 * 4.4  =	RST_BT        SODIMM pin  57 
+			 * 3.6	=	VCC_M.2_ON    SODIMM pin 111 
+			 *
+			 * Inputs
+			 * 4.10	=	nBackup_ON    SODIMM pin 126
+			 * 3.12 =	Akku_removed  SODIMM pin 132
+			 *
+			 * Hardware revision (inputs)
+			 * 4.5	= 	HW_Rev0       SODIMM pin  61
+			 * 4.6	=  	HW_Rev1       SODIMM pin  63
+			 * 4.7 	= 	HW_Rev2       SODIMM pin  65
+			 * 4.8 	= 	HW_Rev3       SODIMM pin  67
+			 * 5.2 	= 	HW_Rev4       SODIMM pin  69
+			 * 4.9 	= 	HW_Rev5       SODIMM pin  71
+		 	 * 3.22 = 	HW_Rev6       SODIMM pin  73
+	 		 * 3.23 = 	HW_Rev7       SODIMM pin  75
+			 */
+			
+			&gpio1  8 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0))  
+			&gpio4  4 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1))  
+			&gpio3  6 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2))  
+			&gpio4 10 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(3))  
+			&gpio3 12 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(4))  
+			&gpio4  5 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(5))  
+			&gpio4  6 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(6))  
+			&gpio4  7 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(7))  
+			&gpio4  8 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(8))  
+			&gpio5  2 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(9))  
+			&gpio4  9 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(10))  
+			&gpio3 22 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(11))  
+			&gpio3 23 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(12))
+		>;
+	};
+
+};
+
+&i2c2 {
+	rtc@51 { // RX-8564 Real Time Clock
+		compatible = "nxp,pcf8563";
+		reg = <0x51>;
+	};
+
+	eeprom@54 { // M24C08 8-Kbit EEPROM
+		compatible = "at,24c08";
+		#address-cells = <0x1>;
+		#size-cells =<0x0>;
+		pagesize = <16>;
+		reg = <0x54>;
+	};
+
+	w1bridge@18 { // DS2482 1-Wire Master
+		compatible = "mi,ds2482";
+		#address-cells = <0x1>;
+		#size-cells = <0x0>;
+		reg = <0x18>;
+	};
+
+	nfc@28 { // PN7150 NFC controller
+		compatible = "nxp,pn544";
+		reg = <0x28>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_nfc>;
+		interrupt-gpios = <&gpio3 8 GPIO_ACTIVE_LOW>;   /* NFC_IRQ  SODIMM pin 117 */
+		enable-gpios    = <&gpio3 7 GPIO_ACTIVE_HIGH>;  /* NFC_VEN  SODIMM pin 113 */
+		status = "okay";
+	};
+};
+
+&pcie0{
+	pinctrl-0     = <&pinctrl_pcie_ext>;
+	reset-gpio    = <&gpio4 17 GPIO_ACTIVE_LOW>;   /* PCIE2_RESET      SODIMM pin 120 */
+};
+
+
+&usbotg1 {
+	dr_mode = "peripheral";
+	-usb-role-switch;
+	disable-over-current;
+};
+
+&usbotg2 {
+	dr_mode = "host";
+	-usb-role-switch;
+	disable-over-current; 
+};
+
+&mipi_dsi {
+	status = "okay";
+
+	panel@0 {
+		compatible = "acd,voxter";
+		reg = <0>;
+		port {
+			panel1_in: endpoint {
+				remote-endpoint = <&mipi_dsi_out>;
+			};
+		};
+	};
+
+	port@1 {
+		mipi_dsi_out: endpoint {
+			remote-endpoint = <&panel1_in>;
+		};
+	};
+};
+
+&wdog1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_wdog>;
+	fsl,ext-reset-output;
+	status = "okay";
+};
+
+&uart2 { // UART for external BT module
+	pinctrl-0 = <&pinctrl_bt_uart>;
+	fsl,uart-has-rtscts;
+//	dmas = <&sdma1 24 4 0>, <&sdma1 25 4 0>;
+	dma-names = "rx", "tx";
+};
+
+&uart3 { // UART for internal BT module
+	status = "disabled";
+};
+
+&uart4 {
+	status = "disabled";
+};
+
+
+
