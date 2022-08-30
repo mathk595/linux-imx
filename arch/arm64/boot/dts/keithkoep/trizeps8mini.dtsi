@@ -279,6 +279,23 @@ Switches:
 		default-brightness-level = <80>;
 		status = "disabled";
  	};
+
+        reserved@trizeps7 {
+                compatible    = "kk,trizeps7-reserved";
+                kk,gpio-names = "nRESET_OUT","nPCIE1_WAKE","nWL_POWERDOWN","nPCIE1_W_DISABLE","nPCIE1_RESET";
+                kk,os-gpios   = <\
+                                &gpio1  2 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(0)) /* nRESET_OUT      */ \
+                                &gpio3  2 (KK_RSRVD_IN    |KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(1)) /* nPCIE1_WAKE     */ \
+                                &gpio3  5 (KK_RSRVD_OUT_HI|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(2)) /* nWL_POWERDOWN   */ \
+                                &gpio3 17 (KK_RSRVD_OUT_HI)                                     /* nPCIE1_W_DISABLE*/ \
+                                &gpio2 19 (KK_RSRVD_OUT_HI)                                     /* nPCIE1_RESET    */ \
+                                >;
+#if 0
+				&gpio5 20 (KK_RSRVD_OUT_LO|KK_RSRVD_EXPORT|KK_RSRVD_REQUEST(4)) /* nPCIE1_CLKREQ   */ \
+				&gpio1  5 (KK_RSRVD_OUT_HI)                  /* Display Enable (already allocated) */
+#endif
+
+	};
 };
 
 &A53_0 {
