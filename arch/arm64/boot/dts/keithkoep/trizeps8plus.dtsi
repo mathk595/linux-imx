@@ -542,7 +542,7 @@ Switches:
 		//status = "ok";
 	};
 
-#if 1 //MCUTOUCH
+#if MCUTOUCH
 	/*
 	  Usualy there will be no mcu-touch, but since the mcu-touch driver
 	  also contains the driver for the mcu-gpios. 
@@ -576,9 +576,11 @@ Switches:
 #endif
 };
 
+#if MCUTOUCH
 &gpio5 {
 	kukmiscinit = <1>;
 };
+#endif
 
 
 &snvs_pwrkey {

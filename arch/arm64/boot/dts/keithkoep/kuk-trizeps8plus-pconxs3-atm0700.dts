@@ -9,6 +9,7 @@
 #define display_enable &gpio1 5
 #define USDHC_MHZ 100
 #define DISPLAY_ONLY_18BPP          1
+#define MCUTOUCH 1
 
 #include "trizeps8plus.dtsi"
 #include "pconxs-tr8p.dtsi"
