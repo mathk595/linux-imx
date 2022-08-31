@@ -60,11 +60,11 @@ Defines:
 	// 0x20
 	//      0x01    Enable Wireless Module 2 UART4
 	//      
-	tr8fpga,addresses = < 0x10 0x20 0x10 >;
+	tr8fpga,addresses = < 0x10 0x10 >;
 #if DISPLAY_ONLY_18BPP
-	tr8fpga,values    = < 0x00 0x00 0x89 >;
+	tr8fpga,values    = < 0x00 0x89 >;
 #else
-	tr8fpga,values    = < 0x00 0x00 0x8D >;
+	tr8fpga,values    = < 0x00 0x8D >;
 #endif
 	status = "okay";
 };
