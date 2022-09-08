@@ -31,6 +31,8 @@ Switches:
 #define TRIZEPS_HOGGRP_COMMON
 #endif
 
+#define PCB_REVISION 3 // counting starts at 0, like burned to fuses
+
 / {
 	firmware {
 		android {
@@ -347,12 +349,18 @@ Switches:
 		#size-cells = <0>;
 
 		ethphy0: ethernet-phy@0 {
-			compatible = "ethernet-phy-ieee802.3-c22";
+#if PCB_REVISION < 3
+			//compatible = "ethernet-phy-ieee802.3-c22";
+			compatible = "ethernet-phy-id004d.d074"; // AR8031
 			reg = <4>;
+#else
+			compatible = "ethernet-phy-id001c.c916"; // RTL8211
+#endif
 			at803x,eee-disabled;
 			at803x,vddio-1p8v;
 #if defined(ETHERNET_ONLY_100MBIT) && (ETHERNET_ONLY_100MBIT==1)
 			at803x,100MBit;
+			rtl821x,100MBit;
 #endif            
 		};
 	};

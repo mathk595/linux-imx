@@ -48,6 +48,7 @@
 #define RTL8366RB_POWER_SAVE_ON			BIT(12)
 
 #define RTL_SUPPORTS_5000FULL			BIT(14)
+
 #define RTL_SUPPORTS_2500FULL			BIT(13)
 #define RTL_SUPPORTS_10000FULL			BIT(0)
 #define RTL_ADV_2500FULL			BIT(7)
@@ -64,6 +65,7 @@
 #define RTL8211F_CLKOUT_EN			BIT(0)
 
 #define RTL821X_CLKOUT_EN_FEATURE		(1 << 0)
+#define RTL821X_100MBIT					(1 << 1)
 
 MODULE_DESCRIPTION("Realtek PHY driver");
 MODULE_AUTHOR("Johnson Leung");
@@ -88,12 +90,15 @@ static int rtl821x_probe(struct phy_device *phydev)
 	struct device *dev = &phydev->mdio.dev;
 	struct rtl821x_priv *priv;
 
+	//printk("%s\n",__FUNCTION__);
 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
 
 	if (of_property_read_bool(dev->of_node, "rtl821x,clkout_en"))
 		priv->quirks |= RTL821X_CLKOUT_EN_FEATURE;
+	if (of_property_read_bool(dev->of_node, "rtl821x,100MBit"))
+		priv->quirks |= RTL821X_100MBIT;
 
 	phydev->priv = priv;
 
@@ -214,6 +219,9 @@ static int rtl8211f_config_init(struct phy_device *phydev)
 	int ret;
 	struct rtl821x_priv *priv = phydev->priv;
 
+	//printk("%s\n",__FUNCTION__);
+	//for(val=0; val<=15; val++)
+	//	printk("%s: reg%02d=0x%04x\n",__FUNCTION__,val,phy_read_paged(phydev, 0, val));
 	val = RTL8211F_ALDPS_ENABLE | RTL8211F_ALDPS_PLL_OFF | RTL8211F_ALDPS_XTAL_OFF;
 	phy_modify_paged_changed(phydev, 0xa43, RTL8211F_PHYCR1, val, val);
 
@@ -496,6 +504,21 @@ static int rtl822x_write_mmd(struct phy_device *phydev, int devnum, u16 regnum,
 	return ret;
 }
 
+static int rtl8211f_get_features(struct phy_device *phydev)
+{
+	struct rtl821x_priv *priv = phydev->priv;
+	int err=genphy_read_abilities(phydev);
+
+	//printk("%s\n",__FUNCTION__);
+	if(!err && priv->quirks & RTL821X_100MBIT)
+	{
+		linkmode_clear_bit(ETHTOOL_LINK_MODE_1000baseT_Half_BIT,phydev->supported);
+		linkmode_clear_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,phydev->supported);
+		linkmode_clear_bit(ETHTOOL_LINK_MODE_Autoneg_BIT,phydev->supported);
+	}
+	return err;
+}
+
 static int rtl822x_get_features(struct phy_device *phydev)
 {
 	int val;
@@ -666,6 +689,7 @@ static struct phy_driver realtek_drvs[] = {
 		PHY_ID_MATCH_EXACT(0x001cc916),
 		.name		= "RTL8211F Gigabit Ethernet",
 		.probe		= rtl821x_probe,
+		.get_features	= rtl8211f_get_features,
 		.config_init	= &rtl8211f_config_init,
 		.ack_interrupt	= &rtl8211f_ack_interrupt,
 		.config_intr	= &rtl8211f_config_intr,

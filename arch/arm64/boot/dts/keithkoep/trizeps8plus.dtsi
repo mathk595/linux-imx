@@ -17,6 +17,10 @@ Switches:
 #define MCUTOUCH 0
 #endif
 
+#ifndef ETHERNET_ONLY_100MBIT
+#define ETHERNET_ONLY_100MBIT 0
+#endif
+
 #define PCB_REVISION 2 // counting starts at 0, like burned to fuses
 
 / {
@@ -374,8 +378,9 @@ Switches:
 #endif
 			//at803x,eee-disabled;
 			//at803x,vddio-1p8v;
-#if defined(ETHERNET_ONLY_100MBIT) && (ETHERNET_ONLY_100MBIT==1)
-			//at803x,100MBit;
+#if ETHERNET_ONLY_100MBIT
+			at803x,100MBit;
+			rtl821x,100MBit;
 #endif
 		};
 	};
