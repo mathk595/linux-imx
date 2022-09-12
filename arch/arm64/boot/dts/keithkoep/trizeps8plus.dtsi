@@ -380,7 +380,9 @@ Switches:
 			//at803x,vddio-1p8v;
 #if ETHERNET_ONLY_100MBIT
 			at803x,100MBit;
-			rtl821x,100MBit;
+			//rtl821x,100MBit;
+			eee-broken-100tx;
+			eee-broken-1000t;
 #endif
 		};
 	};
